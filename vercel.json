@@ -4,6 +4,5 @@
   "devCommand": "cd web && npm run dev",
   "installCommand": "cd web && npm install",
   "framework": null,
-  "outputDirectory": "web/.next",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./web"
+  "outputDirectory": "web/.next"
 }
