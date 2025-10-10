@@ -35,6 +35,8 @@
   "dependencies": {
     "@formatjs/intl-localematcher": "^0.6.1",
     "@hookform/resolvers": "^5.2.2",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-popover": "^1.1.15",
     "@sendgrid/mail": "^8.1.6",
     "@sentry/nextjs": "^10.17.0",
     "@vercel/analytics": "^1.5.0",
@@ -54,7 +56,6 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.63.0",
-    "reactour": "^1.19.4",
     "recharts": "^3.2.1",
     "resend": "^6.1.2",
     "stripe": "^18.5.0",
