@@ -1823,6 +1823,46 @@ These tasks require human interaction (interviews, partner recruitment, market r
    - **Repository**: github.com:jackdamnielzz/maasiso-safetask.git
    - **Commit**: 04e2b71 (comprehensive billing system with 17 completed tasks)
 
+✅ **COMPLETED**: - [x] **Task 8.10S**: Fix React Hook violations and build errors
+   - **Completion Criteria**: All React Hook rule violations resolved, build process working
+   - **Dependencies**: Task 8.10R (Repository push)
+   - **Time Estimate**: 30 minutes
+   - **Phase**: Advanced Features (Month 8)
+   - **Completed**: 2025-10-10
+   - **Issues Fixed**:
+     - React Hook violations in schema utility functions (useSchema() calls)
+     - CommonJS require() import error in invitation.ts
+     - Parsing errors preventing production build
+     - Next.js build process failures
+   - **Files Updated**:
+     - web/src/lib/seo/article-schema.tsx - Fixed createArticleSchema function
+     - web/src/lib/seo/dataset-schema.tsx - Fixed createDatasetSchema function
+     - web/src/lib/seo/event-schema.tsx - Fixed createEventSchema function
+     - web/src/lib/seo/faq-schema.tsx - Fixed createFAQSchema function
+     - web/src/lib/seo/organization-schema.tsx - Fixed createOrganizationSchema function
+     - web/src/lib/seo/product-schema.tsx - Fixed createProductSchema function
+     - web/src/lib/types/invitation.ts - Replaced require() with ES module solution
+   - **Technical Solution**:
+     - Converted utility functions to pure functions without React hooks
+     - Added proper fallbacks for crypto token generation
+     - Maintained backward compatibility for all existing functionality
+     - Ensured successful Next.js production builds
+
+✅ **COMPLETED**: - [x] **Task 8.10T**: Deploy corrected version to Vercel
+   - **Completion Criteria**: Fixed version successfully deployed to production
+   - **Dependencies**: Task 8.10S (Build fixes)
+   - **Time Estimate**: 5 minutes
+   - **Phase**: Advanced Features (Month 8)
+   - **Completed**: 2025-10-10
+   - **Deployment Details**:
+     - 3 objects pushed to main branch (972 bytes)
+     - Auto-deployment triggered by git push
+     - Latest commit: def9875 (fixed build errors)
+     - All React Hook violations resolved
+     - Production build now working correctly
+   - **Repository**: github.com:jackdamnielzz/maasiso-safetask.git
+   - **Vercel URL**: maasiso-safetask-jr1hlfxw8-tunuxs-projects.vercel.app
+
 ---
 
 ## 8. Testing & Quality Assurance (8 tasks) - Months 2-8 (Continuous)
