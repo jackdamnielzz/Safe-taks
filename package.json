@@ -3,7 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "deploy:preview": "./scripts/deploy-preview.sh",
+    "deploy:production": "./scripts/deploy-production.sh",
+    "deploy:verify": "./scripts/verify-deployment.sh",
+    "deploy:rollback": "./scripts/rollback-deployment.sh"
   },
   "devDependencies": {
     "husky": "^9.1.7",
@@ -20,6 +24,7 @@
     ]
   },
   "dependencies": {
-    "firebase-admin": "^13.5.0"
+    "firebase-admin": "^13.5.0",
+    "next": "15.5.4"
   }
 }
