@@ -1,0 +1,23 @@
+{
+  "testUser": {
+    "email": "test@example.com",
+    "firstName": "Test",
+    "lastName": "User",
+    "role": "safety_manager",
+    "password": "testpassword123"
+  },
+  "adminUser": {
+    "email": "admin@example.com",
+    "firstName": "Admin",
+    "lastName": "User",
+    "role": "admin",
+    "password": "adminpassword123"
+  },
+  "fieldWorker": {
+    "email": "field@example.com",
+    "firstName": "Field",
+    "lastName": "Worker",
+    "role": "field_worker",
+    "password": "fieldpassword123"
+  }
+}

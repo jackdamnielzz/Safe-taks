@@ -1,0 +1,977 @@
+@import "tailwindcss";
+
+:root {
+  /* Light theme - always use light colors */
+  --background: #f8f9fa;
+  --foreground: #1a202c;
+  
+  /* Brand Colors (from DESIGN_SYSTEM.md) */
+  --brand-primary: rgb(255, 139, 0);
+  --brand-secondary: rgb(0, 128, 85);
+  --brand-dark: rgb(9, 30, 66);
+  --brand-white: rgb(255, 255, 255);
+  
+  /* Mobile-First Touch Targets */
+  --touch-min: 44px;
+  --touch-comfortable: 48px;
+  --touch-large: 56px;
+  --touch-glove: 64px;
+  
+  /* Mobile Spacing Scale */
+  --mobile-space-xs: 0.5rem;   /* 8px */
+  --mobile-space-sm: 0.75rem;  /* 12px */
+  --mobile-space-md: 1rem;     /* 16px */
+  --mobile-space-lg: 1.5rem;   /* 24px */
+  --mobile-space-xl: 2rem;     /* 32px */
+  
+  /* Touch-Optimized Typography */
+  --mobile-text-xs: 0.875rem;  /* 14px - minimum readable */
+  --mobile-text-sm: 1rem;      /* 16px - prevents iOS zoom */
+  --mobile-text-base: 1.125rem; /* 18px - comfortable reading */
+  --mobile-text-lg: 1.25rem;   /* 20px - headings */
+  --mobile-text-xl: 1.5rem;    /* 24px - large headings */
+  
+  /* Mobile Border Radius */
+  --mobile-radius-sm: 0.5rem;  /* 8px */
+  --mobile-radius-md: 0.75rem; /* 12px */
+  --mobile-radius-lg: 1rem;    /* 16px */
+  
+  /* Mobile Transitions - Slower for touch feedback */
+  --mobile-duration-fast: 200ms;
+  --mobile-duration-normal: 300ms;
+  --mobile-duration-slow: 400ms;
+  
+  /* Gesture Thresholds */
+  --swipe-threshold: 50px;
+  --swipe-velocity: 0.3;
+  --tap-max-duration: 200ms;
+  --long-press-duration: 500ms;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Force light mode - disable dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Still use light colors even in dark mode */
+    --background: #f8f9fa;
+    --foreground: #1a202c;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  /* Prevent text size adjustment on iOS */
+  -webkit-text-size-adjust: 100%;
+  /* Smooth scrolling for mobile */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile-First Base Styles */
+@media (max-width: 768px) {
+  /* Prevent pull-to-refresh on mobile browsers */
+  body {
+    overscroll-behavior-y: contain;
+  }
+  
+  /* Larger minimum font size for mobile */
+  html {
+    font-size: 16px;
+  }
+}
+
+/* Touch-Optimized Interactive Elements */
+.touch-target {
+  min-width: var(--touch-min);
+  min-height: var(--touch-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.touch-target-comfortable {
+  min-width: var(--touch-comfortable);
+  min-height: var(--touch-comfortable);
+}
+
+.touch-target-large {
+  min-width: var(--touch-large);
+  min-height: var(--touch-large);
+}
+
+/* Glove-Friendly Mode */
+.glove-mode .touch-target,
+.glove-mode button,
+.glove-mode input[type="checkbox"],
+.glove-mode input[type="radio"] {
+  min-width: var(--touch-glove);
+  min-height: var(--touch-glove);
+}
+
+/* Touch Feedback - Visual ripple effect */
+.touch-feedback {
+  position: relative;
+  overflow: hidden;
+}
+
+.touch-feedback::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 139, 0, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease-out, height 0.6s ease-out, opacity 0.6s ease-out;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.touch-feedback:active::after {
+  width: 200px;
+  height: 200px;
+  opacity: 1;
+  transition: width 0s, height 0s, opacity 0s;
+}
+
+/* Mobile-Optimized Form Controls */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="search"],
+  textarea,
+  select {
+    /* Prevent iOS zoom on focus */
+    font-size: 16px !important;
+    min-height: var(--touch-comfortable);
+    padding: 0.75rem 1rem;
+    border-radius: var(--mobile-radius-md);
+  }
+  
+  /* Larger checkboxes and radios for mobile */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+  
+  /* Touch-friendly buttons */
+  button,
+  .btn {
+    min-height: var(--touch-comfortable);
+    padding: 0.75rem 1.5rem;
+    font-size: 16px;
+    border-radius: var(--mobile-radius-md);
+    /* Prevent double-tap zoom */
+    touch-action: manipulation;
+  }
+}
+
+/* Gesture Support Classes */
+.swipeable {
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.swipeable-horizontal {
+  touch-action: pan-y;
+  overscroll-behavior-x: contain;
+}
+
+.swipeable-vertical {
+  touch-action: pan-x;
+  overscroll-behavior-y: contain;
+}
+
+.draggable {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+/* Mobile Navigation Enhancements */
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.5rem;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-nav-item {
+  min-width: var(--touch-comfortable);
+  min-height: var(--touch-comfortable);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border-radius: var(--mobile-radius-sm);
+  transition: background var(--mobile-duration-fast);
+}
+
+.mobile-nav-item:active {
+  background: rgba(255, 139, 0, 0.1);
+}
+
+/* Pull-to-Refresh Indicator */
+.pull-to-refresh {
+  position: relative;
+}
+
+.pull-to-refresh-indicator {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity var(--mobile-duration-normal);
+}
+
+.pull-to-refresh.is-pulling .pull-to-refresh-indicator {
+  opacity: 1;
+}
+
+/* Bottom Sheet - Mobile Modal Pattern */
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: var(--mobile-radius-lg) var(--mobile-radius-lg) 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(100%);
+  transition: transform var(--mobile-duration-normal) cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.bottom-sheet.is-open {
+  transform: translateY(0);
+}
+
+.bottom-sheet-handle {
+  width: 40px;
+  height: 4px;
+  background: #cbd5e0;
+  border-radius: 2px;
+  margin: 0.75rem auto;
+  cursor: grab;
+  touch-action: none;
+}
+
+.bottom-sheet-handle:active {
+  cursor: grabbing;
+}
+
+.bottom-sheet-content {
+  padding: 1rem;
+  overflow-y: auto;
+  max-height: calc(90vh - 48px);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* FAB - Floating Action Button */
+.fab {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 139, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: transform var(--mobile-duration-fast), box-shadow var(--mobile-duration-fast);
+  z-index: 100;
+  touch-action: manipulation;
+}
+
+.fab:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 8px rgba(255, 139, 0, 0.3);
+}
+
+.fab-extended {
+  width: auto;
+  padding: 0 1.5rem;
+  border-radius: 28px;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+/* High Contrast Mode for Outdoor Visibility */
+@media (prefers-contrast: high) {
+  :root {
+    --foreground: #000000;
+  }
+  
+  .btn,
+  button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .touch-feedback::after {
+    display: none;
+  }
+}
+
+/* Landscape Mobile Optimization */
+@media (max-width: 896px) and (orientation: landscape) {
+  .mobile-nav {
+    padding: 0.25rem;
+  }
+  
+  .mobile-nav-item {
+    min-height: 40px;
+    padding: 0.25rem;
+  }
+  
+  .bottom-sheet {
+    max-height: 80vh;
+  }
+}
+
+/* Safe Area Insets for Notched Devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .mobile-nav {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+  }
+
+  .fab {
+    bottom: calc(1.5rem + env(safe-area-inset-bottom));
+  }
+
+  .bottom-sheet-content {
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+
+/* Emergency Access Components - Field Worker Critical Safety */
+.emergency-access {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Emergency Stop Button - Most Prominent */
+.emergency-stop-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: var(--mobile-radius-md);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  min-width: 140px;
+  min-height: var(--touch-glove);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all var(--mobile-duration-fast);
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.emergency-stop-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.98);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.emergency-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.emergency-text {
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.emergency-subtext {
+  font-size: 0.625rem;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+/* Emergency Contact Button - Secondary */
+.emergency-contact-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--mobile-radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 100px;
+  min-height: var(--touch-comfortable);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  transition: all var(--mobile-duration-fast);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.emergency-contact-btn:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(0.98);
+}
+
+/* Connection Status Indicator */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.status-dot.online {
+  background: #10b981;
+}
+
+.status-dot.offline {
+  background: #f59e0b;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-text {
+  font-size: 0.625rem;
+  opacity: 0.9;
+}
+
+/* Floating Emergency Button - Compact Mobile Version */
+.floating-emergency-btn {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  z-index: 9998;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all var(--mobile-duration-fast);
+  animation: emergency-pulse 3s infinite;
+}
+
+.floating-emergency-btn:active {
+  transform: scale(0.95);
+  animation: none;
+}
+
+@keyframes emergency-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.6);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.8);
+  }
+}
+
+/* Emergency Status Banner */
+.emergency-status-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem;
+  z-index: 9997;
+  animation: emergency-slide-down 0.3s ease-out;
+}
+
+@keyframes emergency-slide-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.emergency-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.emergency-banner-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.emergency-banner-text {
+  flex: 1;
+}
+
+.emergency-banner-title {
+  font-weight: 800;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.emergency-banner-message {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  opacity: 0.9;
+}
+
+.emergency-banner-acknowledge {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all var(--mobile-duration-fast);
+  flex-shrink: 0;
+}
+
+.emergency-banner-acknowledge:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.95);
+}
+
+/* Emergency Color Variants */
+.emergency-stop-work {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: white;
+}
+
+.emergency-hazard {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #1f2937;
+}
+
+.emergency-injury {
+  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+  color: white;
+}
+
+.emergency-default {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+}
+
+/* Field Worker Mode - Enhanced Touch Targets */
+.field-worker-mode .touch-target,
+.field-worker-mode button,
+.field-worker-mode .btn {
+  min-width: var(--touch-glove);
+  min-height: var(--touch-glove);
+  font-size: 1.125rem; /* Prevents iOS zoom */
+}
+
+.field-worker-mode .emergency-stop-btn,
+.field-worker-mode .emergency-contact-btn {
+  min-width: 160px;
+  min-height: 80px;
+  font-size: 1rem;
+}
+
+/* Field Worker Offline Indicator - Critical for Construction Sites */
+.field-worker-offline-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--mobile-radius-md);
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Status Variants */
+.field-worker-offline-indicator.online {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #065f46;
+}
+
+.field-worker-offline-indicator.offline {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #92400e;
+}
+
+.field-worker-offline-indicator.warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.3) 100%);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #92400e;
+  animation: warning-pulse 2s infinite;
+}
+
+.field-worker-offline-indicator.critical {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.3) 0%, rgba(185, 28, 28, 0.3) 100%);
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #991b1b;
+  animation: critical-pulse 1s infinite;
+}
+
+@keyframes warning-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes critical-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Main Status Display */
+.offline-status-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.status-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.status-icon.online {
+  animation: signal-strength 3s infinite;
+}
+
+.status-icon.offline {
+  opacity: 0.7;
+}
+
+@keyframes signal-strength {
+  0%, 90%, 100% { opacity: 1; }
+  45% { opacity: 0.6; }
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-text {
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.last-sync {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  font-weight: 500;
+  margin-top: 0.125rem;
+}
+
+/* Pending Actions Counter */
+.pending-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--mobile-radius-sm);
+  min-width: 48px;
+}
+
+.pending-count {
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pending-label {
+  font-size: 0.625rem;
+  opacity: 0.9;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+/* Force Sync Button */
+.force-sync-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: currentColor;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all var(--mobile-duration-fast);
+  font-size: 1rem;
+}
+
+.force-sync-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.95);
+}
+
+/* Connection Quality Bars */
+.connection-quality {
+  position: relative;
+  width: 20px;
+  height: 16px;
+  display: flex;
+  align-items: end;
+  gap: 2px;
+}
+
+.quality-bars {
+  display: flex;
+  align-items: end;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+}
+
+.quality-bar {
+  width: 3px;
+  border-radius: 1px 1px 0 0;
+  transition: height 0.3s ease;
+}
+
+.quality-bars.online .quality-bar:nth-child(1) { height: 4px; background: currentColor; }
+.quality-bars.online .quality-bar:nth-child(2) { height: 6px; background: currentColor; }
+.quality-bars.online .quality-bar:nth-child(3) { height: 8px; background: currentColor; }
+.quality-bars.online .quality-bar:nth-child(4) { height: 10px; background: currentColor; }
+
+.quality-bars.offline .quality-bar {
+  height: 2px;
+  background: rgba(107, 114, 128, 0.5);
+}
+
+/* Compact Offline Badge */
+.compact-offline-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--mobile-radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 48px;
+  position: relative;
+}
+
+.compact-offline-badge.online {
+  background: rgba(16, 185, 129, 0.2);
+  color: #065f46;
+}
+
+.compact-offline-badge.offline {
+  background: rgba(245, 158, 11, 0.2);
+  color: #92400e;
+}
+
+.badge-icon {
+  font-size: 0.875rem;
+}
+
+.badge-count {
+  font-size: 0.75rem;
+  font-weight: 800;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* Offline Mode Banner */
+.offline-mode-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.95) 100%);
+  color: #1f2937;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 -2px 10px rgba(245, 158, 11, 0.3);
+  z-index: 999;
+  backdrop-filter: blur(8px);
+  animation: offline-banner-slide-up 0.3s ease-out;
+}
+
+@keyframes offline-banner-slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.banner-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.banner-text {
+  flex: 1;
+}
+
+.banner-title {
+  font-weight: 800;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.banner-message {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  margin-top: 0.125rem;
+}
+
+.banner-dismiss {
+  background: rgba(31, 41, 55, 0.2);
+  border: 1px solid rgba(31, 41, 55, 0.3);
+  color: #1f2937;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all var(--mobile-duration-fast);
+  flex-shrink: 0;
+  font-size: 0.875rem;
+}
+
+.banner-dismiss:active {
+  background: rgba(31, 41, 55, 0.3);
+  transform: scale(0.95);
+}
+
+/* Outdoor Visibility Enhancements */
+@media (max-width: 768px) {
+  .field-worker-mode {
+    /* Higher contrast for outdoor use */
+  }
+
+  .field-worker-mode .emergency-access {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .field-worker-mode .emergency-stop-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  }
+}

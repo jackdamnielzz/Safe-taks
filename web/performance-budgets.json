@@ -1,0 +1,163 @@
+{
+  "name": "SafeWork Pro - Performance Budgets",
+  "description": "Performance budgets for the SafeWork Pro application to ensure optimal user experience",
+  "budgets": {
+    "page_load": {
+      "target": "2000ms",
+      "description": "Total page load time should be under 2 seconds",
+      "measurement": "Load event completion time",
+      "priority": "critical"
+    },
+    "api_response": {
+      "target": "500ms",
+      "description": "API endpoints should respond within 500ms",
+      "measurement": "Time to First Byte (TTFB) for API calls",
+      "priority": "critical"
+    },
+    "first_contentful_paint": {
+      "target": "1800ms",
+      "description": "First Contentful Paint should occur within 1.8 seconds",
+      "measurement": "FCP metric from Web Vitals",
+      "priority": "critical"
+    },
+    "largest_contentful_paint": {
+      "target": "2500ms",
+      "description": "Largest Contentful Paint should occur within 2.5 seconds",
+      "measurement": "LCP metric from Web Vitals",
+      "priority": "critical"
+    },
+    "first_input_delay": {
+      "target": "100ms",
+      "description": "First Input Delay should be under 100ms for good interactivity",
+      "measurement": "FID metric from Web Vitals",
+      "priority": "high"
+    },
+    "cumulative_layout_shift": {
+      "target": "0.1",
+      "description": "Cumulative Layout Shift should be minimal for visual stability",
+      "measurement": "CLS metric from Web Vitals",
+      "priority": "high"
+    },
+    "time_to_interactive": {
+      "target": "3000ms",
+      "description": "Page should be fully interactive within 3 seconds",
+      "measurement": "TTI metric",
+      "priority": "medium"
+    },
+    "bundle_size": {
+      "target": "250kb",
+      "description": "JavaScript bundle size should be kept under 250kb (gzipped)",
+      "measurement": "Gzipped bundle size",
+      "priority": "high"
+    }
+  },
+  "thresholds": {
+    "good": {
+      "description": "Performance is excellent - no action needed",
+      "criteria": "All metrics meet or exceed targets"
+    },
+    "needs_improvement": {
+      "description": "Performance needs improvement - monitor closely",
+      "criteria": "One or more metrics are 10-25% over target"
+    },
+    "poor": {
+      "description": "Performance is poor - immediate action required",
+      "criteria": "One or more metrics are >25% over target"
+    }
+  },
+  "monitoring": {
+    "tools": ["Vercel Speed Insights", "Lighthouse CI", "Web Vitals API", "Core Web Vitals"],
+    "frequency": "Every deployment and weekly monitoring",
+    "alerts": {
+      "enabled": true,
+      "email": "development@safeworkpro.com",
+      "slack_webhook": "TBD"
+    }
+  },
+  "device_targets": {
+    "mobile": {
+      "connection": "3G",
+      "device": "Moto G4 (mid-range mobile)",
+      "note": "Field workers often use mobile devices with limited connectivity"
+    },
+    "desktop": {
+      "connection": "Broadband",
+      "device": "Standard desktop",
+      "note": "Office environments typically have good connectivity"
+    }
+  },
+  "optimization_strategies": {
+    "images": {
+      "format": "WebP/AVIF with fallbacks",
+      "compression": "80-85% quality",
+      "lazy_loading": "Implemented for below-the-fold content",
+      "responsive": "Multiple sizes for different screen densities"
+    },
+    "javascript": {
+      "code_splitting": "Route-based splitting with dynamic imports",
+      "tree_shaking": "Remove unused code from bundles",
+      "minification": "Terser for production builds",
+      "compression": "Gzip/Brotli compression enabled"
+    },
+    "css": {
+      "critical_css": "Inline critical CSS for above-the-fold content",
+      "unused_css": "Remove unused CSS with PurgeCSS/Tailwind JIT",
+      "minification": "CSS minification in production"
+    },
+    "fonts": {
+      "preload": "Preload critical fonts",
+      "display": "font-display: swap for better perceived performance",
+      "subset": "Use font subsets when possible"
+    },
+    "caching": {
+      "static_assets": "Long-term caching with hash-based filenames",
+      "api_responses": "Appropriate cache headers for API responses",
+      "service_worker": "Cache-first strategy for static assets"
+    }
+  },
+  "feature_budgets": {
+    "tra_creation_form": {
+      "target_load_time": "1500ms",
+      "description": "TRA creation form should load quickly for field efficiency"
+    },
+    "lmra_mobile_execution": {
+      "target_load_time": "1000ms",
+      "description": "Mobile LMRA execution must be fast for field workers"
+    },
+    "dashboard": {
+      "target_load_time": "2000ms",
+      "description": "Executive dashboard with charts and data"
+    },
+    "reports_generation": {
+      "target_load_time": "3000ms",
+      "description": "Report generation may take longer due to data processing"
+    }
+  },
+  "implementation": {
+    "lighthouse_ci": {
+      "enabled": false,
+      "note": "To be implemented in CI/CD pipeline"
+    },
+    "vercel_speed_insights": {
+      "enabled": true,
+      "note": "Already integrated in layout.tsx"
+    },
+    "web_vitals_tracking": {
+      "enabled": true,
+      "note": "Tracked via Vercel Analytics"
+    },
+    "bundle_analyzer": {
+      "enabled": true,
+      "note": "Configured with @next/bundle-analyzer - run 'npm run build:analyze' to generate reports",
+      "output_directory": ".next/analyze",
+      "reports": {
+        "client": ".next/analyze/client.html",
+        "server": ".next/analyze/server.html"
+      }
+    }
+  },
+  "last_updated": "2025-09-30",
+  "version": "1.0",
+  "owner": "Development Team",
+  "review_schedule": "Monthly review and quarterly updates"
+}
