@@ -17,9 +17,9 @@ import { Errors } from "@/lib/api/errors";
 // ============================================================================
 
 export const POST = requireAuth(
-  async (req: NextRequest, auth, { params }: { params: { id: string } }) => {
+  async (req: NextRequest, auth, { params }: { params: Promise<{ id: string }> }) => {
     try {
-      const sessionId = params.id;
+      const { id: sessionId } = await params;
 
       // Get existing session
       const sessionRef = doc(db, `organizations/${auth.orgId}/lmraSessions`, sessionId);

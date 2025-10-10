@@ -250,7 +250,7 @@ export async function getOptimizedLMRAList(
 
   return cachedQuery(
     async () => {
-      let ref = firestore.collection(`organizations/${orgId}/lmraSessions`);
+      let ref: any = firestore.collection(`organizations/${orgId}/lmraSessions`);
 
       // Apply filters
       if (filters.traId) {

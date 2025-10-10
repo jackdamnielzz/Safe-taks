@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { webcrypto } from "crypto";
 import { webhookService } from "@/lib/webhooks/webhook-service";
 import { CreateWebhookSchema } from "@/lib/types/webhook";
 import { authenticateRequest, requireAuth } from "@/lib/api/auth";
@@ -77,6 +78,7 @@ export const POST = requireAuth(async (request: NextRequest, user: any) => {
  * Generate a cryptographically secure secret for webhook verification
  */
 function generateSecureSecret(): string {
-  const crypto = require("crypto");
-  return crypto.randomBytes(32).toString("hex");
+  const array = new Uint8Array(32);
+  webcrypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 }

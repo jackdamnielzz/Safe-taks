@@ -56,13 +56,16 @@ function initializeFirebaseAdmin() {
       });
     } else {
       // Option 3: Development mode (will work in Firebase emulator)
-      console.warn(
-        "Firebase Admin: No service account credentials found. Using default credentials."
-      );
-      console.warn("This is only suitable for development with Firebase emulator.");
+      // During build time without credentials, we suppress warnings
+      if (process.env.NODE_ENV !== 'production' || process.env.VERCEL_ENV === 'production') {
+        console.warn(
+          "Firebase Admin: No service account credentials found. Using default credentials."
+        );
+        console.warn("This is only suitable for development with Firebase emulator.");
+      }
 
       adminApp = initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'demo-project',
       });
     }
   }
@@ -83,7 +86,7 @@ initializeFirebaseAdmin();
  * const decodedToken = await auth.verifyIdToken(token);
  * ```
  */
-export const auth = adminAuth;
+export const auth = adminAuth!;
 
 /**
  * Firebase Admin Firestore instance for server-side database operations
@@ -93,7 +96,7 @@ export const auth = adminAuth;
  * const doc = await db.collection('organizations').doc(orgId).get();
  * ```
  */
-export const db = adminDb;
+export const db = adminDb!;
 
 /**
  * Firebase Admin Storage instance for server-side storage operations
@@ -103,7 +106,7 @@ export const db = adminDb;
  * const bucket = storage.bucket();
  * ```
  */
-export const storage = adminStorage;
+export const storage = adminStorage!;
 
 /**
  * Helper function to set custom claims for user authentication

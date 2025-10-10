@@ -22,7 +22,7 @@ export const ProjectCreateSchema = z.object({
   description: z.string().max(2000).optional(),
   location: ProjectLocationSchema.optional(),
   visibility: z.enum(["private", "org", "public"]).optional(),
-  settings: z.record(z.unknown()).optional(),
+  settings: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const ProjectUpdateSchema = z.object({
@@ -35,7 +35,7 @@ export const ProjectUpdateSchema = z.object({
   description: z.string().max(2000).nullable().optional(),
   location: ProjectLocationSchema.nullable().optional(),
   visibility: z.enum(["private", "org", "public"]).optional(),
-  settings: z.record(z.unknown()).nullable().optional(),
+  settings: z.record(z.string(), z.unknown()).nullable().optional(),
 });
 
 export const MemberInviteSchema = z.object({

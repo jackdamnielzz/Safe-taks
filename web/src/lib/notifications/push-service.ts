@@ -160,10 +160,10 @@ export class PushNotificationService {
       // Create full notification payload
       const fullPayload: NotificationPayload = {
         id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        userId,
-        organizationId,
         timestamp: Timestamp.now(),
         ...payload,
+        userId,
+        organizationId,
       };
 
       // Send notification

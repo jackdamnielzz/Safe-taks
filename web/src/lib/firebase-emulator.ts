@@ -15,24 +15,24 @@ let getStorage: any = null;
 let connectStorageEmulator: any = null;
 
 // Try to require emulator connector helpers where available (avoid static imports)
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const authModule = require("firebase/auth");
   connectAuthEmulator = authModule.connectAuthEmulator || null;
 } catch (e) {
   connectAuthEmulator = null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const firestoreModule = require("firebase/firestore");
   connectFirestoreEmulator = firestoreModule.connectFirestoreEmulator || null;
 } catch (e) {
   connectFirestoreEmulator = null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 try {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const storageModule = require("firebase/storage");
   getStorage = storageModule.getStorage || null;
   connectStorageEmulator = storageModule.connectStorageEmulator || null;
@@ -62,7 +62,6 @@ if (typeof global !== "undefined") {
 export function initializeEmulatorApp(): { auth: any; firestore: any; storage: any } {
   if (getApps().length === 0) {
     // minimal options for test/helper use; ignore TS strictness in this helper
-    // @ts-ignore
     initializeApp({
       apiKey: process.env.FIREBASE_API_KEY || "fake",
       authDomain: process.env.FIREBASE_AUTH_DOMAIN || "localhost",
@@ -118,9 +117,8 @@ export function initializeEmulatorApp(): { auth: any; firestore: any; storage: a
  * - Falls back to deleting all documents in known collections (best-effort, safe for tests).
  */
 export async function clearEmulatorData(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   try {
-    // prefer rules-unit-testing clear via REST if available
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const r = require("@firebase/rules-unit-testing");
     if (r && typeof r.clearFirestoreData === "function") {
       await r.clearFirestoreData({ projectId: process.env.FIREBASE_PROJECT_ID || "demo-project" });
@@ -130,13 +128,12 @@ export async function clearEmulatorData(): Promise<void> {
     // ignore - not available in this environment
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   try {
     const { getFirestore, collection, getDocs, deleteDoc, doc } = require("firebase/firestore");
     const db = getFirestore();
     // Best-effort: enumerate top-level collections and delete documents
     // Note: This is intentionally conservative for test environments only.
-    // eslint-disable-next-line no-console
-    // @ts-ignore
     const topCollections = ["organizations", "tras", "users", "projects", "projectAudits"];
     for (const col of topCollections) {
       try {

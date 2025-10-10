@@ -164,12 +164,8 @@ export const SchemaPerformanceDashboard: React.FC<DashboardProps> = ({
 
   if (!metrics) {
     return (
-      <Alert>
-        <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-          Unable to load schema performance data. Please try again.
-        </AlertDescription>
+      <Alert variant="error" title="Error">
+        Unable to load schema performance data. Please try again.
       </Alert>
     );
   }

@@ -5,16 +5,18 @@ import { SubmitTRASchema } from "@/lib/validators/tra";
 import { writeAuditLog } from "@/lib/audit";
 
 // POST /api/tras/:traId/submit
-export async function POST(request: Request, { params }: { params: { traId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ traId: string }> }) {
+  const { traId } = await params;
+  
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const orgId = auth.orgId;
   const userId = auth.uid;
-  const userName = (auth as any).displayName || auth.email || "unknown";
+  const userName = (auth as any).displayName || (auth as any).email || "unknown";
 
   const body = await request.json().catch(() => ({}));
-  const parse = SubmitTRASchema.safeParse({ traId: params.traId, comments: body.comments });
+  const parse = SubmitTRASchema.safeParse({ traId: traId, comments: body.comments });
   if (!parse.success) {
     return NextResponse.json(
       { error: "Invalid payload", details: parse.error.flatten() },
@@ -22,7 +24,7 @@ export async function POST(request: Request, { params }: { params: { traId: stri
     );
   }
 
-  const traRef = db.collection(`organizations/${orgId}/tras`).doc(params.traId);
+  const traRef = db.collection(`organizations/${orgId}/tras`).doc(traId);
   const traSnap = await traRef.get();
   if (!traSnap.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const tra = traSnap.data() as any;
@@ -74,7 +76,7 @@ export async function POST(request: Request, { params }: { params: { traId: stri
   };
 
   await traRef.update(update);
-  await writeAuditLog(orgId, params.traId, userId, "tra.submit", {
+  await writeAuditLog(orgId, traId, userId, "tra.submit", {
     comments: body.comments || null,
   });
 

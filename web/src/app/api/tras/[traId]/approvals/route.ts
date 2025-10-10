@@ -5,13 +5,14 @@ import { ApprovalDecisionSchema } from "@/lib/validators/tra";
 import { writeAuditLog } from "@/lib/audit";
 
 // POST /api/tras/:traId/approvals
-export async function POST(request: Request, { params }: { params: { traId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ traId: string }> }) {
+  const { traId } = await params;
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const orgId = auth.orgId;
   const userId = auth.uid;
-  const userName = (auth as any).displayName || auth.email || "unknown";
+  const userName = (auth as any).displayName || "unknown";
   const userRole = (auth as any).role || "field_worker";
 
   const body = await request.json().catch(() => ({}));
@@ -24,7 +25,7 @@ export async function POST(request: Request, { params }: { params: { traId: stri
   }
   const data = parse.data;
 
-  const traRef = db.collection(`organizations/${orgId}/tras`).doc(params.traId);
+  const traRef = db.collection(`organizations/${orgId}/tras`).doc(traId);
   const traSnap = await traRef.get();
   if (!traSnap.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const tra = traSnap.data() as any;
@@ -106,7 +107,7 @@ export async function POST(request: Request, { params }: { params: { traId: stri
   update.updatedAt = now;
 
   await traRef.update(update);
-  await writeAuditLog(orgId, params.traId, userId, "approval.decision", {
+  await writeAuditLog(orgId, traId, userId, "approval.decision", {
     decision: data.decision,
     stepNumber: data.stepNumber,
     comments: data.comments || null,

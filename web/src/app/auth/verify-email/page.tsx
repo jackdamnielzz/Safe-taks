@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthLayout } from "@/components/layouts/FormContainer";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { useAuth } from "@/components/AuthProvider";
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { resendVerificationEmail, user, error, clearError } = useAuth();
@@ -218,5 +218,22 @@ export default function VerifyEmailPage() {
         </div>
       </div>
     </AuthLayout>
+  );
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <AuthLayout
+        title="Verify your email"
+        subtitle="We've sent a verification link to your email address."
+      >
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </AuthLayout>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

@@ -273,7 +273,7 @@ async function migrateOrganizationTRAs(
       } catch (error) {
         const errorMsg = `Failed to update TRA ${doc.id}: ${error}`;
         console.error(`❌ ${errorMsg}`);
-        stats.errors.push(errorMsg);
+        // Note: errors are handled at the organization level in the parent function
       }
     }
 

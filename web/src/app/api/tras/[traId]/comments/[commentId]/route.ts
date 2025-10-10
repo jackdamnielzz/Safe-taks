@@ -12,8 +12,10 @@ import { writeAuditLog } from "@/lib/audit";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { traId: string; commentId: string } }
+  { params }: { params: Promise<{ traId: string; commentId: string }> }
 ) {
+  const { traId, commentId } = await params;
+  
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -31,11 +33,12 @@ export async function PATCH(
   const data = parse.data;
 
   const docRef = db
-    .collection(`organizations/${orgId}/tras/${params.traId}/comments`)
-    .doc(params.commentId);
+    .collection(`organizations/${orgId}/tras/${traId}/comments`)
+    .doc(commentId);
   const doc = await docRef.get();
   if (!doc.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const existing = doc.data();
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   // Only author may edit body
   if (data.body !== undefined) {
@@ -43,7 +46,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     await docRef.update({ body: data.body, updatedAt: new Date() });
-    await writeAuditLog(orgId, params.commentId, uid, "comment.update", {
+    await writeAuditLog(orgId, commentId, uid, "comment.update", {
       before: existing,
       after: { body: data.body },
     });
@@ -67,7 +70,7 @@ export async function PATCH(
     });
     await writeAuditLog(
       orgId,
-      params.commentId,
+      commentId,
       uid,
       data.isResolved ? "comment.resolve" : "comment.unresolve",
       { resolvedBy, resolvedAt }
@@ -80,8 +83,10 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { traId: string; commentId: string } }
+  { params }: { params: Promise<{ traId: string; commentId: string }> }
 ) {
+  const { traId, commentId } = await params;
+  
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -89,11 +94,12 @@ export async function DELETE(
   const uid = auth.uid;
 
   const docRef = db
-    .collection(`organizations/${orgId}/tras/${params.traId}/comments`)
-    .doc(params.commentId);
+    .collection(`organizations/${orgId}/tras/${traId}/comments`)
+    .doc(commentId);
   const doc = await docRef.get();
   if (!doc.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const existing = doc.data();
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   // Soft-delete: author or admin
   const roleList = (auth as any).roles || [];
@@ -103,6 +109,6 @@ export async function DELETE(
   }
 
   await docRef.update({ isDeleted: true, deletedAt: new Date(), updatedAt: new Date() });
-  await writeAuditLog(orgId, params.commentId, uid, "comment.delete", { before: existing });
+  await writeAuditLog(orgId, commentId, uid, "comment.delete", { before: existing });
   return NextResponse.json({ success: true }, { status: 200 });
 }

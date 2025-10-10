@@ -21,8 +21,9 @@ import type { TRATemplate } from "@/lib/types/template";
  * GET /api/templates/[id]
  * Get template by ID
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireOrgAuth(request);
     const { firestore } = initializeAdmin();
 
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       .collection("organizations")
       .doc(user.orgId)
       .collection("traTemplates")
-      .doc(params.id)
+      .doc(id)
       .get();
 
     if (!templateDoc.exists) {
@@ -61,8 +62,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
  * PATCH /api/templates/[id]
  * Update template
  */
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireOrgAuth(request);
     const { firestore } = initializeAdmin();
 
@@ -71,7 +73,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       .collection("organizations")
       .doc(user.orgId)
       .collection("traTemplates")
-      .doc(params.id);
+      .doc(id);
 
     const templateDoc = await templateRef.get();
 
@@ -206,8 +208,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
  * DELETE /api/templates/[id]
  * Delete template (soft delete)
  */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const user = await requireOrgAuth(request);
     const { firestore } = initializeAdmin();
 
@@ -216,7 +219,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       .collection("organizations")
       .doc(user.orgId)
       .collection("traTemplates")
-      .doc(params.id);
+      .doc(id);
 
     const templateDoc = await templateRef.get();
 

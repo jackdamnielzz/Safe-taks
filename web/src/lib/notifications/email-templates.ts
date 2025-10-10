@@ -19,31 +19,31 @@ export interface EmailTemplate {
 export function getEmailTemplate(type: EmailType, data: Record<string, any>): EmailTemplate {
   switch (type) {
     case EmailType.WELCOME:
-      return getWelcomeEmail(data);
+      return getWelcomeEmail(data as any);
     case EmailType.INVITATION:
-      return getInvitationEmail(data);
+      return getInvitationEmail(data as any);
     case EmailType.TRA_CREATED:
-      return getTraCreatedEmail(data);
+      return getTraCreatedEmail(data as any);
     case EmailType.TRA_APPROVED:
-      return getTraApprovedEmail(data);
+      return getTraApprovedEmail(data as any);
     case EmailType.TRA_REJECTED:
-      return getTraRejectedEmail(data);
+      return getTraRejectedEmail(data as any);
     case EmailType.LMRA_STOP_WORK:
-      return getLmraStopWorkEmail(data);
+      return getLmraStopWorkEmail(data as any);
     case EmailType.LMRA_COMPLETED:
-      return getLmraCompletedEmail(data);
+      return getLmraCompletedEmail(data as any);
     case EmailType.PASSWORD_RESET:
-      return getPasswordResetEmail(data);
+      return getPasswordResetEmail(data as any);
     case EmailType.SUBSCRIPTION_CREATED:
-      return getSubscriptionCreatedEmail(data);
+      return getSubscriptionCreatedEmail(data as any);
     case EmailType.SUBSCRIPTION_CANCELLED:
-      return getSubscriptionCancelledEmail(data);
+      return getSubscriptionCancelledEmail(data as any);
     case EmailType.PAYMENT_FAILED:
-      return getPaymentFailedEmail(data);
+      return getPaymentFailedEmail(data as any);
     case EmailType.TRIAL_ENDING:
-      return getTrialEndingEmail(data);
+      return getTrialEndingEmail(data as any);
     case EmailType.USAGE_LIMIT_WARNING:
-      return getUsageLimitWarningEmail(data);
+      return getUsageLimitWarningEmail(data as any);
     default:
       throw new Error(`Unknown email type: ${type}`);
   }

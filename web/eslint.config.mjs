@@ -15,6 +15,12 @@ const eslintConfig = [
     ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts"],
   },
   {
+    files: ["src/lib/firebase-emulator.ts"],
+    rules: {
+      "@typescript-eslint/no-require-imports": "off",
+    },
+  },
+  {
     rules: {
       // React rules
       "react/react-in-jsx-scope": "off",

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { CreateCommentInput } from "@/lib/validators/comment";
 import { createComment } from "@/lib/api/comments";
 import { Button } from "@/components/ui/Button";
-import TextArea from "@/components/ui/TextArea";
+import { TextArea } from "@/components/ui/TextArea";
 
 interface Props {
   orgId: string;

@@ -25,13 +25,16 @@ const declineInvitationSchema = z.object({
 // POST /api/invitations/[id]/decline - Decline invitation
 // ============================================================================
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const body = await req.json();
     const validatedData = declineInvitationSchema.parse(body) as DeclineInvitationRequest;
     const { invitationToken, reason } = validatedData;
 
-    const invitationId = params.id;
+    const { id: invitationId } = await params;
 
     // Get orgId from query parameters
     const { searchParams } = new URL(req.url);

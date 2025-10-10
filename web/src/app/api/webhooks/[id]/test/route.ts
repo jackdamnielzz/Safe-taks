@@ -11,14 +11,16 @@ import { requireAuth } from "@/lib/api/auth";
 
 // POST /api/webhooks/[id]/test - Send test event to webhook
 export const POST = requireAuth(
-  async (request: NextRequest, user: any, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, user: any, { params }: { params: Promise<{ id: string }> }) => {
+    const { id } = await params;
+    
     try {
       // Check if user has permission to manage webhooks
       if (!["admin", "safety_manager"].includes(user.role || "")) {
         return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
       }
 
-      const webhook = await webhookService.getWebhook(params.id);
+      const webhook = await webhookService.getWebhook(id);
       if (!webhook) {
         return NextResponse.json({ error: "Webhook not found" }, { status: 404 });
       }

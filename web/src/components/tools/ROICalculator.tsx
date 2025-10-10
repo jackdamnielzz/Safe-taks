@@ -405,7 +405,7 @@ export function ROICalculator() {
                             {inputs.incidentCost.toLocaleString()}):
                           </span>
                           <span className="text-green-600 font-semibold">
-                            €{incidentCostSavings.toLocaleString()}
+                            €{(results.incidentReduction * inputs.incidentCost).toLocaleString()}
                           </span>
                         </div>
                         <div className="flex justify-between font-semibold text-lg border-t pt-2">

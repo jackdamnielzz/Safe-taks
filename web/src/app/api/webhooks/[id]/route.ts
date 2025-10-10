@@ -13,9 +13,11 @@ import { requireAuth } from "@/lib/api/auth";
 
 // GET /api/webhooks/[id] - Get webhook by ID
 export const GET = requireAuth(
-  async (request: NextRequest, user: any, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, user: any, { params }: { params: Promise<{ id: string }> }) => {
+    const { id } = await params;
+    
     try {
-      const webhook = await webhookService.getWebhook(params.id);
+      const webhook = await webhookService.getWebhook(id);
 
       if (!webhook) {
         return NextResponse.json({ error: "Webhook not found" }, { status: 404 });
@@ -42,14 +44,16 @@ export const GET = requireAuth(
 
 // PATCH /api/webhooks/[id] - Update webhook
 export const PATCH = requireAuth(
-  async (request: NextRequest, user: any, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, user: any, { params }: { params: Promise<{ id: string }> }) => {
+    const { id } = await params;
+    
     try {
       // Check if user has permission to manage webhooks
       if (!["admin", "safety_manager"].includes(user.role || "")) {
         return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
       }
 
-      const webhook = await webhookService.getWebhook(params.id);
+      const webhook = await webhookService.getWebhook(id);
       if (!webhook) {
         return NextResponse.json({ error: "Webhook not found" }, { status: 404 });
       }
@@ -76,7 +80,7 @@ export const PATCH = requireAuth(
       const updates = validationResult.data;
 
       // Update webhook
-      const updatedWebhook = await webhookService.updateWebhook(params.id, updates);
+      const updatedWebhook = await webhookService.updateWebhook(id, updates);
 
       if (!updatedWebhook) {
         return NextResponse.json({ error: "Failed to update webhook" }, { status: 500 });
@@ -98,14 +102,16 @@ export const PATCH = requireAuth(
 
 // DELETE /api/webhooks/[id] - Delete webhook
 export const DELETE = requireAuth(
-  async (request: NextRequest, user: any, { params }: { params: { id: string } }) => {
+  async (request: NextRequest, user: any, { params }: { params: Promise<{ id: string }> }) => {
+    const { id } = await params;
+    
     try {
       // Check if user has permission to manage webhooks
       if (!["admin", "safety_manager"].includes(user.role || "")) {
         return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
       }
 
-      const webhook = await webhookService.getWebhook(params.id);
+      const webhook = await webhookService.getWebhook(id);
       if (!webhook) {
         return NextResponse.json({ error: "Webhook not found" }, { status: 404 });
       }
@@ -115,7 +121,7 @@ export const DELETE = requireAuth(
         return NextResponse.json({ error: "Webhook not found" }, { status: 404 });
       }
 
-      const deleted = await webhookService.deleteWebhook(params.id);
+      const deleted = await webhookService.deleteWebhook(id);
 
       if (!deleted) {
         return NextResponse.json({ error: "Failed to delete webhook" }, { status: 500 });

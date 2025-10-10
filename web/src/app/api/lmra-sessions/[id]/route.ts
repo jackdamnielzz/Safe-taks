@@ -16,9 +16,9 @@ import { Errors } from "@/lib/api/errors";
 // ============================================================================
 
 export const GET = requireAuth(
-  async (req: NextRequest, auth, { params }: { params: { id: string } }) => {
+  async (req: NextRequest, auth, { params }: { params: Promise<{ id: string }> }) => {
     try {
-      const sessionId = params.id;
+      const { id: sessionId } = await params;
 
       // Get session document
       const sessionRef = doc(db, `organizations/${auth.orgId}/lmraSessions`, sessionId);
@@ -49,9 +49,9 @@ export const GET = requireAuth(
 // ============================================================================
 
 export const PATCH = requireAuth(
-  async (req: NextRequest, auth, { params }: { params: { id: string } }) => {
+  async (req: NextRequest, auth, { params }: { params: Promise<{ id: string }> }) => {
     try {
-      const sessionId = params.id;
+      const { id: sessionId } = await params;
 
       // Get existing session
       const sessionRef = doc(db, `organizations/${auth.orgId}/lmraSessions`, sessionId);
@@ -139,9 +139,9 @@ export const PATCH = requireAuth(
 // ============================================================================
 
 export const DELETE = requireAuth(
-  async (req: NextRequest, auth, { params }: { params: { id: string } }) => {
+  async (req: NextRequest, auth, { params }: { params: Promise<{ id: string }> }) => {
     try {
-      const sessionId = params.id;
+      const { id: sessionId } = await params;
 
       // Only safety managers and admins can delete LMRA sessions
       if (auth.role !== "admin" && auth.role !== "safety_manager") {

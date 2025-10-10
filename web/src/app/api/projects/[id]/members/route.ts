@@ -45,8 +45,8 @@ function invitesCol(firestore: any, orgId: string) {
 }
 
 /* Invite: create invite token and audit */
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-  const projectId = params.id;
+export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = await params;
   const user = await requireOrgAuth(request);
   const body = await request.json();
   const parsed = InviteSchema.parse(body);
@@ -76,9 +76,9 @@ export async function POST(request: Request, { params }: { params: { id: string 
 }
 
 /* Accept invite */
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   // Accept with body { token }
-  const projectId = params.id;
+  const { id: projectId } = await params;
   const body = await request.json();
   const parsed = AcceptSchema.parse(body);
 
@@ -119,8 +119,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 /* List members */
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const projectId = params.id;
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = await params;
   const user = await requireOrgAuth(request);
   const { firestore } = initializeAdmin();
   const orgId = user.orgId;
@@ -133,8 +133,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 /* Change role or remove member determined by query/method */
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  const projectId = params.id;
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = await params;
   const user = await requireOrgAuth(request);
   const { firestore } = initializeAdmin();
   const orgId = user.orgId;
@@ -157,8 +157,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 }
 
 /* Delete (remove) member */
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const projectId = params.id;
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = await params;
   const user = await requireOrgAuth(request);
   const { firestore } = initializeAdmin();
   const orgId = user.orgId;

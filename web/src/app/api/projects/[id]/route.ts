@@ -4,8 +4,8 @@ import { initializeAdmin, requireOrgAuth } from "@/lib/server-helpers";
 import { writeAuditLog } from "@/lib/audit";
 
 // CRUD for single project (GET, PATCH, DELETE - soft delete)
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const projectId = params.id;
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = await params;
   const user = await requireOrgAuth(request);
   const { firestore } = initializeAdmin();
   const orgId = user.orgId;
@@ -24,8 +24,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
   return NextResponse.json({ id: snap.id, ...snap.data() });
 }
 
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  const projectId = params.id;
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = await params;
   const user = await requireOrgAuth(request);
   const body = await request.json();
   const parsed = ProjectUpdateSchema.parse(body);
@@ -45,8 +45,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   return NextResponse.json({ id: snap.id, ...snap.data() });
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const projectId = params.id;
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id: projectId } = await params;
   const user = await requireOrgAuth(request);
   const { firestore } = initializeAdmin();
   const orgId = user.orgId;

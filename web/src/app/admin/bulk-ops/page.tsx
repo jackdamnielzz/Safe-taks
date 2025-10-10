@@ -235,6 +235,9 @@ export default function BulkOperationsPanelPage() {
 
     setIsExecuting(true);
 
+    // Create operation record - declare outside try/catch so it's accessible in catch block
+    const operationId = Date.now().toString();
+
     try {
       // Validate required parameters
       const missingParams = template.parameters.filter((p) => p.required && !parameters[p.name]);
@@ -245,7 +248,6 @@ export default function BulkOperationsPanelPage() {
       }
 
       // Create operation record
-      const operationId = Date.now().toString();
       const operation: BulkOperation = {
         id: operationId,
         name: template.name,

@@ -341,8 +341,13 @@ class LocationService {
 
     if (this.settings.privacy.requireExplicitConsent) {
       // Check if user has provided consent (stored in localStorage)
-      const consent = localStorage.getItem("safework-pro-location-consent");
-      return consent === "granted";
+      // Only access localStorage in browser environment
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        const consent = localStorage.getItem("safework-pro-location-consent");
+        return consent === "granted";
+      }
+      // On server, assume consent required but not available
+      return false;
     }
 
     return true;
@@ -403,17 +408,28 @@ class LocationService {
   private async getDeviceId(): Promise<string> {
     // In a real implementation, this would get a unique device identifier
     // For now, we'll use a simple fingerprint
-    let deviceId = localStorage.getItem("safework-pro-device-id");
+    // Only access localStorage in browser environment
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      let deviceId = localStorage.getItem("safework-pro-device-id");
 
-    if (!deviceId) {
-      deviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem("safework-pro-device-id", deviceId);
+      if (!deviceId) {
+        deviceId = `device_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem("safework-pro-device-id", deviceId);
+      }
+
+      return deviceId;
     }
-
-    return deviceId;
+    
+    // On server, return a placeholder
+    return `server_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   private loadCacheFromStorage(): void {
+    // Only access localStorage in browser environment
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+    
     try {
       const cachedData = localStorage.getItem(this.CACHE_KEY);
       if (cachedData) {
@@ -443,6 +459,11 @@ class LocationService {
   }
 
   private saveCacheToStorage(): void {
+    // Only access localStorage in browser environment
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+    
     try {
       const entries = Array.from(this.cache.values());
       localStorage.setItem(this.CACHE_KEY, JSON.stringify(entries));

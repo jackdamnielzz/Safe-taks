@@ -54,36 +54,6 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  console.log('🔄 Team page: Auth state', {
-    authLoading,
-    user: !!user,
-    userProfile: !!userProfile,
-    userProfileRole: userProfile?.role,
-    organizationId: userProfile?.organizationId,
-    userEmail: user?.email,
-    userUID: user?.uid,
-    userEmailVerified: user?.emailVerified
-  });
-
-  // If auth loading is stuck, show debug info
-  if (authLoading) {
-    console.log('🔄 Team page: Authentication is still loading...');
-    return;
-  }
-
-  // If no user, they're not authenticated
-  if (!user) {
-    console.log('❌ Team page: No user authenticated');
-    return;
-  }
-
-  // If no userProfile, it means the profile failed to load
-  if (!userProfile) {
-    console.log('❌ Team page: No user profile found');
-    console.log('🔍 Team page: This means the profile document doesn\'t exist in Firestore');
-    return;
-  }
-
   useEffect(() => {
     console.log('🔄 Team page: useEffect triggered');
     console.log('🔍 Team page: userProfile:', userProfile);

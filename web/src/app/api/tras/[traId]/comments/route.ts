@@ -11,7 +11,9 @@ import { writeAuditLog } from "@/lib/audit";
  * GET  - list comments for TRA (optionally filtered by anchor)
  */
 
-export async function POST(request: Request, { params }: { params: { traId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ traId: string }> }) {
+  const { traId } = await params;
+  
   // Basic server-side auth helper (uses TEST_UID/TEST_ORG in emulator/test)
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -31,23 +33,23 @@ export async function POST(request: Request, { params }: { params: { traId: stri
     );
   }
   const data = parse.data;
-  if (data.traId !== params.traId) {
+  if (data.traId !== traId) {
     return NextResponse.json({ error: "traId mismatch" }, { status: 400 });
   }
 
   const now = new Date();
   const commentId = nanoid();
   const docRef = db
-    .collection(`organizations/${orgId}/tras/${params.traId}/comments`)
+    .collection(`organizations/${orgId}/tras/${traId}/comments`)
     .doc(commentId);
   const payload = {
     id: commentId,
-    traId: params.traId,
+    traId: traId,
     anchor: data.anchor || null,
     body: data.body,
     authorId: userId,
-    authorDisplayName: auth.email || "unknown",
-    authorRole: auth.role || null,
+    authorDisplayName: "unknown",
+    authorRole: auth.roles[0] || null,
     isResolved: false,
     resolvedBy: null,
     resolvedAt: null,
@@ -60,14 +62,16 @@ export async function POST(request: Request, { params }: { params: { traId: stri
 
   await docRef.set(payload);
   await writeAuditLog(orgId, commentId, userId, "comment.create", {
-    traId: params.traId,
+    traId: traId,
     anchor: data.anchor ?? null,
   });
 
   return NextResponse.json(payload, { status: 201 });
 }
 
-export async function GET(request: Request, { params }: { params: { traId: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ traId: string }> }) {
+  const { traId } = await params;
+  
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const orgId = auth.orgId;
@@ -76,7 +80,7 @@ export async function GET(request: Request, { params }: { params: { traId: strin
   const anchor = url.searchParams.get("anchor");
 
   let ref = db
-    .collection(`organizations/${orgId}/tras/${params.traId}/comments`)
+    .collection(`organizations/${orgId}/tras/${traId}/comments`)
     .where("isDeleted", "==", false)
     .orderBy("createdAt", "desc")
     .limit(200);

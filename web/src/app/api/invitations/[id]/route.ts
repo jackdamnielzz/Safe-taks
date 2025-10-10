@@ -24,7 +24,10 @@ import { Errors } from "@/lib/api/errors";
 // GET /api/invitations/[id] - Get invitation by token (public)
 // ============================================================================
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { searchParams } = new URL(req.url);
     const token = searchParams.get("token");
@@ -39,7 +42,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     // For now, we'll require orgId in the URL or use a different approach
 
     // Alternative: Search by invitation ID and validate token
-    const invitationId = params.id;
+    const { id: invitationId } = await params;
 
     // We need to find the invitation across all organizations
     // This is inefficient - better to include orgId in the URL or use a global invitations collection
@@ -125,14 +128,14 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 // ============================================================================
 
 export const DELETE = requireAuth(
-  async (req: NextRequest, auth, { params }: { params: { id: string } }) => {
+  async (req: NextRequest, auth, { params }: { params: Promise<{ id: string }> }) => {
     try {
       // Only admins and safety managers can cancel invitations
       if (auth.role !== "admin" && auth.role !== "safety_manager") {
         return Errors.forbidden("Only administrators and safety managers can cancel invitations");
       }
 
-      const invitationId = params.id;
+      const { id: invitationId } = await params;
 
       // Get invitation
       const invitationDoc = await getDoc(

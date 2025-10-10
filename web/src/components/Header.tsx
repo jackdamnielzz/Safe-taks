@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { MobileMenu } from "@/components/MobileMenu";
 import { NotificationHeader } from "@/app/components/NotificationHeader";
 import { useAuth } from "@/components/AuthProvider";
@@ -124,14 +125,14 @@ export function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <a href="/" className="inline-flex items-center gap-3 group">
+            <Link href="/" className="inline-flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-lg group-hover:shadow-indigo-500/50 transition-all">
                 SW
               </div>
               <span className="font-bold text-xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 SafeWork Pro
               </span>
-            </a>
+            </Link>
           </div>
 
           {/* Navigation */}
@@ -204,7 +205,7 @@ export function Header() {
                     {visibleItems.map((item) => (
                       <div key={item.id}>
                         {item.href ? (
-                          <a
+                          <Link
                             href={item.href}
                             className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
                             onClick={() => setAccountDropdownOpen(false)}
@@ -213,7 +214,7 @@ export function Header() {
                               {item.icon}
                             </span>
                             {item.label}
-                          </a>
+                          </Link>
                         ) : (
                           <button
                             onClick={() => {
@@ -257,13 +258,13 @@ function NavLink({
   [key: string]: any;
 }) {
   return (
-    <a
+    <Link
       href={href}
       className="relative px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all group"
       {...props}
     >
       {children}
       <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-    </a>
+    </Link>
   );
 }

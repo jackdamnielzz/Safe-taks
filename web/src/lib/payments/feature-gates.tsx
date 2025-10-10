@@ -155,10 +155,10 @@ export function FeatureGate({
   }
 
   if (!hasAccess) {
-    return fallback || null;
+    return <>{fallback}</> || null;
   }
 
-  return <React.Fragment>{children}</React.Fragment>;
+  return <>{children}</>;
 }
 
 /**

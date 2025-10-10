@@ -52,12 +52,13 @@ export class WebPushClient {
   /**
    * Convert VAPID key to Uint8Array for browser API
    */
-  static urlBase64ToUint8Array(base64String: string): Uint8Array {
+  static urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
     const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
 
     const rawData = window.atob(base64);
-    const outputArray = new Uint8Array(rawData.length);
+    const buffer = new ArrayBuffer(rawData.length);
+    const outputArray = new Uint8Array(buffer);
 
     for (let i = 0; i < rawData.length; ++i) {
       outputArray[i] = rawData.charCodeAt(i);
@@ -448,6 +449,10 @@ export class BrowserPushManager {
     try {
       if (!this.serviceWorkerRegistration) {
         await this.registerServiceWorker();
+      }
+
+      if (!this.serviceWorkerRegistration) {
+        return null;
       }
 
       const subscription = await this.serviceWorkerRegistration.pushManager.getSubscription();
