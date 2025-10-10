@@ -1,40 +1,77 @@
-# Unit Testing Guide
+# Unit testing guide (Jest) — SafeWork Pro
 
-Purpose
-- Short description of what this manual covers.
-  Guide to writing, running, and organizing unit tests for the codebase, including best practices, test structure, and sample commands for the project's Jest setup.
+Doel: uitleg en concrete voorbeelden om unit tests te draaien en schrijven voor de web-app (Next.js + TypeScript) met Jest.
 
-Audience
-- Who should read this.
-  Developers and contributors writing unit tests for the frontend and backend logic.
+Snelstart
+1. Open terminal in het project root.
+2. Start unit tests:
+   - cd web && npm run test
+   - Voor continuous watch: cd web && npm run test:watch
+3. Coverage rapport:
+   - cd web && npm run test:coverage
 
-Prerequisites
-- What must be available or configured before following this guide.
-  - Node.js and project dependencies installed (run npm install in repository root).
-  - Familiarity with Jest and Testing Library concepts.
-  - Access to the repository and ability to run npm scripts.
+Belangrijke scripts
+- Zie npm scripts in [`web/package.json`](web/package.json:1) voor exacte scriptnamen en CI integratie.
 
-Quick start / Steps
-1. Step 1 — Install dependencies: npm install
-2. Step 2 — Run all unit tests: npm run test
-3. Step 3 — Run tests in watch mode during development: npm run test:watch
-4. Step 4 — Add new tests under web/src/**/__tests__ or adjacent to modules as fileName.test.ts
+Configuratie overzicht
+- Jest config: [`web/jest.config.js`](web/jest.config.js:1)
+- Jest setup: [`web/jest.setup.js`](web/jest.setup.js:1)
+- Mocks: [`web/__mocks__/fileMock.js`](web/__mocks__/fileMock.js:1)
+- TypeScript integratie: ts-jest / next/jest in jest.config.js
 
-Examples / Commands
-- Run tests once:
-  npm run test
-- Run watch mode:
-  npm run test:watch
-- Generate coverage report:
-  npm run test -- --coverage
+Aanbevolen teststructuur
+- Plaats unit tests naast code of in `__tests__` mappen:
+  - Component tests: `web/src/components/__tests__/`
+  - Lib / util tests: `web/src/lib/__tests__/`
+- Naamgeving: `ComponentName.test.tsx` of `utilName.test.ts`
 
-Links / Related
-- docs/testing/02-e2e-testing-guide.md: End-to-end testing guide
-- docs/testing/03-firebase-emulator-testing.md: Firebase emulator testing
-- web/jest.config.js: Jest configuration file
-- TESTING_STRATEGY.md: Project-wide testing strategy
+Voorbeeld: component test (React Testing Library)
+```ts
+import { render, screen } from '@testing-library/react';
+import Button from '@/components/ui/Button';
 
-TODO / Next work
-- Add code examples demonstrating mocking Firebase services.
-- Document conventions for test file naming and fixtures.
-- Provide examples of common Jest matchers and testing-library patterns.
+test('renders label', () => {
+  render(<Button>Opslaan</Button>);
+  expect(screen.getByText('Opslaan')).toBeInTheDocument();
+});
+```
+
+Mocking richtlijnen
+- Mock externe services en Firebase in `jest.setup.js`.
+- Gebruik `jest.mock()` voor modules zoals `next/router`, `next/image` en Firebase clients.
+- Gebruik `web/src/__mocks__` voor herbruikbare mocks.
+
+Firebase emulator in unit tests
+- Voor tests die Firestore/Auth echt nodig hebben, gebruik de Firebase emulator in combinatie met jest:
+  - Start emulator: cd web && npm run emulators:test
+  - In tests: gebruik helper utils uit [`web/src/lib/firebase-emulator.ts`](web/src/lib/firebase-emulator.ts:1)
+- Prefer mock-based unit tests en reserveer emulator-backed runs voor integration tests.
+
+Best practices
+- Test enkel pure logic in unit tests; complexe Firebase-interacties naar integration tests verplaatsen.
+- Houd tests snel: < 200ms per test waar mogelijk.
+- Coverage thresholds: project vereist 80%+ (zie `web/jest.config.js` en CI gates).
+- Maak deterministische tests: seed data en fixed timestamps waar nodig.
+
+CI Integratie
+- GitHub Actions CI pipeline voert unit tests en coverage checks (zie `.github/workflows/ci.yml`).
+- Zorg dat `npm run test:ci` of gelijkwaardig script succesvol draait in CI en emulators indien vereist.
+
+Fouten oplossen
+- Veelvoorkomende problemen:
+  - "Invalid attempt to destructure undefined": controleer mocks en import paden.
+  - TypeScript compile errors in tests: run `cd web && npm run tsc --noEmit` lokaal.
+- Debugging tips:
+  - Voeg `--runInBand` toe aan jest in CI voor isolatie.
+  - Gebruik `console.log` in combinatie met `--silent=false` tijdens local debugging.
+
+Links & reference
+- Jest docs: https://jestjs.io
+- Testing Library: https://testing-library.com
+- Firebase emulator helpers: [`web/src/lib/firebase-emulator.ts`](web/src/lib/firebase-emulator.ts:1)
+- Project testing strategy: [`TESTING_STRATEGY.md`](TESTING_STRATEGY.md:1)
+
+TODO / Next steps
+- Voeg voorbeeldtests per belangrijke module (auth, api wrappers, permissions).
+- Document wanneer emulator nodig is vs mocked tests.
+- Add examples for snapshot testing if/when components stabilise.

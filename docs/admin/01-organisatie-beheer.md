@@ -1,250 +1,95 @@
-# Organisatie Beheer - Administrator Handleiding
+# Organisatie Beheer (Organization Management)
 
-**Doelgroep**: Hoofdbeheerder/Eigenaar van SafeWork Pro  
-**Versie**: 1.0.0  
-**Laatste Update**: 30 september 2025
+This guide documents how organizations are created and managed in the application using implemented APIs and server-side helpers. It is intentionally aligned with the repository code and only describes implemented behavior.
 
-## 🎯 Doel van deze Handleiding
+Relevant code references
+- Organization API route: [`web/src/app/api/organizations/route.ts`](web/src/app/api/organizations/route.ts:1)
+- Firebase Admin helper (set custom claims): [`web/src/lib/firebase-admin.ts`](web/src/lib/firebase-admin.ts:129)
+- Auth middleware: [`web/src/lib/api/auth.ts`](web/src/lib/api/auth.ts:1)
+- Firestore data model and rules: [`firestore.rules`](firestore.rules:1), [`docs/backend/03-database-management.md`](docs/backend/03-database-management.md:1)
 
-Deze handleiding laat zien hoe je als hoofdbeheerder organisaties kunt aanmaken, beheren en configureren in SafeWork Pro.
+Overview: organization creation flow (implemented)
+1. Preconditions
+   - A user must have an authenticated Firebase ID token (client-side).
+   - The user may be newly signed up and not yet assigned to an organization.
+2. Endpoint
+   - POST /api/organizations
+   - Implemented at: [`web/src/app/api/organizations/route.ts`](web/src/app/api/organizations/route.ts:40)
+3. Request structure
+   - Headers:
+     - Authorization: Bearer <FIREBASE_ID_TOKEN>
+     - Content-Type: application/json
+   - Body (example):
+     {
+       "name": "Acme Ltd",
+       "slug": "acme",
+       "settings": {
+         "industry": "construction",
+         "complianceFramework": "vca",
+         "timeZone": "Europe/Amsterdam",
+         "language": "nl"
+       }
+     }
+   - Validation: handled by zod schema in the route (`createOrganizationSchema`).
 
-## 📋 Vereisten
+What the route does (step-by-step)
+1. Extracts and validates the request body.
+2. Reads the Authorization header, verifies the Bearer token using `verifyIdToken(token)` imported from [`web/src/lib/firebase-admin.ts`](web/src/lib/firebase-admin.ts:137).
+3. Ensures the token contains a valid email (decoded token must include email).
+4. Checks uniqueness of the organization slug by querying `organizations` collection.
+5. Verifies the user does not already belong to an organization (reads `users/{uid}`).
+6. Creates a new organization document with a generated UUID (crypto.randomUUID()) and default subscription settings.
+   - Document fields: id, name, slug, settings, subscription, createdAt, createdBy.
+7. Writes/updates the user's profile document at `users/{uid}` with:
+   - organizationId, role: 'admin', joinedAt, lastLoginAt, profileComplete: true.
+8. Sets custom claims on the user via `setCustomClaims(uid, { orgId: organizationId, role: 'admin' })` so subsequent client tokens and Firestore rules reflect tenant membership and role.
+9. Returns a JSON response containing organization summary and updated user info.
 
-- Toegang tot Firebase Console
-- Admin rechten in de applicatie
-- Basis kennis van Firestore database
-- Toegang tot de web applicatie
+Notes and caveats (repo-accurate)
+- Token verification
+  - The route verifies raw ID token from Authorization header with `verifyIdToken` (server-side).
+  - The repository also provides `requireAuth` middleware (`web/src/lib/api/auth.ts`) that API routes can use. Organization creation uses direct verification to allow simplified "first user creates org" flow.
+- First user becomes admin
+  - The route sets the newly created organization's initial user to role 'admin' both in Firestore user profile and via custom claims.
+- Client token refresh
+  - After server-side setCustomClaims, clients must refresh their ID token (`getIdToken(true)`) to pick up new custom claims.
+- Error handling
+  - The route returns structured Errors.* responses for validation, already-exists, token expiry (`auth/id-token-expired`), or server errors (see code).
+- Auditability
+  - createdAt/createdBy fields are set server-side and protected by Firestore rules (`firestore.rules`) to prevent tampering.
 
-## 🏢 Organisatie Structuur
-
-SafeWork Pro gebruikt een multi-tenant architectuur waarbij elke organisatie volledig geïsoleerd is:
-
-```
-organizations/
-├── {organizationId}/
-    ├── id: string
-    ├── name: string
-    ├── slug: string (uniek)
-    ├── settings: object
-    ├── subscription: object
-    ├── createdAt: timestamp
-    └── createdBy: string (userId)
-```
-
-## 1️⃣ Nieuwe Organisatie Aanmaken
-
-### Via API (Aanbevolen)
-
-```bash
-# POST naar /api/organizations
-curl -X POST https://safeworkpro.com/api/organizations \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_FIREBASE_TOKEN" \
-  -d '{
-    "name": "Bouwbedrijf Van der Berg",
-    "slug": "bouwbedrijf-vd-berg",
-    "settings": {
-      "industry": "construction",
-      "complianceFramework": "vca",
-      "timeZone": "Europe/Amsterdam",
-      "language": "nl"
+Example curl (requires a real Firebase ID token for a user not yet in an organization)
+- curl example:
+  - curl -X POST https://[TODO-PRODUCTION-URL]/api/organizations \
+    -H "Authorization: Bearer <ID_TOKEN>" \
+    -H "Content-Type: application/json" \
+    -d '{"name":"Acme Ltd","slug":"acme"}'
+- Response (success):
+  - {
+      "success": true,
+      "message": "Organization created successfully",
+      "data": {
+        "organization": { "id": "...", "name":"Acme Ltd", "slug":"acme", ... },
+        "user": { "organizationId": "...", "role": "admin" }
+      }
     }
-  }'
-```
 
-### Via Firebase Console (Manual)
+Inviting users to an organization (implemented patterns)
+- The route provides validation schemas for invite payloads (email, role, firstName, lastName) and the code contains invite flow structures. However, invitation creation and email delivery may rely on other system components (Cloud Functions or SMTP) that are not fully implemented in the repository — consult the admin manuals and invitation docs when available.
 
-1. **Open Firebase Console**
-   - Ga naar [Firebase Console](https://console.firebase.google.com)
-   - Select project `hale-ripsaw-403915`
+Recommended admin workflows
+1. Create organization via client or API as first step for a new company.
+2. Invite additional users:
+   - Use invite flows (when implemented) or create accounts via admin panel and then use the Role Assignment endpoint (`/api/auth/set-claims`) to assign roles.
+3. Audit and monitor:
+   - Use auditLogs subcollection for system-side logs; these are intended to be written by backend functions and read by admins (see rules).
+4. Backups and rollback:
+   - Export Firestore snapshots using Firebase export commands and test restore in staging before production restores.
 
-2. **Navigate naar Firestore Database**
-   - Klik op "Firestore Database" in het menu
-   - Zorg dat je in "Data" tab bent
+Where to look next in the repo
+- Role assignment: [`web/src/app/api/auth/set-claims/route.ts`](web/src/app/api/auth/set-claims/route.ts:1)
+- Security rules and tenant isolation: [`firestore.rules`](firestore.rules:1), [`docs/backend/04-security-rules-guide.md`](docs/backend/04-security-rules-guide.md:1)
+- Admin user management guide: docs/admin/02-gebruiker-beheer.md (I will populate this next if you confirm)
 
-3. **Maak nieuwe organisatie aan**
-   - Klik op "Start collection"
-   - Collection ID: `organizations`
-   - Document ID: Genereer automatisch of gebruik UUID
-
-4. **Voeg organisatie data toe**:
-```json
-{
-  "id": "generated-uuid-here",
-  "name": "Bouwbedrijf Van der Berg",
-  "slug": "bouwbedrijf-vd-berg",
-  "settings": {
-    "industry": "construction",
-    "complianceFramework": "vca",
-    "timeZone": "Europe/Amsterdam",
-    "language": "nl"
-  },
-  "subscription": {
-    "tier": "trial",
-    "status": "active",
-    "trialEndsAt": "2025-10-15T00:00:00Z"
-  },
-  "createdAt": "2025-09-30T17:00:00Z",
-  "createdBy": "admin-user-id"
-}
-```
-
-## 2️⃣ Organisatie Instellingen
-
-### Basis Instellingen
-
-| Setting | Beschrijving | Opties |
-|---------|-------------|--------|
-| `name` | Officiële bedrijfsnaam | Tekst (2-100 karakters) |
-| `slug` | URL-vriendelijke naam (uniek) | lowercase, nummers, koppeltekens |
-| `industry` | Industrie sector | construction, industrial, offshore, etc. |
-| `complianceFramework` | Compliance standaard | vca, iso45001, both |
-| `timeZone` | Tijdzone | Europe/Amsterdam, Europe/London, etc. |
-| `language` | Interface taal | nl, en |
-
-### Subscription Instellingen
-
-| Setting | Beschrijving | Opties |
-|---------|-------------|--------|
-| `tier` | Abonnement type | trial, starter, professional, enterprise |
-| `status` | Account status | active, suspended, cancelled |
-| `trialEndsAt` | Trial einde datum | ISO 8601 timestamp |
-| `maxUsers` | Maximum gebruikers | Nummer (gebaseerd op tier) |
-| `maxProjects` | Maximum projecten | Nummer (gebaseerd op tier) |
-
-## 3️⃣ Organisatie Beheren
-
-### Organisatie Details Opvragen
-
-```bash
-# GET /api/organizations/{organizationId}
-curl -X GET https://safeworkpro.com/api/organizations/org-uuid \
-  -H "Authorization: Bearer YOUR_FIREBASE_TOKEN"
-```
-
-### Organisatie Bijwerken
-
-```bash
-# PATCH /api/organizations/{organizationId}
-curl -X PATCH https://safeworkpro.com/api/organizations/org-uuid \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_FIREBASE_TOKEN" \
-  -d '{
-    "settings": {
-      "complianceFramework": "both",
-      "maxUsers": 50
-    }
-  }'
-```
-
-### Organisatie Deactiveren
-
-```bash
-# PATCH subscription status
-curl -X PATCH https://safeworkpro.com/api/organizations/org-uuid \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_FIREBASE_TOKEN" \
-  -d '{
-    "subscription": {
-      "status": "suspended"
-    }
-  }'
-```
-
-## 4️⃣ Organisatie Statistieken
-
-### Gebruikers per Organisatie
-
-```javascript
-// Firebase Console > Firestore > Query
-// Collection: users
-// Where: organizationId == "org-uuid"
-```
-
-### Projecten per Organisatie
-
-```javascript
-// Collection: organizations/{orgId}/projects
-// Count documents
-```
-
-### TRAs per Organisatie
-
-```javascript
-// Collection: organizations/{orgId}/tras
-// Group by status: draft, review, approved, active
-```
-
-## 5️⃣ Troubleshooting
-
-### Probleem: Organisatie slug al in gebruik
-
-**Symptoom**: Error bij aanmaken nieuwe organisatie
-```json
-{
-  "error": {
-    "code": "RESOURCE_ALREADY_EXISTS",
-    "message": "Organization with identifier 'slug' already exists"
-  }
-}
-```
-
-**Oplossing**: 
-1. Kies een andere slug
-2. Check bestaande slugs in Firestore:
-```javascript
-// Query: organizations where slug == "gewenste-slug"
-```
-
-### Probleem: Gebruiker kan niet inloggen na organisatie wijziging
-
-**Symptoom**: "Organization mismatch" error
-
-**Oplossing**:
-1. Check custom claims van gebruiker:
-```bash
-# Firebase Admin SDK
-admin.auth().getUser(uid).then(user => {
-  console.log(user.customClaims);
-});
-```
-
-2. Update custom claims:
-```bash
-curl -X POST https://safeworkpro.com/api/auth/set-claims \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer ADMIN_TOKEN" \
-  -d '{
-    "targetUserId": "user-uid",
-    "organizationId": "correct-org-id",
-    "role": "admin"
-  }'
-```
-
-## 6️⃣ Best Practices
-
-### Organisatie Naamgeving
-- Gebruik duidelijke, professionele namen
-- Vermijd speciale karakters in slug
-- Houd slugs kort maar beschrijvend
-
-### Data Beheer
-- Maak regelmatig backups van organisatie data
-- Monitor subscription status en trial einddatums
-- Houd gebruiker counts bij voor facturering
-
-### Security
-- Controleer regelmatig gebruiker rollen per organisatie
-- Review admin toegang per kwartaal
-- Monitor voor ongebruikelijke activiteit
-
-## 📚 Gerelateerde Documentatie
-
-- [Gebruiker Beheer](02-gebruiker-beheer.md)
-- [Data Manipulatie](03-data-manipulatie.md)
-- [API Endpoints Guide](../backend/01-api-endpoints-guide.md)
-- [Firebase Admin Guide](../backend/02-firebase-admin-guide.md)
-
----
-
-**Volgende Stap**: Lees [Gebruiker Beheer](02-gebruiker-beheer.md) voor het beheren van gebruikers binnen organisaties.
+Status
+- This manual documents implemented organization creation and management behavior. If you want, I will now populate the user/role management manual (`docs/admin/02-gebruiker-beheer.md`) with repo-accurate examples and role assignment steps.

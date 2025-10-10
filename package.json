@@ -18,5 +18,8 @@
     "web/**/*.{json,md}": [
       "cd web && npm run format"
     ]
+  },
+  "dependencies": {
+    "firebase-admin": "^13.5.0"
   }
 }

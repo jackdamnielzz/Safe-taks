@@ -1,0 +1,75 @@
+# Example Sentry alert rules (conceptual YAML)
+# Import these manually into Sentry or translate to Sentry's alert-builder UI.
+# This file is a documentation example — adapt thresholds to your production traffic.
+
+# High error rate (backend) — trigger PagerDuty
+- name: "High backend error rate (5xx) - Critical"
+  project: "maasiso-web"
+  condition:
+    type: "metric"
+    metric: "event.error"
+    filter: "error.type:server AND http.status_code:5xx"
+    timeframe_minutes: 5
+    threshold: 100    # events in timeframe
+    comparator: ">"
+  actions:
+    - type: "notify_pagerduty"
+      integration: "pagerduty-production"
+    - type: "notify_slack"
+      channel: "#ops"
+
+# Elevated JS exception rate (frontend)
+- name: "Frontend exceptions spike - High"
+  project: "maasiso-web"
+  condition:
+    type: "metric"
+    metric: "event.error"
+    filter: "error.handled:false AND device.type:browser"
+    timeframe_minutes: 10
+    threshold: 200
+    comparator: ">"
+  actions:
+    - type: "notify_slack"
+      channel: "#frontend-alerts"
+    - type: "create_issue"
+      provider: "github"
+      repo: "org/repo"
+
+# Deployment-related regressions (new release)
+- name: "Release Regression - Error Increase vs Previous Release"
+  project: "maasiso-web"
+  condition:
+    type: "regression"
+    compare_with: "previous_release"
+    metric: "error_rate"
+    threshold_percent: 200  # 2x error rate vs previous
+    timeframe_minutes: 30
+  actions:
+    - type: "notify_slack"
+      channel: "#releases"
+    - type: "notify_pagerduty"
+      integration: "pagerduty-production"
+
+# Low-level watch: Firestore permission-denied spike
+- name: "Firestore permission-denied spike"
+  project: "maasiso-web"
+  condition:
+    type: "metric"
+    metric: "event.error"
+    filter: "message:\"permission denied\" OR message:\"PERMISSION_DENIED\""
+    timeframe_minutes: 10
+    threshold: 50
+    comparator: ">"
+  actions:
+    - type: "notify_slack"
+      channel: "#ops"
+    - type: "create_ticket"
+      provider: "jira"
+      project: "OPS"
+
+# Notes:
+# - Replace project names, integration identifiers, channels and thresholds with values from your Sentry and PagerDuty configuration.
+# - For production, tune thresholds to reduce noise and add rate-limiting or aggregation as appropriate.
+# - See runtime references in docs:
+#   - Health endpoint: [`web/src/app/api/health/route.ts`](web/src/app/api/health/route.ts:1)
+#   - Monitoring guide: [`docs/deployment/02-monitoring-guide.md`](docs/deployment/02-monitoring-guide.md:1)

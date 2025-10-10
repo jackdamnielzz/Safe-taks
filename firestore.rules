@@ -76,6 +76,24 @@ service cloud.firestore {
       }
       
       // ============================================================================
+      // INVITATIONS SUBCOLLECTION
+      // ============================================================================
+      
+      match /invitations/{invitationId} {
+        // Admins and safety managers can read all invitations
+        allow read: if isOrgMember(orgId) && isSafetyManager(orgId);
+        
+        // Admins and safety managers can create invitations
+        allow create: if isOrgMember(orgId) && isSafetyManager(orgId);
+        
+        // Admins and safety managers can cancel invitations (delete = cancel status update)
+        allow update: if isOrgMember(orgId) && isSafetyManager(orgId);
+        
+        // Only admins can permanently delete invitations
+        allow delete: if isAdmin(orgId);
+      }
+      
+      // ============================================================================
       // PROJECTS SUBCOLLECTION
       // ============================================================================
       
@@ -84,10 +102,52 @@ service cloud.firestore {
         allow read: if isOrgMember(orgId);
         
         // Supervisors and above can create/update projects
-        allow create, update: if isSupervisor(orgId) && isValidUpdate();
+        allow create, update: if isSupervisor(orgId);
         
-        // Only admins can delete projects
+        // Only admins can delete projects (soft delete via update)
         allow delete: if isAdmin(orgId);
+        
+        // Project members subcollection
+        match /members/{memberId} {
+          // Members can read member list if they're in the org
+          allow read: if isOrgMember(orgId);
+          
+          // Supervisors and above can manage members
+          allow create, update: if isSupervisor(orgId);
+          
+          // Only admins can delete members
+          allow delete: if isAdmin(orgId);
+        }
+      }
+      
+      // ============================================================================
+      // PROJECT INVITATIONS SUBCOLLECTION (org-level for easier querying)
+      // ============================================================================
+      
+      match /projectInvites/{inviteId} {
+        // Org members can read invites
+        allow read: if isOrgMember(orgId);
+        
+        // Supervisors can create invites
+        allow create: if isSupervisor(orgId);
+        
+        // System updates invite status (used: true)
+        allow update: if isOrgMember(orgId);
+        
+        // Only admins can delete invites
+        allow delete: if isAdmin(orgId);
+      }
+      
+      // ============================================================================
+      // PROJECT AUDIT LOGS SUBCOLLECTION
+      // ============================================================================
+      
+      match /projectAudits/{auditId} {
+        // Admins and safety managers can read audit logs
+        allow read: if isSafetyManager(orgId);
+        
+        // System only (no direct writes)
+        allow create, update, delete: if false;
       }
       
       // ============================================================================
@@ -255,3 +315,4 @@ service cloud.firestore {
     }
   }
 }
+// Comment rules are already integrated into the main TRA rules structure above

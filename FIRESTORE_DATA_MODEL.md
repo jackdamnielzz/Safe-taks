@@ -181,7 +181,87 @@ interface Organization {
 
 ---
 
-### 2. Users Subcollection
+### 2. Invitations Collection
+
+**Path**: `organizations/{orgId}/invitations/{invitationId}`
+
+User invitations for team management. Invitations expire after 7 days and can be accepted, declined, or canceled.
+
+```typescript
+interface Invitation {
+  // Identity
+  id: string;                    // Auto-generated document ID
+  
+  // Organization Context
+  organizationId: string;
+  organizationName: string;      // Denormalized for email display
+  
+  // Invitee Information
+  email: string;                 // Email address of invited user
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  
+  // Role Assignment
+  role: 'safety_manager' | 'supervisor' | 'field_worker';
+  projectAccess: 'all' | 'assigned';
+  assignedProjects?: string[];   // Project IDs if projectAccess = 'assigned'
+  
+  // Invitation Status
+  status: 'pending' | 'accepted' | 'declined' | 'expired' | 'canceled';
+  
+  // Inviter Information
+  invitedBy: string;             // User ID of inviter
+  invitedByName: string;         // Denormalized for display
+  invitedByEmail: string;        // For email notifications
+  
+  // Token & Security
+  invitationToken: string;       // Secure random token for accepting invitation
+  acceptanceUrl: string;         // Full URL with token
+  
+  // Lifecycle Timestamps
+  createdAt: Timestamp;
+  expiresAt: Timestamp;          // Default: 7 days from creation
+  acceptedAt?: Timestamp;
+  declinedAt?: Timestamp;
+  canceledAt?: Timestamp;
+  
+  // Metadata
+  emailSent: boolean;
+  emailSentAt?: Timestamp;
+  emailError?: string;           // If email failed to send
+  remindersSent: number;         // Count of reminder emails sent
+  lastReminderAt?: Timestamp;
+  
+  // Acceptance Details (filled when accepted)
+  acceptedBy?: string;           // User ID of person who accepted
+  userCreated?: boolean;         // Whether a new user was created
+  
+  // Notes
+  notes?: string;                // Optional notes from inviter
+}
+```
+
+**Indexes Required**:
+- `email` (for checking existing invitations)
+- `status` (for filtering active invitations)
+- `invitedBy` (for user's sent invitations)
+- `expiresAt` (for cleanup of expired invitations)
+- Composite: `email + status` (for duplicate detection)
+- Composite: `status + expiresAt` (for expired invitation cleanup)
+
+**Business Rules**:
+1. Only one pending invitation per email per organization
+2. Invitations expire after 7 days
+3. Only admins and safety managers can send invitations
+4. Cannot invite email addresses that already exist as active members
+5. Invitation tokens must be cryptographically secure (32+ bytes)
+6. Expired invitations can be re-sent (creates new invitation)
+7. Canceled invitations cannot be accepted
+
+---
+
+### 3. Users Subcollection
 
 **Path**: `organizations/{orgId}/users/{userId}`
 

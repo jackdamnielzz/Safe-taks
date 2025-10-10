@@ -1,0 +1,151 @@
+config:
+  target: "{{ $processEnvironment.BASE_URL }}"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up"
+    - duration: 120
+      arrivalRate: 10
+      name: "Sustained load"
+    - duration: 60
+      arrivalRate: 20
+      name: "Peak load"
+  processor: "../scripts/auth-processor.js"
+  variables:
+    adminEmail: "{{ $processEnvironment.TEST_ADMIN_EMAIL }}"
+    adminPassword: "{{ $processEnvironment.TEST_ADMIN_PASSWORD }}"
+    safetyManagerEmail: "{{ $processEnvironment.TEST_SAFETY_MANAGER_EMAIL }}"
+    safetyManagerPassword: "{{ $processEnvironment.TEST_SAFETY_MANAGER_PASSWORD }}"
+  plugins:
+    expect: {}
+    metrics-by-endpoint: {}
+  ensure:
+    maxErrorRate: 1  # Max 1% error rate
+    p95: 500         # 95th percentile response time < 500ms
+    p99: 1000        # 99th percentile response time < 1000ms
+
+scenarios:
+  - name: "User Registration Flow"
+    weight: 2
+    flow:
+      - post:
+          url: "/api/auth/register"
+          json:
+            email: "{{ $randomString() }}@loadtest.com"
+            password: "LoadTest123!"
+            displayName: "Load Test User {{ $randomNumber(1, 10000) }}"
+          capture:
+            - json: "$.user.uid"
+              as: "userId"
+            - json: "$.user.email"
+              as: "userEmail"
+          expect:
+            - statusCode: 201
+            - contentType: json
+            - hasProperty: user.uid
+      - think: 2
+
+  - name: "User Login Flow"
+    weight: 5
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ adminEmail }}"
+            password: "{{ adminPassword }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+            - json: "$.user.uid"
+              as: "userId"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: token
+      - think: 1
+      - get:
+          url: "/api/auth/profile"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - contentType: json
+      - think: 2
+
+  - name: "Session Management"
+    weight: 3
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ safetyManagerEmail }}"
+            password: "{{ safetyManagerPassword }}"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+          expect:
+            - statusCode: 200
+      - loop:
+          - get:
+              url: "/api/auth/session"
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              expect:
+                - statusCode: 200
+          - think: 5
+        count: 5
+      - post:
+          url: "/api/auth/logout"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Password Reset Flow"
+    weight: 1
+    flow:
+      - post:
+          url: "/api/auth/password-reset"
+          json:
+            email: "{{ adminEmail }}"
+          expect:
+            - statusCode: 200
+      - think: 3
+
+  - name: "Concurrent Session Test"
+    weight: 2
+    flow:
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ adminEmail }}"
+            password: "{{ adminPassword }}"
+          capture:
+            - json: "$.token"
+              as: "token1"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: "/api/auth/login"
+          json:
+            email: "{{ adminEmail }}"
+            password: "{{ adminPassword }}"
+          capture:
+            - json: "$.token"
+              as: "token2"
+          expect:
+            - statusCode: 200
+      - parallel:
+          - get:
+              url: "/api/auth/profile"
+              headers:
+                Authorization: "Bearer {{ token1 }}"
+              expect:
+                - statusCode: 200
+          - get:
+              url: "/api/auth/profile"
+              headers:
+                Authorization: "Bearer {{ token2 }}"
+              expect:
+                - statusCode: 200

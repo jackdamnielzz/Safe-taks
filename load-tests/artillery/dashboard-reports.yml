@@ -1,0 +1,299 @@
+config:
+  target: "{{ $processEnvironment.API_BASE_URL }}"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up - Dashboard access"
+    - duration: 120
+      arrivalRate: 15
+      name: "Sustained load - Multiple dashboards"
+    - duration: 60
+      arrivalRate: 25
+      name: "Peak load - Report generation"
+  processor: "../scripts/dashboard-processor.js"
+  variables:
+    orgId: "{{ $processEnvironment.TEST_ORG_ID }}"
+  plugins:
+    expect: {}
+    metrics-by-endpoint:
+      stripQueryString: true
+  ensure:
+    maxErrorRate: 2  # Max 2% error rate
+    p95: 2000        # 95th percentile < 2s for dashboard loads
+    p99: 3000        # 99th percentile < 3s
+
+scenarios:
+  - name: "Executive Dashboard Load"
+    weight: 5
+    flow:
+      - function: "generateAdminToken"
+      # Load main dashboard with KPIs
+      - get:
+          url: "/dashboard"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - contentType: json
+      - think: 3
+      
+      # Load KPI metrics
+      - get:
+          url: "/admin/analytics"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            period: "month"
+            metrics: "tras_created,lmras_executed,avg_risk_score,compliance_rate"
+          expect:
+            - statusCode: 200
+      - think: 2
+      
+      # Load risk distribution
+      - get:
+          url: "/admin/risk-analysis"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            period: "quarter"
+            groupBy: "project"
+          expect:
+            - statusCode: 200
+      - think: 2
+
+  - name: "LMRA Analytics Dashboard"
+    weight: 4
+    flow:
+      - function: "generateSafetyManagerToken"
+      - get:
+          url: "/admin/lmra-analytics"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            period: "week"
+          expect:
+            - statusCode: 200
+      - think: 2
+      
+      # Load completion metrics
+      - get:
+          url: "/admin/lmra-analytics"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            period: "month"
+            metrics: "completion_rate,avg_duration,stop_work_count"
+          expect:
+            - statusCode: 200
+      - think: 3
+
+  - name: "Cohort Analysis Dashboard"
+    weight: 2
+    flow:
+      - function: "generateAdminToken"
+      - get:
+          url: "/admin/cohorts"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            groupBy: "weekly"
+            retentionDays: "1,7,30"
+          expect:
+            - statusCode: 200
+      - think: 4
+
+  - name: "Real-time Dashboard Updates"
+    weight: 3
+    flow:
+      - function: "generateSafetyManagerToken"
+      - loop:
+          - get:
+              url: "/dashboard"
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              expect:
+                - statusCode: 200
+          - get:
+              url: "/lmra-sessions"
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              qs:
+                status: "in_progress"
+                limit: 10
+              expect:
+                - statusCode: 200
+          - think: 10
+        count: 6
+
+  - name: "PDF Report Generation"
+    weight: 4
+    flow:
+      - function: "generateSafetyManagerToken"
+      - post:
+          url: "/reports/generate"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            reportType: "tra_summary"
+            format: "pdf"
+            dateRange:
+              from: "{{ $timestamp(-30, 'days') }}"
+              to: "{{ $timestamp }}"
+            filters:
+              status: ["approved", "active"]
+              riskLevel: ["high", "very_high"]
+            sections:
+              - type: "executive_summary"
+              - type: "kpi_widgets"
+                metrics: ["tras_created", "avg_risk_score"]
+              - type: "tra_list"
+                limit: 50
+              - type: "risk_matrix"
+          capture:
+            - json: "$.reportId"
+              as: "reportId"
+          expect:
+            - statusCode: 200
+            - contentType: json
+      - think: 5
+      
+      # Check report status
+      - get:
+          url: "/reports/{{ reportId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Excel Report Generation"
+    weight: 3
+    flow:
+      - function: "generateSafetyManagerToken"
+      - post:
+          url: "/reports/generate"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            reportType: "compliance_report"
+            format: "excel"
+            dateRange:
+              from: "{{ $timestamp(-90, 'days') }}"
+              to: "{{ $timestamp }}"
+            includeSheets:
+              - "summary"
+              - "tra_overview"
+              - "lmra_overview"
+              - "compliance_metrics"
+          capture:
+            - json: "$.reportId"
+              as: "reportId"
+          expect:
+            - statusCode: 200
+      - think: 6
+
+  - name: "Custom Report Builder"
+    weight: 2
+    flow:
+      - function: "generateAdminToken"
+      - get:
+          url: "/admin/reports/builder"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      - think: 3
+      
+      # Save custom report template
+      - post:
+          url: "/reports/templates"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            name: "Load Test Custom Report {{ $randomNumber(1, 1000) }}"
+            description: "Custom report for load testing"
+            sections:
+              - type: "executive_summary"
+                config:
+                  title: "Safety Performance Overview"
+              - type: "kpi_widgets"
+                config:
+                  metrics: ["tras_created", "lmras_executed", "compliance_rate"]
+              - type: "charts"
+                config:
+                  chartType: "risk_distribution"
+                  period: "month"
+              - type: "tra_list"
+                config:
+                  filters:
+                    status: ["approved"]
+                    riskLevel: ["high", "very_high"]
+                  limit: 25
+          capture:
+            - json: "$.id"
+              as: "templateId"
+          expect:
+            - statusCode: 201
+      - think: 2
+      
+      # Generate report from template
+      - post:
+          url: "/reports/generate"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            templateId: "{{ templateId }}"
+            format: "pdf"
+            dateRange:
+              from: "{{ $timestamp(-30, 'days') }}"
+              to: "{{ $timestamp }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Concurrent Dashboard Access"
+    weight: 3
+    flow:
+      - function: "generateSafetyManagerToken"
+      - parallel:
+          - get:
+              url: "/dashboard"
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              expect:
+                - statusCode: 200
+          - get:
+              url: "/admin/analytics"
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              qs:
+                period: "month"
+              expect:
+                - statusCode: 200
+          - get:
+              url: "/admin/risk-analysis"
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              qs:
+                period: "quarter"
+              expect:
+                - statusCode: 200
+          - get:
+              url: "/admin/lmra-analytics"
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              qs:
+                period: "week"
+              expect:
+                - statusCode: 200
+
+  - name: "Report Export and Download"
+    weight: 2
+    flow:
+      - function: "generateSafetyManagerToken"
+      - function: "generateReport"
+      - get:
+          url: "/reports/{{ reportId }}/download"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      - think: 2

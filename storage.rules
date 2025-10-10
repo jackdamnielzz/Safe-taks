@@ -208,6 +208,33 @@ service firebase.storage {
       allow update, delete: if isAuthenticated() && request.auth.uid == userId;
     }
     
+    // ============================================================================
+    // USER UPLOADS (General file uploads with metadata tracking)
+    // ============================================================================
+    
+    // User uploads stored under organizations with metadata in Firestore
+    match /organizations/{orgId}/uploads/{userId}/{uploadId}/{filename} {
+      // All org members can read uploads
+      allow read: if isOrgMember(orgId);
+      
+      // Authenticated org members can upload files
+      // Images: max 10MB, Documents: max 25MB
+      allow create: if isOrgMember(orgId) &&
+                       request.auth.uid == userId && (
+                         (isImage() && isValidSize(10)) ||
+                         (isDocument() && isValidSize(25))
+                       );
+      
+      // Only the uploader or admins can delete uploads
+      allow delete: if isOrgMember(orgId) && (
+        request.auth.uid == userId ||
+        request.auth.token.role == 'admin'
+      );
+      
+      // Uploads are immutable once created
+      allow update: if false;
+    }
+    
     // Default deny for all other paths
     match /{allPaths=**} {
       allow read, write: if false;

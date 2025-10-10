@@ -1,0 +1,327 @@
+config:
+  target: "{{ $processEnvironment.API_BASE_URL }}"
+  phases:
+    - duration: 60
+      arrivalRate: 2
+      name: "Warm up - LMRA sessions"
+    - duration: 180
+      arrivalRate: 5
+      name: "Sustained load - Field worker activity"
+    - duration: 60
+      arrivalRate: 10
+      name: "Peak load - Multiple concurrent LMRAs"
+  processor: "../scripts/lmra-processor.js"
+  variables:
+    orgId: "{{ $processEnvironment.TEST_ORG_ID }}"
+  plugins:
+    expect: {}
+    metrics-by-endpoint:
+      stripQueryString: true
+  ensure:
+    maxErrorRate: 1  # Max 1% error rate for safety-critical operations
+    p95: 800         # 95th percentile < 800ms
+    p99: 1500        # 99th percentile < 1.5s
+
+scenarios:
+  - name: "Complete LMRA Execution Flow"
+    weight: 5
+    flow:
+      - function: "generateFieldWorkerToken"
+      - function: "getActiveTRA"
+      # Step 1: Create LMRA Session
+      - post:
+          url: "/lmra-sessions"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            traId: "{{ traId }}"
+            projectId: "{{ projectId }}"
+            organizationId: "{{ orgId }}"
+            location:
+              latitude: 52.0907
+              longitude: 5.1214
+              accuracy: 10
+              address: "Utrecht, Netherlands"
+            weather:
+              temperature: 18
+              condition: "partly_cloudy"
+              windSpeed: 15
+              visibility: "good"
+            personnel:
+              - userId: "{{ userId }}"
+                name: "Load Test Worker"
+                role: "field_worker"
+                competent: true
+          capture:
+            - json: "$.id"
+              as: "sessionId"
+          expect:
+            - statusCode: 201
+            - contentType: json
+      - think: 3
+      
+      # Step 2: Update with environmental checks
+      - patch:
+          url: "/lmra-sessions/{{ sessionId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            environmentalChecks:
+              weatherAcceptable: true
+              lightingAdequate: true
+              groundConditions: "stable"
+              accessRoutes: "clear"
+          expect:
+            - statusCode: 200
+      - think: 2
+      
+      # Step 3: Equipment verification
+      - patch:
+          url: "/lmra-sessions/{{ sessionId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            equipmentChecks:
+              - equipmentId: "hardhat-001"
+                type: "ppe"
+                condition: "good"
+                verified: true
+              - equipmentId: "harness-042"
+                type: "fall_protection"
+                condition: "good"
+                verified: true
+          expect:
+            - statusCode: 200
+      - think: 2
+      
+      # Step 4: Hazard assessment
+      - patch:
+          url: "/lmra-sessions/{{ sessionId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            hazardAssessment:
+              identifiedHazards:
+                - hazardId: "falling_objects"
+                  present: true
+                  controlsInPlace: true
+                  additionalControls: "Barricade established"
+              additionalHazards:
+                - description: "Wet surface near work area"
+                  severity: "medium"
+                  controlMeasure: "Warning signs placed"
+          expect:
+            - statusCode: 200
+      - think: 3
+      
+      # Step 5: Risk decision
+      - patch:
+          url: "/lmra-sessions/{{ sessionId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            riskDecision: "safe_to_proceed"
+            decisionRationale: "All controls in place, conditions acceptable"
+          expect:
+            - statusCode: 200
+      - think: 1
+      
+      # Step 6: Complete session
+      - post:
+          url: "/lmra-sessions/{{ sessionId }}/complete"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            signature: "LoadTestWorker"
+            completionNotes: "Work completed safely"
+          expect:
+            - statusCode: 200
+      - think: 2
+      
+      # Verify completion
+      - get:
+          url: "/lmra-sessions/{{ sessionId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - json: "$.status"
+              value: "completed"
+
+  - name: "LMRA Stop Work Decision"
+    weight: 2
+    flow:
+      - function: "generateFieldWorkerToken"
+      - function: "getActiveTRA"
+      - post:
+          url: "/lmra-sessions"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            traId: "{{ traId }}"
+            projectId: "{{ projectId }}"
+            organizationId: "{{ orgId }}"
+            location:
+              latitude: 52.0907
+              longitude: 5.1214
+              accuracy: 15
+          capture:
+            - json: "$.id"
+              as: "sessionId"
+          expect:
+            - statusCode: 201
+      - think: 2
+      - patch:
+          url: "/lmra-sessions/{{ sessionId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            hazardAssessment:
+              identifiedHazards:
+                - hazardId: "electrical_hazard"
+                  present: true
+                  controlsInPlace: false
+                  additionalControls: "None available"
+            riskDecision: "stop_work"
+            decisionRationale: "Electrical hazard without proper controls"
+            stopWorkReason: "unsafe_conditions"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: "/lmra-sessions/{{ sessionId }}/complete"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            signature: "LoadTestWorker"
+            completionNotes: "Work stopped due to safety concerns"
+          expect:
+            - statusCode: 200
+
+  - name: "LMRA with Photo Documentation"
+    weight: 3
+    flow:
+      - function: "generateFieldWorkerToken"
+      - function: "getActiveTRA"
+      - post:
+          url: "/lmra-sessions"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            traId: "{{ traId }}"
+            projectId: "{{ projectId }}"
+            organizationId: "{{ orgId }}"
+            location:
+              latitude: 52.0907
+              longitude: 5.1214
+          capture:
+            - json: "$.id"
+              as: "sessionId"
+          expect:
+            - statusCode: 201
+      - think: 2
+      - function: "uploadTestPhoto"
+      - patch:
+          url: "/lmra-sessions/{{ sessionId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            photos:
+              - url: "{{ photoUrl }}"
+                caption: "Work area before start"
+                timestamp: "{{ $timestamp }}"
+              - url: "{{ photoUrl }}"
+                caption: "Safety equipment in place"
+                timestamp: "{{ $timestamp }}"
+          expect:
+            - statusCode: 200
+      - think: 3
+      - post:
+          url: "/lmra-sessions/{{ sessionId }}/complete"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            signature: "LoadTestWorker"
+          expect:
+            - statusCode: 200
+
+  - name: "LMRA List and Filter"
+    weight: 2
+    flow:
+      - function: "generateSafetyManagerToken"
+      - get:
+          url: "/lmra-sessions"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            limit: 20
+            sortBy: "createdAt"
+            sortOrder: "desc"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - get:
+          url: "/lmra-sessions"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            status: "completed"
+            riskDecision: "stop_work"
+            dateFrom: "{{ $timestamp(-7, 'days') }}"
+          expect:
+            - statusCode: 200
+
+  - name: "Real-time LMRA Dashboard"
+    weight: 3
+    flow:
+      - function: "generateSafetyManagerToken"
+      - get:
+          url: "/lmra-sessions"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            status: "in_progress"
+            limit: 50
+          expect:
+            - statusCode: 200
+      - think: 2
+      - loop:
+          - get:
+              url: "/lmra-sessions"
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+              qs:
+                status: "in_progress,completed"
+                dateFrom: "{{ $timestamp(-1, 'hours') }}"
+              expect:
+                - statusCode: 200
+          - think: 5
+        count: 3
+
+  - name: "Offline LMRA Sync Simulation"
+    weight: 1
+    flow:
+      - function: "generateFieldWorkerToken"
+      - function: "getActiveTRA"
+      - function: "createOfflineLMRAData"
+      - post:
+          url: "/lmra-sessions"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json: "{{ offlineLMRAData }}"
+          capture:
+            - json: "$.id"
+              as: "sessionId"
+          expect:
+            - statusCode: 201
+      - think: 1
+      - post:
+          url: "/lmra-sessions/{{ sessionId }}/complete"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            signature: "LoadTestWorker"
+            offlineCreated: true
+            syncedAt: "{{ $timestamp }}"
+          expect:
+            - statusCode: 200

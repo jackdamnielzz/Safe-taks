@@ -1,0 +1,253 @@
+config:
+  target: "{{ $processEnvironment.API_BASE_URL }}"
+  phases:
+    - duration: 60
+      arrivalRate: 3
+      name: "Warm up - TRA creation"
+    - duration: 180
+      arrivalRate: 8
+      name: "Sustained load - TRA operations"
+    - duration: 60
+      arrivalRate: 15
+      name: "Peak load - Multiple TRAs"
+  processor: "../scripts/tra-processor.js"
+  variables:
+    orgId: "{{ $processEnvironment.TEST_ORG_ID }}"
+  plugins:
+    expect: {}
+    metrics-by-endpoint:
+      stripQueryString: true
+  ensure:
+    maxErrorRate: 2  # Max 2% error rate for complex operations
+    p95: 1000        # 95th percentile < 1s for TRA operations
+    p99: 2000        # 99th percentile < 2s
+
+scenarios:
+  - name: "Create TRA from Scratch"
+    weight: 3
+    flow:
+      - function: "generateAuthToken"
+      - post:
+          url: "/tras"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+            Content-Type: "application/json"
+          json:
+            title: "Load Test TRA {{ $randomNumber(1, 100000) }}"
+            description: "Automated load testing TRA for performance validation"
+            projectId: "{{ projectId }}"
+            organizationId: "{{ orgId }}"
+            status: "draft"
+            taskSteps:
+              - stepNumber: 1
+                description: "Prepare work area"
+                hazards:
+                  - hazardId: "falling_objects"
+                    description: "Risk of falling objects"
+                    probability: 3
+                    exposure: 6
+                    consequence: 7
+                    riskScore: 126
+                    riskLevel: "high"
+                    controlMeasures:
+                      - description: "Use hard hat"
+                        type: "ppe"
+                        effectiveness: "high"
+                        responsible: "field_worker"
+              - stepNumber: 2
+                description: "Execute work"
+                hazards:
+                  - hazardId: "manual_handling"
+                    description: "Heavy lifting required"
+                    probability: 6
+                    exposure: 6
+                    consequence: 3
+                    riskScore: 108
+                    riskLevel: "medium"
+                    controlMeasures:
+                      - description: "Use lifting equipment"
+                        type: "engineering"
+                        effectiveness: "high"
+                        responsible: "supervisor"
+          capture:
+            - json: "$.id"
+              as: "traId"
+            - json: "$.status"
+              as: "traStatus"
+          expect:
+            - statusCode: 201
+            - contentType: json
+            - hasProperty: id
+      - think: 2
+      - get:
+          url: "/tras/{{ traId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - contentType: json
+
+  - name: "Create TRA from Template"
+    weight: 5
+    flow:
+      - function: "generateAuthToken"
+      - get:
+          url: "/templates"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            limit: 10
+            isActive: true
+          capture:
+            - json: "$[0].id"
+              as: "templateId"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - post:
+          url: "/tras"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            title: "TRA from Template {{ $randomNumber(1, 100000) }}"
+            templateId: "{{ templateId }}"
+            projectId: "{{ projectId }}"
+            organizationId: "{{ orgId }}"
+            status: "draft"
+          capture:
+            - json: "$.id"
+              as: "traId"
+          expect:
+            - statusCode: 201
+      - think: 3
+      - patch:
+          url: "/tras/{{ traId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            description: "Customized from template"
+            status: "draft"
+          expect:
+            - statusCode: 200
+
+  - name: "TRA List and Filter"
+    weight: 4
+    flow:
+      - function: "generateAuthToken"
+      - get:
+          url: "/tras"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            limit: 20
+            sortBy: "createdAt"
+            sortOrder: "desc"
+          expect:
+            - statusCode: 200
+            - contentType: json
+      - think: 1
+      - get:
+          url: "/tras"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            status: "draft,pending_approval"
+            overallRiskLevel: "high,very_high"
+            limit: 10
+          expect:
+            - statusCode: 200
+
+  - name: "TRA Search"
+    weight: 2
+    flow:
+      - function: "generateAuthToken"
+      - get:
+          url: "/tras"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          qs:
+            search: "electrical"
+            limit: 15
+          expect:
+            - statusCode: 200
+      - think: 2
+
+  - name: "TRA Approval Workflow"
+    weight: 3
+    flow:
+      - function: "generateAuthToken"
+      - function: "createDraftTRA"
+      - post:
+          url: "/tras/{{ traId }}/submit"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      - think: 2
+      - post:
+          url: "/tras/{{ traId }}/approve"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            comments: "Approved via load test"
+            signature: "LoadTestApprover"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/tras/{{ traId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+            - json: "$.status"
+              value: "approved"
+
+  - name: "TRA Comments and Collaboration"
+    weight: 2
+    flow:
+      - function: "generateAuthToken"
+      - function: "createDraftTRA"
+      - post:
+          url: "/tras/{{ traId }}/comments"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            content: "Load test comment {{ $randomNumber(1, 1000) }}"
+            section: "taskSteps"
+          capture:
+            - json: "$.id"
+              as: "commentId"
+          expect:
+            - statusCode: 201
+      - think: 1
+      - get:
+          url: "/tras/{{ traId }}/comments"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          expect:
+            - statusCode: 200
+      - think: 1
+      - patch:
+          url: "/tras/{{ traId }}/comments/{{ commentId }}"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            resolved: true
+          expect:
+            - statusCode: 200
+
+  - name: "Bulk TRA Operations"
+    weight: 1
+    flow:
+      - function: "generateAuthToken"
+      - function: "createMultipleTRAs"
+      - post:
+          url: "/tras"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+          json:
+            action: "bulk"
+            operation: "archive"
+            traIds: "{{ traIds }}"
+          expect:
+            - statusCode: 200

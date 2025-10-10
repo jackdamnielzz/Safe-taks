@@ -65,20 +65,24 @@ Deze documentatie bevat alle handleidingen die nodig zijn voor het effectief geb
 - Unit testing guide (basis)
 - Firebase emulator testing (basis)
 - Authentication testing (compleet)
+- Monitoring & logging guide (complete)
+- Deployment guide (basic)
+- Performance guide (basic)
+- Troubleshooting guide (basic)
 
-### 🚧 In Ontwikkeling
+### 🚧 In Ontwikkeling / Review
 - Safety manager handleiding
 - Supervisor handleiding
 - Field worker handleiding
 - API endpoints guide
 - Database management guide
+- Admin data-manipulatie guide (in review)
 
-### 📋 Gepland
-- E2E testing guide
-- Deployment guide
-- Monitoring guide
-- Performance guide
-- Troubleshooting guide
+### 📋 Gepland / Next steps
+- Final Review & QA (link-check, spell-check, stakeholder review)
+- Add diagrams and screenshots to `docs/images/`
+- Publish documentation site (generate static site / configure hosting)
+- Prepare release PR and notify stakeholders
 
 ## 🔄 Bijdragen aan Documentatie
 
@@ -101,3 +105,19 @@ Voor vragen over deze documentatie of de applicatie:
 ---
 
 **Laatste Update**: Deze documentatie wordt regelmatig bijgewerkt. Check de datum bovenaan voor de laatste versie.
+## Documentation status (auto-updated)
+
+Completed highlights:
+- Monitoring & logging guide: [`deployment/02-monitoring-guide.md`](deployment/02-monitoring-guide.md) — Completed
+- Runbooks added:
+  - [`runbooks/top-5-incidents.md`](runbooks/top-5-incidents.md)
+  - [`runbooks/health-endpoint-unhealthy.md`](runbooks/health-endpoint-unhealthy.md)
+  - [`runbooks/high-error-rate.md`](runbooks/high-error-rate.md)
+  - [`runbooks/firestore-permission-errors.md`](runbooks/firestore-permission-errors.md)
+
+Next actions:
+- Final Review & QA
+- Add diagrams to `docs/images/`
+- Publish documentation site
+
+(Entry added by Roo — 2025-09-30)
