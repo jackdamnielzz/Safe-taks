@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Joyride, { CallBackProps, STATUS, EVENTS, ACTIONS } from "react-joyride";
+import Tour from "reactour";
 import { useProductTour } from "../../hooks/useProductTour";
 
 // Dutch translations for the tour
@@ -173,31 +173,32 @@ export function ProductTour() {
     skip: tourButtons.skip,
   };
 
+  // Map Joyride-style steps to Reactour steps
+  const reactourSteps = enhancedSteps.map((s) => ({
+    selector: s.target,
+    content: (
+      <div>
+        <div style={joyrideStyles.tooltipTitle as React.CSSProperties}>{s.title}</div>
+        <div style={joyrideStyles.tooltipContent as React.CSSProperties}>{s.content}</div>
+      </div>
+    ),
+    // Reactour doesn't use placement; keep spotlight padding via styles if needed
+  }));
+
   return (
-    <Joyride
-      steps={enhancedSteps}
-      run={tourState.run}
-      stepIndex={tourState.stepIndex}
-      callback={handleJoyrideCallback}
-      continuous={true}
-      showProgress={true}
-      showSkipButton={true}
-      spotlightClicks={false}
-      disableOverlayClose={false}
-      disableScrollParentFix={false}
-      hideCloseButton={false}
-      scrollToFirstStep={true}
-      scrollOffset={120}
-      styles={joyrideStyles}
-      locale={locale}
-      floaterProps={{
-        disableAnimation: false,
-        styles: {
-          floater: {
-            filter: "drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1))",
-          },
-        },
+    <Tour
+      steps={reactourSteps}
+      isOpen={tourState.run}
+      onRequestClose={() =>
+        // reuse existing handler: mark as skipped
+        handleJoyrideCallback({ status: "skipped", type: "tour:close" })
+      }
+      getCurrentStep={(i: number) => {
+        /* keep sync if needed */ return;
       }}
+      rounded={8}
+      maskClassName="reactour-mask"
+      className="reactour-tooltip"
     />
   );
 }

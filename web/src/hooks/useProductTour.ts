@@ -1,7 +1,22 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Step } from "react-joyride";
+
+/**
+ * Local Step type (replaces dependency on react-joyride types).
+ * Kept permissive to match legacy shape used in the project.
+ */
+export interface Step {
+  target: string;
+  content?: any;
+  placement?: string;
+  disableBeacon?: boolean;
+  hideCloseButton?: boolean;
+  hideFooter?: boolean;
+  spotlightPadding?: number;
+  styles?: Record<string, any>;
+  [key: string]: any;
+}
 
 // Local storage keys for tour state
 const TOUR_COMPLETED_KEY = "safework-pro-tour-completed";

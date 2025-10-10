@@ -54,7 +54,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.63.0",
-    "react-joyride": "^2.9.3",
+    "reactour": "^1.19.4",
     "recharts": "^3.2.1",
     "resend": "^6.1.2",
     "stripe": "^18.5.0",
