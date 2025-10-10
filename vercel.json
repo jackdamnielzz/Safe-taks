@@ -12,7 +12,7 @@
   ],
   "buildCommand": "cd web && npm run build",
   "devCommand": "cd web && npm run dev",
-  "installCommand": "npm install --legacy-peer-deps --force",
+  "installCommand": "cd web && npm install --legacy-peer-deps --force",
   "framework": "nextjs",
   "outputDirectory": "web/.next"
 }
