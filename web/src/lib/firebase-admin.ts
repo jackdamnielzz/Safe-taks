@@ -76,7 +76,24 @@ function initializeFirebaseAdmin() {
 }
 
 // Initialize on import
-initializeFirebaseAdmin();
+// Only initialize automatically when we have credentials or are in local development.
+// This avoids attempting to initialize Firebase Admin during Vercel preview builds
+// where service account credentials are often not available and cause build failures.
+if (
+  process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
+  (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) ||
+  process.env.NODE_ENV === "development"
+) {
+  initializeFirebaseAdmin();
+} else {
+  // Skip automatic initialization in CI/builds without credentials.
+  // Individual runtime codepaths can still call initializeFirebaseAdmin() lazily if needed.
+  // Log at debug level so it's visible in build logs for diagnosis.
+  // eslint-disable-next-line no-console
+  console.warn(
+    "Skipping Firebase Admin initialization: no service credentials found. This is expected in preview/build environments."
+  );
+}
 
 /**
  * Firebase Admin Auth instance for server-side authentication
