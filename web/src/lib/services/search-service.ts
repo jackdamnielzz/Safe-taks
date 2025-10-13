@@ -21,12 +21,10 @@ import {
   where,
   orderBy,
   limit,
-  startAfter,
   getDocs,
   QueryDocumentSnapshot,
   QueryConstraint,
   Timestamp,
-  DocumentData,
   getFirestore,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -77,14 +75,14 @@ export interface SearchOptions {
   cursor?: QueryDocumentSnapshot;
 }
 
-export interface SearchResult<T = any> {
+export interface SearchResult<T = unknown> {
   id: string;
   data: T;
   relevanceScore: number;
   matchedFields: string[];
 }
 
-export interface SearchResponse<T = any> {
+export interface SearchResponse<T = unknown> {
   results: SearchResult<T>[];
   totalCount: number;
   hasMore: boolean;
@@ -305,7 +303,7 @@ export class FirebaseSearchService {
       const cacheKey = this.generateCacheKey(options);
       const cached = this.searchCache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < cached.ttl) {
-        console.log(`🔍 Search cache hit for: ${options.entityType}`);
+        console.warn(`🔍 Search cache hit for: ${options.entityType}`);
         return cached.results as SearchResponse<T>;
       }
 
@@ -315,7 +313,7 @@ export class FirebaseSearchService {
         options
       );
 
-      console.log(`🔍 Executing ${options.entityType} search query...`);
+      console.warn(`🔍 Executing ${options.entityType} search query...`);
       const querySnapshot = await getDocs(firestoreQuery);
 
       // Process results
@@ -380,7 +378,7 @@ export class FirebaseSearchService {
       });
 
       const duration = Date.now() - startTime;
-      console.log(`✅ Search completed: ${results.length} results in ${duration}ms`);
+      console.warn(`✅ Search completed: ${results.length} results in ${duration}ms`);
 
       return response;
     } catch (error) {

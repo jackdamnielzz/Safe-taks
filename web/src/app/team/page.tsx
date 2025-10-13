@@ -23,28 +23,28 @@ interface TeamMember {
 
 const roleConfig = {
   admin: {
-    label: 'Administrator',
-    color: 'bg-red-100 text-red-800',
+    label: "Administrator",
+    color: "bg-red-100 text-red-800",
     icon: Shield,
-    description: 'Full system access and organization management'
+    description: "Full system access and organization management"
   },
   safety_manager: {
-    label: 'Safety Manager',
-    color: 'bg-blue-100 text-blue-800',
+    label: "Safety Manager",
+    color: "bg-blue-100 text-blue-800",
     icon: Shield,
-    description: 'Safety protocols, approvals, and compliance oversight'
+    description: "Safety protocols, approvals, and compliance oversight"
   },
   supervisor: {
-    label: 'Supervisor',
-    color: 'bg-green-100 text-green-800',
+    label: "Supervisor",
+    color: "bg-green-100 text-green-800",
     icon: Users,
-    description: 'Team coordination and operational management'
+    description: "Team coordination and operational management"
   },
   field_worker: {
-    label: 'Field Worker',
-    color: 'bg-gray-100 text-gray-800',
+    label: "Field Worker",
+    color: "bg-gray-100 text-gray-800",
     icon: Users,
-    description: 'Safety assessments and fieldwork execution'
+    description: "Safety assessments and fieldwork execution"
   }
 };
 
@@ -55,75 +55,47 @@ export default function TeamPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
 
   useEffect(() => {
-    console.log('🔄 Team page: useEffect triggered');
-    console.log('🔍 Team page: userProfile:', userProfile);
-    console.log('🔍 Team page: user:', user);
-    console.log('🔍 Team page: authLoading:', authLoading);
-
     // Wait for authentication to load first
     if (authLoading) {
-      console.log('🔄 Team page: Waiting for authentication to load...');
       return;
     }
 
     // Wait for user profile to be loaded
     if (!userProfile) {
-      console.log('🔄 Team page: Waiting for user profile...');
       return;
     }
 
     if (!userProfile.organizationId) {
-      console.log('⚠️ Team page: No organization ID found in user profile');
-      console.log('🔍 Team page: userProfile details:', {
-        uid: userProfile.uid,
-        email: userProfile.email,
-        role: userProfile.role,
-        organizationId: userProfile.organizationId,
-        profileComplete: userProfile.profileComplete
-      });
       setLoading(false);
       return;
     }
 
-    console.log('🔍 Team page: Loading team members for organization:', userProfile.organizationId);
-
     const membersQuery = query(
-      collection(db, 'organizations', userProfile.organizationId, 'users'),
-      where('emailVerified', '==', true)
+      collection(db, "organizations", userProfile.organizationId, "users"),
+      where("emailVerified", "==", true)
     );
-
-    console.log('🔍 Team page: Executing Firestore query...');
 
     const unsubscribe = onSnapshot(
       membersQuery,
       (snapshot) => {
-        console.log('📥 Team page: Received team members:', snapshot.docs.length);
         const members = snapshot.docs.map(doc => {
           const data = doc.data();
-          console.log('👤 Team member:', data.firstName, data.lastName, data.role);
           return {
             uid: doc.id,
             ...data
           };
         }) as TeamMember[];
 
-        console.log('✅ Team page: Setting team members:', members.length);
         setTeamMembers(members);
         setLoading(false);
       },
       (error) => {
-        console.error('❌ Team page: Error loading team members:', error);
-        console.error('❌ Team page: Error details:', {
-          message: error.message,
-          code: error.code,
-          stack: error.stack
-        });
+        console.error("❌ Team page: Error loading team members:", error);
         setLoading(false);
       }
     );
 
     return () => {
-      console.log('🔄 Team page: Cleaning up Firestore listener');
       unsubscribe();
     };
   }, [userProfile]);

@@ -5,11 +5,11 @@
  * and enforcing tier-based limitations in the UI.
  */
 
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { getFirestore, doc, onSnapshot } from 'firebase/firestore';
-import type { Organization, SubscriptionTier } from '../types/organization';
+import React, { useState, useEffect } from "react";
+import { getFirestore, doc, onSnapshot } from "firebase/firestore";
+import type { Organization, SubscriptionTier } from "../types/organization";
 import { 
   isFeatureEnabled, 
   getEnabledFeatures, 
@@ -117,7 +117,7 @@ export function useSubscriptionTier(
     }
 
     const db = getFirestore();
-    const orgRef = doc(db, 'organizations', organizationId);
+    const orgRef = doc(db, "organizations", organizationId);
 
     const unsubscribe = onSnapshot(orgRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -166,19 +166,19 @@ export function FeatureGate({
  */
 export function getFeatureDisplayName(feature: FeatureName): string {
   const names: Record<FeatureName, string> = {
-    createTRA: 'Create TRAs',
-    executeLMRA: 'Execute LMRAs',
-    basicReports: 'Basic Reports',
-    advancedReports: 'Advanced Reports',
-    customBranding: 'Custom Branding',
-    apiAccess: 'API Access',
-    ssoIntegration: 'SSO Integration',
-    prioritySupport: 'Priority Support',
-    auditLogs: 'Audit Logs',
-    customWorkflows: 'Custom Workflows',
-    bulkOperations: 'Bulk Operations',
-    dataExport: 'Data Export',
-    webhooks: 'Webhooks',
+    createTRA: "Create TRAs",
+    executeLMRA: "Execute LMRAs",
+    basicReports: "Basic Reports",
+    advancedReports: "Advanced Reports",
+    customBranding: "Custom Branding",
+    apiAccess: "API Access",
+    ssoIntegration: "SSO Integration",
+    prioritySupport: "Priority Support",
+    auditLogs: "Audit Logs",
+    customWorkflows: "Custom Workflows",
+    bulkOperations: "Bulk Operations",
+    dataExport: "Data Export",
+    webhooks: "Webhooks",
   };
   return names[feature];
 }
@@ -188,10 +188,10 @@ export function getFeatureDisplayName(feature: FeatureName): string {
  */
 export function getTierDisplayName(tier: SubscriptionTier): string {
   const names: Record<SubscriptionTier, string> = {
-    trial: 'Trial',
-    starter: 'Starter',
-    professional: 'Professional',
-    enterprise: 'Enterprise',
+    trial: "Trial",
+    starter: "Starter",
+    professional: "Professional",
+    enterprise: "Enterprise",
   };
   return names[tier];
 }

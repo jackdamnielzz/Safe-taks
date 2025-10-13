@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Alert } from '@/components/ui/Alert';
+import React, { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Alert } from "@/components/ui/Alert";
 import {
   CreditCard,
   TrendingUp,
@@ -17,13 +17,13 @@ import {
   Users,
   FileText,
   Activity
-} from 'lucide-react';
+} from "lucide-react";
 
 // Types
 interface Subscription {
   id: string;
-  plan: 'starter' | 'professional' | 'enterprise';
-  status: 'active' | 'past_due' | 'cancelled' | 'trial';
+  plan: "starter" | "professional" | "enterprise";
+  status: "active" | "past_due" | "cancelled" | "trial";
   current_period_start: string;
   current_period_end: string;
   cancel_at_period_end: boolean;
@@ -42,14 +42,14 @@ interface PaymentHistory {
   id: string;
   date: string;
   amount: number;
-  status: 'succeeded' | 'pending' | 'failed';
+  status: "succeeded" | "pending" | "failed";
   description: string;
   invoice_url?: string;
 }
 
 interface PaymentMethod {
   id: string;
-  type: 'card' | 'sepa_debit';
+  type: "card" | "sepa_debit";
   last4: string;
   brand: string;
   exp_month: number;
@@ -59,13 +59,13 @@ interface PaymentMethod {
 
 // Mock data - replace with real API calls
 const mockSubscription: Subscription = {
-  id: 'sub_1234567890',
-  plan: 'professional',
-  status: 'active',
-  current_period_start: '2025-10-01',
-  current_period_end: '2025-11-01',
+  id: "sub_1234567890",
+  plan: "professional",
+  status: "active",
+  current_period_start: "2025-10-01",
+  current_period_end: "2025-11-01",
   cancel_at_period_end: false,
-  trial_end: '2025-10-15'
+  trial_end: "2025-10-15"
 };
 
 const mockUsageStats: UsageStats = {
@@ -78,36 +78,36 @@ const mockUsageStats: UsageStats = {
 
 const mockPaymentHistory: PaymentHistory[] = [
   {
-    id: 'pi_1234567890',
-    date: '2025-10-01',
+    id: "pi_1234567890",
+    date: "2025-10-01",
     amount: 149,
-    status: 'succeeded',
-    description: 'SafeWork Pro Professional - Monthly',
-    invoice_url: '#'
+    status: "succeeded",
+    description: "SafeWork Pro Professional - Monthly",
+    invoice_url: "#"
   },
   {
-    id: 'pi_1234567891',
-    date: '2025-09-01',
+    id: "pi_1234567891",
+    date: "2025-09-01",
     amount: 149,
-    status: 'succeeded',
-    description: 'SafeWork Pro Professional - Monthly',
-    invoice_url: '#'
+    status: "succeeded",
+    description: "SafeWork Pro Professional - Monthly",
+    invoice_url: "#"
   },
   {
-    id: 'pi_1234567892',
-    date: '2025-08-01',
+    id: "pi_1234567892",
+    date: "2025-08-01",
     amount: 149,
-    status: 'succeeded',
-    description: 'SafeWork Pro Professional - Monthly',
-    invoice_url: '#'
+    status: "succeeded",
+    description: "SafeWork Pro Professional - Monthly",
+    invoice_url: "#"
   }
 ];
 
 const mockPaymentMethod: PaymentMethod = {
-  id: 'pm_1234567890',
-  type: 'card',
-  last4: '4242',
-  brand: 'visa',
+  id: "pm_1234567890",
+  type: "card",
+  last4: "4242",
+  brand: "visa",
   exp_month: 12,
   exp_year: 2026,
   is_default: true
@@ -116,19 +116,19 @@ const mockPaymentMethod: PaymentMethod = {
 // Plan details - Aligned with documented pricing strategy
 const plans = {
   starter: {
-    name: 'Starter',
+    name: "Starter",
     price: 49,
-    features: ['5 gebruikers', '50 TRAs', '100 LMRAs', 'Basis rapportages', 'Email ondersteuning']
+    features: ["5 gebruikers", "50 TRAs", "100 LMRAs", "Basis rapportages", "Email ondersteuning"]
   },
   professional: {
-    name: 'Professional',
+    name: "Professional",
     price: 149,
-    features: ['25 gebruikers', 'Onbeperkt TRAs/LMRAs', 'Geavanceerde rapportages', 'API toegang', 'SSO integratie', 'Telefoon ondersteuning']
+    features: ["25 gebruikers", "Onbeperkt TRAs/LMRAs", "Geavanceerde rapportages", "API toegang", "SSO integratie", "Telefoon ondersteuning"]
   },
   enterprise: {
-    name: 'Enterprise',
+    name: "Enterprise",
     price: 499,
-    features: ['Onbeperkt gebruikers', 'Alle Professional features', 'Custom workflows', 'Dedicated support', 'SLA garantie', 'White-label optie']
+    features: ["Onbeperkt gebruikers", "Alle Professional features", "Custom workflows", "Dedicated support", "SLA garantie", "White-label optie"]
   }
 };
 
@@ -138,9 +138,9 @@ export default function BillingPage() {
   const [paymentHistory] = useState<PaymentHistory[]>(mockPaymentHistory);
   const [paymentMethod] = useState<PaymentMethod>(mockPaymentMethod);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('usage');
+  const [activeTab, setActiveTab] = useState("usage");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   // Modal states
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false);
