@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Bell, Check, X, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Bell, Check, X, ExternalLink } from "lucide-react";
 
 interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  type: "info" | "success" | "warning" | "error";
   timestamp: Date;
   read: boolean;
   actionUrl?: string;
@@ -21,50 +21,53 @@ export default function NotificationsPage() {
   useEffect(() => {
     const sampleNotifications: Notification[] = [
       {
-        id: '1',
-        title: 'Nieuwe veiligheidsinspectie vereist',
-        message: 'Er staat een periodieke veiligheidsinspectie gepland voor project "Kantoor Renovat"',
-        type: 'warning',
+        id: "1",
+        title: "Nieuwe veiligheidsinspectie vereist",
+        message:
+          'Er staat een periodieke veiligheidsinspectie gepland voor project "Kantoor Renovat"',
+        type: "warning",
         timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
         read: false,
-        actionUrl: '/projects/1'
+        actionUrl: "/projects/1",
       },
       {
-        id: '2',
-        title: 'TRA goedgekeurd',
-        message: 'De Taak Risico Analyse voor "Dakwerken Project" is goedgekeurd door de veiligheidscoördinator',
-        type: 'success',
+        id: "2",
+        title: "TRA goedgekeurd",
+        message:
+          'De Taak Risico Analyse voor "Dakwerken Project" is goedgekeurd door de veiligheidscoördinator',
+        type: "success",
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
         read: false,
-        actionUrl: '/tras/2'
+        actionUrl: "/tras/2",
       },
       {
-        id: '3',
-        title: 'Veiligheidsmelding ontvangen',
-        message: 'Er is een nieuwe veiligheidsmelding ontvangen van veldwerker Jan Smit',
-        type: 'info',
+        id: "3",
+        title: "Veiligheidsmelding ontvangen",
+        message: "Er is een nieuwe veiligheidsmelding ontvangen van veldwerker Jan Smit",
+        type: "info",
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4), // 4 hours ago
         read: true,
-        actionUrl: '/safety-reports/3'
+        actionUrl: "/safety-reports/3",
       },
       {
-        id: '4',
-        title: 'Certificaat verloopt binnenkort',
-        message: 'Het VCA-certificaat van Pieter Jansen verloopt over 14 dagen',
-        type: 'warning',
+        id: "4",
+        title: "Certificaat verloopt binnenkort",
+        message: "Het VCA-certificaat van Pieter Jansen verloopt over 14 dagen",
+        type: "warning",
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
         read: true,
-        actionUrl: '/certificates/4'
+        actionUrl: "/certificates/4",
       },
       {
-        id: '5',
-        title: 'Nieuwe veiligheidsrichtlijn',
-        message: 'Er is een nieuwe veiligheidsrichtlijn gepubliceerd: "Werken op hoogte - Update 2024"',
-        type: 'info',
+        id: "5",
+        title: "Nieuwe veiligheidsrichtlijn",
+        message:
+          'Er is een nieuwe veiligheidsrichtlijn gepubliceerd: "Werken op hoogte - Update 2024"',
+        type: "info",
         timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
         read: true,
-        actionUrl: '/guidelines/5'
-      }
+        actionUrl: "/guidelines/5",
+      },
     ];
 
     setNotifications(sampleNotifications);
@@ -72,21 +75,17 @@ export default function NotificationsPage() {
   }, []);
 
   const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notif =>
-        notif.id === id ? { ...notif, read: true } : notif
-      )
+    setNotifications((prev) =>
+      prev.map((notif) => (notif.id === id ? { ...notif, read: true } : notif))
     );
   };
 
   const dismissNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
+    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notif => ({ ...notif, read: true }))
-    );
+    setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
   };
 
   const clearAllNotifications = () => {
@@ -97,7 +96,7 @@ export default function NotificationsPage() {
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
 
-    if (diffInMinutes < 1) return 'Zojuist';
+    if (diffInMinutes < 1) return "Zojuist";
     if (diffInMinutes < 60) return `${diffInMinutes} minuten geleden`;
 
     const diffInHours = Math.floor(diffInMinutes / 60);
@@ -109,31 +108,31 @@ export default function NotificationsPage() {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'success':
-        return '✓';
-      case 'warning':
-        return '⚠️';
-      case 'error':
-        return '❌';
+      case "success":
+        return "✓";
+      case "warning":
+        return "⚠️";
+      case "error":
+        return "❌";
       default:
-        return 'ℹ️';
+        return "ℹ️";
     }
   };
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'success':
-        return 'border-l-green-500 bg-green-50';
-      case 'warning':
-        return 'border-l-yellow-500 bg-yellow-50';
-      case 'error':
-        return 'border-l-red-500 bg-red-50';
+      case "success":
+        return "border-l-green-500 bg-green-50";
+      case "warning":
+        return "border-l-yellow-500 bg-yellow-50";
+      case "error":
+        return "border-l-red-500 bg-red-50";
       default:
-        return 'border-l-blue-500 bg-blue-50';
+        return "border-l-blue-500 bg-blue-50";
     }
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   if (loading) {
     return (
@@ -157,7 +156,9 @@ export default function NotificationsPage() {
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Meldingen</h1>
                 <p className="text-gray-600">
-                  {unreadCount > 0 ? `${unreadCount} ongelezen melding${unreadCount !== 1 ? 'en' : ''}` : 'Alle meldingen gelezen'}
+                  {unreadCount > 0
+                    ? `${unreadCount} ongelezen melding${unreadCount !== 1 ? "en" : ""}`
+                    : "Alle meldingen gelezen"}
                 </p>
               </div>
             </div>
@@ -197,13 +198,15 @@ export default function NotificationsPage() {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className={`border-l-4 p-4 rounded-r-lg shadow-sm ${getNotificationColor(notification.type)} ${!notification.read ? 'ring-2 ring-blue-200' : ''}`}
+                className={`border-l-4 p-4 rounded-r-lg shadow-sm ${getNotificationColor(notification.type)} ${!notification.read ? "ring-2 ring-blue-200" : ""}`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center">
                       <span className="text-lg mr-2">{getNotificationIcon(notification.type)}</span>
-                      <h3 className={`text-sm font-medium ${!notification.read ? 'text-gray-900' : 'text-gray-700'}`}>
+                      <h3
+                        className={`text-sm font-medium ${!notification.read ? "text-gray-900" : "text-gray-700"}`}
+                      >
                         {notification.title}
                       </h3>
                       {!notification.read && (
@@ -212,7 +215,9 @@ export default function NotificationsPage() {
                         </span>
                       )}
                     </div>
-                    <p className={`mt-1 text-sm ${!notification.read ? 'text-gray-700' : 'text-gray-600'}`}>
+                    <p
+                      className={`mt-1 text-sm ${!notification.read ? "text-gray-700" : "text-gray-600"}`}
+                    >
                       {notification.message}
                     </p>
                     <p className="mt-2 text-xs text-gray-500">
@@ -223,7 +228,9 @@ export default function NotificationsPage() {
                   <div className="flex items-center space-x-2 ml-4">
                     {notification.actionUrl && (
                       <button
-                        onClick={() => notification.actionUrl && (window.location.href = notification.actionUrl)}
+                        onClick={() =>
+                          notification.actionUrl && (window.location.href = notification.actionUrl)
+                        }
                         className="p-1 text-gray-400 hover:text-blue-600"
                         title="Bekijk details"
                       >

@@ -18,11 +18,14 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     // For development/demo without Firebase credentials, return mock success
-    if (process.env.NODE_ENV === 'development') {
-      return NextResponse.json({
-        id: `draft_${Date.now()}`,
-        status: "ok"
-      }, { status: 200 });
+    if (process.env.NODE_ENV === "development") {
+      return NextResponse.json(
+        {
+          id: `draft_${Date.now()}`,
+          status: "ok",
+        },
+        { status: 200 }
+      );
     }
 
     const draft = {
@@ -42,10 +45,13 @@ export async function POST(request: Request) {
     } catch (firestoreError) {
       console.warn("Firestore connection issue, returning mock success:", firestoreError);
       // Return mock success for development/demo purposes
-      return NextResponse.json({
-        id: `draft_${Date.now()}`,
-        status: "ok"
-      }, { status: 200 });
+      return NextResponse.json(
+        {
+          id: `draft_${Date.now()}`,
+          status: "ok",
+        },
+        { status: 200 }
+      );
     }
   } catch (err) {
     console.error("POST /api/tras/draft error:", err);

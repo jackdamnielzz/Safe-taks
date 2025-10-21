@@ -13,7 +13,7 @@ import { writeAuditLog } from "@/lib/audit";
 
 export async function POST(request: Request, { params }: { params: Promise<{ traId: string }> }) {
   const { traId } = await params;
-  
+
   // Basic server-side auth helper (uses TEST_UID/TEST_ORG in emulator/test)
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -39,9 +39,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tra
 
   const now = new Date();
   const commentId = nanoid();
-  const docRef = db
-    .collection(`organizations/${orgId}/tras/${traId}/comments`)
-    .doc(commentId);
+  const docRef = db.collection(`organizations/${orgId}/tras/${traId}/comments`).doc(commentId);
   const payload = {
     id: commentId,
     traId: traId,
@@ -71,7 +69,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tra
 
 export async function GET(request: Request, { params }: { params: Promise<{ traId: string }> }) {
   const { traId } = await params;
-  
+
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const orgId = auth.orgId;

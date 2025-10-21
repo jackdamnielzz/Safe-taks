@@ -15,7 +15,7 @@ let getStorage: any = null;
 let connectStorageEmulator: any = null;
 
 // Try to require emulator connector helpers where available (avoid static imports)
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
 try {
   const authModule = require("firebase/auth");
   connectAuthEmulator = authModule.connectAuthEmulator || null;
@@ -23,7 +23,6 @@ try {
   connectAuthEmulator = null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 try {
   const firestoreModule = require("firebase/firestore");
   connectFirestoreEmulator = firestoreModule.connectFirestoreEmulator || null;
@@ -31,7 +30,6 @@ try {
   connectFirestoreEmulator = null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 try {
   const storageModule = require("firebase/storage");
   getStorage = storageModule.getStorage || null;
@@ -46,7 +44,7 @@ declare const global: any;
 if (typeof global !== "undefined") {
   if (typeof global.Request === "undefined") {
     // Minimal Request-like shim
-    // eslint-disable-next-line no-global-assign
+
     global.Request = class {
       constructor(input: any, init?: any) {
         return { url: typeof input === "string" ? input : (input && input.url) || "", ...init };
@@ -117,7 +115,6 @@ export function initializeEmulatorApp(): { auth: any; firestore: any; storage: a
  * - Falls back to deleting all documents in known collections (best-effort, safe for tests).
  */
 export async function clearEmulatorData(): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   try {
     const r = require("@firebase/rules-unit-testing");
     if (r && typeof r.clearFirestoreData === "function") {
@@ -128,7 +125,6 @@ export async function clearEmulatorData(): Promise<void> {
     // ignore - not available in this environment
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   try {
     const { getFirestore, collection, getDocs, deleteDoc, doc } = require("firebase/firestore");
     const db = getFirestore();
@@ -138,7 +134,7 @@ export async function clearEmulatorData(): Promise<void> {
     for (const col of topCollections) {
       try {
         const q = collection(db, col);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
         const snaps = await getDocs(q);
         for (const s of snaps.docs || []) {
           await deleteDoc(doc(db, `${col}/${s.id}`));

@@ -315,7 +315,6 @@ export abstract class BaseERPConnector implements ERPConnector {
           // Apply transformation if specified
           if (mapping.transformation?.transformFunction) {
             try {
-              // eslint-disable-next-line no-new-func
               const transformFn = new Function(
                 "value",
                 "record",

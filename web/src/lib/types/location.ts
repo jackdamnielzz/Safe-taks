@@ -166,7 +166,7 @@ export function calculateVerificationScore(
 
   // Age penalty (0-30 points)
   const ageMinutes = age / (1000 * 60);
-  let ageScore = Math.max(0, 30 - ageMinutes);
+  const ageScore = Math.max(0, 30 - ageMinutes);
 
   return Math.round(accuracyScore + ageScore);
 }

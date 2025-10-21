@@ -165,24 +165,22 @@ export default function TraWizard({ initialData }: { initialData?: WizardForm })
         )}
 
         {stepIndex === 2 && (
-          <TeamMemberSelector
-            control={control}
-            setValue={setValue}
-            getValues={getValues}
-          />
+          <TeamMemberSelector control={control} setValue={setValue} getValues={getValues} />
         )}
 
         {stepIndex === 3 && (
           <div className="space-y-6">
             <h3 className="text-lg font-semibold mb-4">Controleer je TRA</h3>
-            
+
             {/* Basic Info */}
             <div className="bg-slate-50 p-4 rounded-lg">
               <h4 className="font-medium text-slate-700 mb-2">Basis Informatie</h4>
               <dl className="space-y-2">
                 <div>
                   <dt className="text-sm text-slate-600">Titel:</dt>
-                  <dd className="font-medium">{getValues().title || <span className="text-slate-400">Niet ingevuld</span>}</dd>
+                  <dd className="font-medium">
+                    {getValues().title || <span className="text-slate-400">Niet ingevuld</span>}
+                  </dd>
                 </div>
                 {getValues().description && (
                   <div>
@@ -200,7 +198,7 @@ export default function TraWizard({ initialData }: { initialData?: WizardForm })
                 const steps = getValues().taskSteps;
                 return steps?.length ? (
                   <p className="text-sm">
-                    {steps.length} {steps.length === 1 ? 'stap' : 'stappen'} toegevoegd
+                    {steps.length} {steps.length === 1 ? "stap" : "stappen"} toegevoegd
                   </p>
                 ) : (
                   <p className="text-sm text-slate-400">Geen taakstappen toegevoegd</p>
@@ -223,13 +221,17 @@ export default function TraWizard({ initialData }: { initialData?: WizardForm })
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-amber-600">⚠️ Voeg minimaal 1 teamlid toe om de TRA in te dienen</p>
+                  <p className="text-sm text-amber-600">
+                    ⚠️ Voeg minimaal 1 teamlid toe om de TRA in te dienen
+                  </p>
                 );
               })()}
             </div>
 
             {/* Validation Warning */}
-            {(!getValues().title || !getValues().teamMembers || getValues().teamMembers?.length === 0) && (
+            {(!getValues().title ||
+              !getValues().teamMembers ||
+              getValues().teamMembers?.length === 0) && (
               <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg">
                 <p className="text-sm text-amber-800">
                   <strong>Let op:</strong> Vul alle verplichte velden in voordat je de TRA aanmaakt:

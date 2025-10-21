@@ -111,7 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (currentUser) {
         // Get the user's ID token to access custom claims
         const idTokenResult = await currentUser.getIdTokenResult();
-        const orgId = idTokenResult.claims['orgId'] as string;
+        const orgId = idTokenResult.claims["orgId"] as string;
 
         if (orgId) {
           // Access user profile under their organization
@@ -162,7 +162,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const currentUser = auth.currentUser;
       if (currentUser) {
         const idTokenResult = await currentUser.getIdTokenResult();
-        const orgId = idTokenResult.claims['orgId'] as string;
+        const orgId = idTokenResult.claims["orgId"] as string;
 
         if (orgId) {
           await setDoc(doc(db, "organizations", orgId, "users", user.uid), profile);
@@ -184,11 +184,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const currentUser = auth.currentUser;
       if (currentUser) {
         const idTokenResult = await currentUser.getIdTokenResult();
-        const orgId = idTokenResult.claims['orgId'] as string;
+        const orgId = idTokenResult.claims["orgId"] as string;
 
         if (orgId) {
           // Update in organization-specific location
-          await setDoc(doc(db, "organizations", orgId, "users", uid), { lastLoginAt: new Date() }, { merge: true });
+          await setDoc(
+            doc(db, "organizations", orgId, "users", uid),
+            { lastLoginAt: new Date() },
+            { merge: true }
+          );
           return;
         }
       }
@@ -336,11 +340,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const currentUser = auth.currentUser;
       if (currentUser) {
         const idTokenResult = await currentUser.getIdTokenResult();
-        const orgId = idTokenResult.claims['orgId'] as string;
+        const orgId = idTokenResult.claims["orgId"] as string;
 
         if (orgId) {
           // Update in organization-specific location
-          await setDoc(doc(db, "organizations", orgId, "users", user.uid), updates, { merge: true });
+          await setDoc(doc(db, "organizations", orgId, "users", user.uid), updates, {
+            merge: true,
+          });
           setUserProfile({ ...userProfile, ...updates });
           return;
         }

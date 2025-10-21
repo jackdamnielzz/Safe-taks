@@ -70,11 +70,7 @@ export function TeamMemberSelector({ control, setValue, getValues }: TeamMemberS
             render={({ field }) => (
               <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border rounded bg-slate-50">
                 {(field.value || []).map((email: string) => (
-                  <Badge
-                    key={email}
-                    variant="secondary"
-                    className="flex items-center gap-1"
-                  >
+                  <Badge key={email} variant="secondary" className="flex items-center gap-1">
                     {email}
                     <button
                       type="button"
@@ -114,9 +110,7 @@ export function TeamMemberSelector({ control, setValue, getValues }: TeamMemberS
           </div>
 
           {/* Error message */}
-          {emailError && (
-            <p className="text-sm text-red-600">{emailError}</p>
-          )}
+          {emailError && <p className="text-sm text-red-600">{emailError}</p>}
         </div>
       </FormField>
 

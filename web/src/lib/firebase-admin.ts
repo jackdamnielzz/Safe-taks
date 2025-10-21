@@ -57,7 +57,7 @@ function initializeFirebaseAdmin() {
     } else {
       // Option 3: Development mode (will work in Firebase emulator)
       // During build time without credentials, we suppress warnings
-      if (process.env.NODE_ENV !== 'production' || process.env.VERCEL_ENV === 'production') {
+      if (process.env.NODE_ENV !== "production" || process.env.VERCEL_ENV === "production") {
         console.warn(
           "Firebase Admin: No service account credentials found. Using default credentials."
         );
@@ -65,7 +65,7 @@ function initializeFirebaseAdmin() {
       }
 
       adminApp = initializeApp({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'demo-project',
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "demo-project",
       });
     }
   }
@@ -89,7 +89,7 @@ if (
   // Skip automatic initialization in CI/builds without credentials.
   // Individual runtime codepaths can still call initializeFirebaseAdmin() lazily if needed.
   // Log at debug level so it's visible in build logs for diagnosis.
-  // eslint-disable-next-line no-console
+
   console.warn(
     "Skipping Firebase Admin initialization: no service credentials found. This is expected in preview/build environments."
   );

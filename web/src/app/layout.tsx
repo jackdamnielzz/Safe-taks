@@ -36,7 +36,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 }
 
-
 /* --- Modern Footer --- */
 function Footer() {
   return (

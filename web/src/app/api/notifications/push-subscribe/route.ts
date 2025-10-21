@@ -13,10 +13,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { PushNotificationService } from "@/lib/notifications/push-service";
-import {
-  NotificationSubscription,
-  UpdateNotificationPreferences,
-} from "@/lib/types/notification";
+import { NotificationSubscription, UpdateNotificationPreferences } from "@/lib/types/notification";
 
 // Validation schemas
 const subscriptionSchema = z.object({
@@ -81,12 +78,13 @@ const unsubscribeSchema = z.object({
 
 // Initialize push notification service only if valid VAPID keys are configured
 // Note: In production, these keys MUST come from environment variables
-const VAPID_KEYS = process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY
-  ? {
-      publicKey: process.env.VAPID_PUBLIC_KEY,
-      privateKey: process.env.VAPID_PRIVATE_KEY,
-    }
-  : null;
+const VAPID_KEYS =
+  process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY
+    ? {
+        publicKey: process.env.VAPID_PUBLIC_KEY,
+        privateKey: process.env.VAPID_PRIVATE_KEY,
+      }
+    : null;
 
 const pushService = VAPID_KEYS ? new PushNotificationService(VAPID_KEYS) : null;
 
@@ -99,7 +97,10 @@ export async function POST(request: NextRequest) {
     // Check if push service is configured
     if (!pushService || !VAPID_KEYS) {
       return NextResponse.json(
-        { error: "Push notifications not configured. Please set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY environment variables." },
+        {
+          error:
+            "Push notifications not configured. Please set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY environment variables.",
+        },
         { status: 503 }
       );
     }
@@ -213,10 +214,7 @@ export async function PATCH(request: NextRequest) {
   try {
     // Check if push service is configured
     if (!pushService) {
-      return NextResponse.json(
-        { error: "Push notifications not configured" },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: "Push notifications not configured" }, { status: 503 });
     }
 
     // TODO: Add proper authentication when auth system is implemented
@@ -322,10 +320,7 @@ export async function DELETE(request: NextRequest) {
   try {
     // Check if push service is configured
     if (!pushService) {
-      return NextResponse.json(
-        { error: "Push notifications not configured" },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: "Push notifications not configured" }, { status: 503 });
     }
 
     // TODO: Add proper authentication when auth system is implemented

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -14,7 +14,7 @@ interface TeamMember {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'safety_manager' | 'supervisor' | 'field_worker';
+  role: "admin" | "safety_manager" | "supervisor" | "field_worker";
   createdAt: any;
   lastLoginAt: any;
   emailVerified: boolean;
@@ -26,26 +26,26 @@ const roleConfig = {
     label: "Administrator",
     color: "bg-red-100 text-red-800",
     icon: Shield,
-    description: "Full system access and organization management"
+    description: "Full system access and organization management",
   },
   safety_manager: {
     label: "Safety Manager",
     color: "bg-blue-100 text-blue-800",
     icon: Shield,
-    description: "Safety protocols, approvals, and compliance oversight"
+    description: "Safety protocols, approvals, and compliance oversight",
   },
   supervisor: {
     label: "Supervisor",
     color: "bg-green-100 text-green-800",
     icon: Users,
-    description: "Team coordination and operational management"
+    description: "Team coordination and operational management",
   },
   field_worker: {
     label: "Field Worker",
     color: "bg-gray-100 text-gray-800",
     icon: Users,
-    description: "Safety assessments and fieldwork execution"
-  }
+    description: "Safety assessments and fieldwork execution",
+  },
 };
 
 export default function TeamPage() {
@@ -78,11 +78,11 @@ export default function TeamPage() {
     const unsubscribe = onSnapshot(
       membersQuery,
       (snapshot) => {
-        const members = snapshot.docs.map(doc => {
+        const members = snapshot.docs.map((doc) => {
           const data = doc.data();
           return {
             uid: doc.id,
-            ...data
+            ...data,
           };
         }) as TeamMember[];
 
@@ -102,23 +102,23 @@ export default function TeamPage() {
 
   const handleRoleChange = async (memberId: string, newRole: string) => {
     if (!userProfile?.organizationId) {
-      console.error('❌ No organization ID available for role change');
+      console.error("❌ No organization ID available for role change");
       return;
     }
 
     try {
-      console.log('🔄 Updating role for member:', memberId, 'to:', newRole);
-      await updateDoc(doc(db, 'organizations', userProfile.organizationId, 'users', memberId), {
-        role: newRole
+      console.log("🔄 Updating role for member:", memberId, "to:", newRole);
+      await updateDoc(doc(db, "organizations", userProfile.organizationId, "users", memberId), {
+        role: newRole,
       });
-      console.log('✅ Role updated successfully');
+      console.log("✅ Role updated successfully");
     } catch (error) {
-      console.error('❌ Error updating user role:', error);
+      console.error("❌ Error updating user role:", error);
       // You could add a toast notification here for better user feedback
     }
   };
 
-  const canManageRoles = userProfile?.role === 'admin' || userProfile?.role === 'safety_manager';
+  const canManageRoles = userProfile?.role === "admin" || userProfile?.role === "safety_manager";
 
   if (authLoading || loading) {
     return (
@@ -138,14 +138,10 @@ export default function TeamPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Authenticatie Vereist
-          </h1>
-          <p className="text-gray-600 mb-4">
-            U moet ingelogd zijn om het team te bekijken.
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Authenticatie Vereist</h1>
+          <p className="text-gray-600 mb-4">U moet ingelogd zijn om het team te bekijken.</p>
           <Button
-            onClick={() => window.location.href = '/auth/login'}
+            onClick={() => (window.location.href = "/auth/login")}
             className="bg-orange-600 hover:bg-orange-700"
           >
             Inloggen
@@ -160,17 +156,18 @@ export default function TeamPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Geen Organisatie Gevonden
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Geen Organisatie Gevonden</h1>
           <p className="text-gray-600 mb-4">
             Uw account is niet gekoppeld aan een organisatie. Neem contact op met uw administrator.
           </p>
           <div className="bg-gray-50 p-4 rounded-lg inline-block">
             <p className="text-sm text-gray-600">
-              <strong>Debug Info:</strong><br />
-              User ID: {user?.uid || 'Unknown'}<br />
-              Email: {userProfile.email}<br />
+              <strong>Debug Info:</strong>
+              <br />
+              User ID: {user?.uid || "Unknown"}
+              <br />
+              Email: {userProfile.email}
+              <br />
               Role: {userProfile.role}
             </p>
           </div>
@@ -184,9 +181,7 @@ export default function TeamPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Team Management
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900">Team Management</h1>
             <p className="text-gray-600 mt-2">
               Manage your organization members and their access permissions
             </p>
@@ -206,43 +201,37 @@ export default function TeamPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Total Members
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">Total Members</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">
-              {teamMembers.length}
-            </div>
+            <div className="text-2xl font-bold text-gray-900">{teamMembers.length}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Active Today
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">Active Today</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {teamMembers.filter(member =>
-                member.lastLoginAt &&
-                new Date(member.lastLoginAt.seconds * 1000).toDateString() === new Date().toDateString()
-              ).length}
+              {
+                teamMembers.filter(
+                  (member) =>
+                    member.lastLoginAt &&
+                    new Date(member.lastLoginAt.seconds * 1000).toDateString() ===
+                      new Date().toDateString()
+                ).length
+              }
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
-              Pending Invites
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-600">Pending Invites</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              0
-            </div>
+            <div className="text-2xl font-bold text-orange-600">0</div>
           </CardContent>
         </Card>
       </div>
@@ -268,7 +257,8 @@ export default function TeamPage() {
                   <div className="flex items-center space-x-4">
                     <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
                       <span className="text-orange-600 font-medium">
-                        {member.firstName?.[0]}{member.lastName?.[0]}
+                        {member.firstName?.[0]}
+                        {member.lastName?.[0]}
                       </span>
                     </div>
 
@@ -294,7 +284,10 @@ export default function TeamPage() {
                         </span>
                         <span className="flex items-center">
                           <Calendar className="w-4 h-4 mr-1" />
-                          Joined {member.createdAt?.toDate ? new Date(member.createdAt.toDate()).toLocaleDateString() : 'Unknown'}
+                          Joined{" "}
+                          {member.createdAt?.toDate
+                            ? new Date(member.createdAt.toDate()).toLocaleDateString()
+                            : "Unknown"}
                         </span>
                       </div>
                     </div>
@@ -327,11 +320,10 @@ export default function TeamPage() {
           {teamMembers.length === 0 && (
             <div className="text-center py-12">
               <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Geen teamleden gevonden
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Geen teamleden gevonden</h3>
               <p className="text-gray-600 mb-4">
-                Uw organisatie heeft nog geen teamleden, of er is een probleem met het laden van de gegevens.
+                Uw organisatie heeft nog geen teamleden, of er is een probleem met het laden van de
+                gegevens.
               </p>
               <div className="bg-blue-50 p-4 rounded-lg mb-4 text-left">
                 <p className="text-sm text-blue-800 mb-2">
@@ -362,9 +354,7 @@ export default function TeamPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Invite Team Member
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-900">Invite Team Member</h2>
               <button
                 onClick={() => setShowInviteModal(false)}
                 className="text-gray-400 hover:text-gray-600"
@@ -387,16 +377,12 @@ export default function TeamPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Role
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                   <option value="field_worker">Field Worker</option>
                   <option value="supervisor">Supervisor</option>
                   <option value="safety_manager">Safety Manager</option>
-                  {userProfile?.role === 'admin' && (
-                    <option value="admin">Administrator</option>
-                  )}
+                  {userProfile?.role === "admin" && <option value="admin">Administrator</option>}
                 </select>
               </div>
 
@@ -420,10 +406,7 @@ export default function TeamPage() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 bg-orange-600 hover:bg-orange-700"
-                >
+                <Button type="submit" className="flex-1 bg-orange-600 hover:bg-orange-700">
                   Send Invitation
                 </Button>
               </div>

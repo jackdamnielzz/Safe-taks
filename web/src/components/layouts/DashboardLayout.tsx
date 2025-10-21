@@ -107,7 +107,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
     console.log("🔔 Notification button clicked!", {
       event: e.type,
       target: e.target,
-      currentState: { notificationsOpen, notifications: notifications.length }
+      currentState: { notificationsOpen, notifications: notifications.length },
     });
     setNotificationsOpen(!notificationsOpen);
   };
@@ -116,7 +116,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   useEffect(() => {
     console.log("🔧 DashboardLayout loaded with notification system", {
       notificationsCount: notifications.length,
-      unreadCount: unreadCount
+      unreadCount: unreadCount,
     });
   }, []);
 

@@ -113,7 +113,7 @@ export async function GET(request: Request) {
     }
 
     // For development/demo, return empty results immediately without Firestore
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       return NextResponse.json({
         items: [],
         nextCursor: undefined,
@@ -235,7 +235,7 @@ export async function POST(request: Request) {
       }
 
       // For development/demo, return mock success without Firestore
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         const createdId = `tra_${Date.now()}`;
         return NextResponse.json({ id: createdId, status: "created" }, { status: 201 });
       }

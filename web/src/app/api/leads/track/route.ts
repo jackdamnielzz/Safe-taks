@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { LeadTrackingEvent } from "@/lib/types/lead";
 
 // Mock database for development - replace with real database in production
-let trackingEvents: LeadTrackingEvent[] = [];
+const trackingEvents: LeadTrackingEvent[] = [];
 let nextEventId = 1;
 
 export async function POST(request: NextRequest) {

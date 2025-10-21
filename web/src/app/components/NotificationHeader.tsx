@@ -51,7 +51,7 @@ export function NotificationHeader() {
     console.log("🔔 Notification button clicked!", {
       event: e.type,
       target: e.target,
-      currentState: { notificationsOpen, notifications: notifications.length }
+      currentState: { notificationsOpen, notifications: notifications.length },
     });
     setNotificationsOpen(!notificationsOpen);
   };
@@ -60,7 +60,7 @@ export function NotificationHeader() {
   useEffect(() => {
     console.log("🔧 NotificationHeader loaded with notification system", {
       notificationsCount: notifications.length,
-      unreadCount: notifications.filter(n => !n.read).length
+      unreadCount: notifications.filter((n) => !n.read).length,
     });
   }, []);
 

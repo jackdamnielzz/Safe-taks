@@ -7,7 +7,7 @@ import { writeAuditLog } from "@/lib/audit";
 // POST /api/tras/:traId/submit
 export async function POST(request: Request, { params }: { params: Promise<{ traId: string }> }) {
   const { traId } = await params;
-  
+
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

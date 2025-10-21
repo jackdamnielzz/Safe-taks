@@ -23,25 +23,25 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { Modal } from "@/components/ui/Modal";
 
 interface NotificationSettings {
-   emailNotifications: boolean;
-   pushNotifications: boolean;
-   smsNotifications: boolean;
-   traApprovals: boolean;
-   traRejected: boolean;
-   traOverdue: boolean;
-   lmraAlerts: boolean;
-   lmraStopWork: boolean;
-   lmraCompleted: boolean;
-   systemUpdates: boolean;
-   weeklyReports: boolean;
-   stopWorkAlerts: boolean;
-   safetyIncidents: boolean;
-   equipmentIssues: boolean;
-   weatherAlerts: boolean;
-   quietHoursEnabled: boolean;
-   quietHoursStart: string;
-   quietHoursEnd: string;
- }
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  smsNotifications: boolean;
+  traApprovals: boolean;
+  traRejected: boolean;
+  traOverdue: boolean;
+  lmraAlerts: boolean;
+  lmraStopWork: boolean;
+  lmraCompleted: boolean;
+  systemUpdates: boolean;
+  weeklyReports: boolean;
+  stopWorkAlerts: boolean;
+  safetyIncidents: boolean;
+  equipmentIssues: boolean;
+  weatherAlerts: boolean;
+  quietHoursEnabled: boolean;
+  quietHoursStart: string;
+  quietHoursEnd: string;
+}
 
 interface PrivacySettings {
   dataExportRequested: boolean;
@@ -167,7 +167,7 @@ export default function SettingsPage() {
       });
 
       if (response.ok) {
-        setPrivacy(prev => ({ ...prev, dataExportRequested: true }));
+        setPrivacy((prev) => ({ ...prev, dataExportRequested: true }));
         setShowExportModal(false);
         // Show success message
       }
@@ -205,16 +205,15 @@ export default function SettingsPage() {
     }
   };
 
-  const canManageOrganization = userProfile?.role === "admin" || userProfile?.role === "safety_manager";
+  const canManageOrganization =
+    userProfile?.role === "admin" || userProfile?.role === "safety_manager";
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Instellingen</h1>
-        <p className="text-gray-600">
-          Beheer je profiel, notificaties en privacy-instellingen
-        </p>
+        <p className="text-gray-600">Beheer je profiel, notificaties en privacy-instellingen</p>
       </div>
 
       <div className="space-y-8">
@@ -226,9 +225,7 @@ export default function SettingsPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Voornaam
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Voornaam</label>
                   <input
                     type="text"
                     value={firstName}
@@ -239,9 +236,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Achternaam
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Achternaam</label>
                   <input
                     type="text"
                     value={lastName}
@@ -253,9 +248,7 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  E-mailadres
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">E-mailadres</label>
                 <input
                   type="email"
                   value={email}
@@ -293,9 +286,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Je Rol
-                    </label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Je Rol</label>
                     <Badge
                       className={
                         userProfile?.role === "admin"
@@ -343,10 +334,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.emailNotifications}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        emailNotifications: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          emailNotifications: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -359,10 +352,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.pushNotifications}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        pushNotifications: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          pushNotifications: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -370,15 +365,19 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <label className="font-medium text-gray-900">SMS Notificaties</label>
-                      <p className="text-sm text-gray-600">Ontvang notificaties via SMS (premie functie)</p>
+                      <p className="text-sm text-gray-600">
+                        Ontvang notificaties via SMS (premie functie)
+                      </p>
                     </div>
                     <input
                       type="checkbox"
                       checked={notifications.smsNotifications}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        smsNotifications: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          smsNotifications: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -399,10 +398,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.traApprovals}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        traApprovals: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          traApprovals: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -415,10 +416,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.traRejected}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        traRejected: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          traRejected: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -431,10 +434,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.traOverdue}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        traOverdue: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          traOverdue: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -455,10 +460,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.lmraAlerts}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        lmraAlerts: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          lmraAlerts: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -471,10 +478,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.lmraStopWork}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        lmraStopWork: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          lmraStopWork: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -487,10 +496,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.lmraCompleted}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        lmraCompleted: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          lmraCompleted: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -506,15 +517,19 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <label className="font-medium text-gray-900">Stop Work Alerts</label>
-                      <p className="text-sm text-gray-600">Kritieke stop work notificaties (altijd aanbevolen)</p>
+                      <p className="text-sm text-gray-600">
+                        Kritieke stop work notificaties (altijd aanbevolen)
+                      </p>
                     </div>
                     <input
                       type="checkbox"
                       checked={notifications.stopWorkAlerts}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        stopWorkAlerts: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          stopWorkAlerts: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -522,15 +537,19 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <label className="font-medium text-gray-900">Veiligheidsincidenten</label>
-                      <p className="text-sm text-gray-600">Notificaties bij veiligheidsincidenten</p>
+                      <p className="text-sm text-gray-600">
+                        Notificaties bij veiligheidsincidenten
+                      </p>
                     </div>
                     <input
                       type="checkbox"
                       checked={notifications.safetyIncidents}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        safetyIncidents: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          safetyIncidents: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -543,10 +562,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.equipmentIssues}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        equipmentIssues: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          equipmentIssues: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -554,15 +575,19 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <label className="font-medium text-gray-900">Weer Waarschuwingen</label>
-                      <p className="text-sm text-gray-600">Notificaties bij extreme weercondities</p>
+                      <p className="text-sm text-gray-600">
+                        Notificaties bij extreme weercondities
+                      </p>
                     </div>
                     <input
                       type="checkbox"
                       checked={notifications.weatherAlerts}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        weatherAlerts: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          weatherAlerts: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -583,10 +608,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.systemUpdates}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        systemUpdates: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          systemUpdates: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -594,15 +621,19 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <label className="font-medium text-gray-900">Wekelijkse Rapporten</label>
-                      <p className="text-sm text-gray-600">Automatische wekelijkse veiligheidsrapporten</p>
+                      <p className="text-sm text-gray-600">
+                        Automatische wekelijkse veiligheidsrapporten
+                      </p>
                     </div>
                     <input
                       type="checkbox"
                       checked={notifications.weeklyReports}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        weeklyReports: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          weeklyReports: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -623,10 +654,12 @@ export default function SettingsPage() {
                     <input
                       type="checkbox"
                       checked={notifications.quietHoursEnabled}
-                      onChange={(e) => setNotifications(prev => ({
-                        ...prev,
-                        quietHoursEnabled: e.target.checked
-                      }))}
+                      onChange={(e) =>
+                        setNotifications((prev) => ({
+                          ...prev,
+                          quietHoursEnabled: e.target.checked,
+                        }))
+                      }
                       className="h-4 w-4 text-orange-600 rounded"
                     />
                   </div>
@@ -640,10 +673,12 @@ export default function SettingsPage() {
                         <input
                           type="time"
                           value={notifications.quietHoursStart}
-                          onChange={(e) => setNotifications(prev => ({
-                            ...prev,
-                            quietHoursStart: e.target.value
-                          }))}
+                          onChange={(e) =>
+                            setNotifications((prev) => ({
+                              ...prev,
+                              quietHoursStart: e.target.value,
+                            }))
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
                       </div>
@@ -655,10 +690,12 @@ export default function SettingsPage() {
                         <input
                           type="time"
                           value={notifications.quietHoursEnd}
-                          onChange={(e) => setNotifications(prev => ({
-                            ...prev,
-                            quietHoursEnd: e.target.value
-                          }))}
+                          onChange={(e) =>
+                            setNotifications((prev) => ({
+                              ...prev,
+                              quietHoursEnd: e.target.value,
+                            }))
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
                       </div>
@@ -691,10 +728,12 @@ export default function SettingsPage() {
                 <input
                   type="checkbox"
                   checked={privacy.marketingEmails}
-                  onChange={(e) => setPrivacy(prev => ({
-                    ...prev,
-                    marketingEmails: e.target.checked
-                  }))}
+                  onChange={(e) =>
+                    setPrivacy((prev) => ({
+                      ...prev,
+                      marketingEmails: e.target.checked,
+                    }))
+                  }
                   className="h-4 w-4 text-orange-600 rounded"
                 />
               </div>
@@ -707,10 +746,12 @@ export default function SettingsPage() {
                 <input
                   type="checkbox"
                   checked={privacy.analyticsTracking}
-                  onChange={(e) => setPrivacy(prev => ({
-                    ...prev,
-                    analyticsTracking: e.target.checked
-                  }))}
+                  onChange={(e) =>
+                    setPrivacy((prev) => ({
+                      ...prev,
+                      analyticsTracking: e.target.checked,
+                    }))
+                  }
                   className="h-4 w-4 text-orange-600 rounded"
                 />
               </div>
@@ -718,15 +759,19 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <label className="font-medium text-gray-900">Locatie Tracking</label>
-                  <p className="text-sm text-gray-600">Sta locatie tracking toe voor LMRA verificatie</p>
+                  <p className="text-sm text-gray-600">
+                    Sta locatie tracking toe voor LMRA verificatie
+                  </p>
                 </div>
                 <input
                   type="checkbox"
                   checked={privacy.locationTracking}
-                  onChange={(e) => setPrivacy(prev => ({
-                    ...prev,
-                    locationTracking: e.target.checked
-                  }))}
+                  onChange={(e) =>
+                    setPrivacy((prev) => ({
+                      ...prev,
+                      locationTracking: e.target.checked,
+                    }))
+                  }
                   className="h-4 w-4 text-orange-600 rounded"
                 />
               </div>
@@ -770,10 +815,7 @@ export default function SettingsPage() {
                     Verwijder permanent je account en alle persoonlijke gegevens
                   </div>
                 </div>
-                <Button
-                  variant="danger"
-                  onClick={() => setShowDeleteModal(true)}
-                >
+                <Button variant="danger" onClick={() => setShowDeleteModal(true)}>
                   Account Verwijderen
                 </Button>
               </div>
@@ -830,8 +872,8 @@ export default function SettingsPage() {
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            We zullen alle persoonlijke gegevens die we over je hebben verzamelen en deze
-            binnen 24 uur naar je e-mailadres sturen.
+            We zullen alle persoonlijke gegevens die we over je hebben verzamelen en deze binnen 24
+            uur naar je e-mailadres sturen.
           </p>
 
           <div className="bg-blue-50 p-4 rounded-lg">
@@ -866,8 +908,8 @@ export default function SettingsPage() {
       >
         <div className="space-y-4">
           <Alert variant="error">
-            <strong>Waarschuwing:</strong> Deze actie kan niet ongedaan worden gemaakt.
-            Alle persoonlijke gegevens worden permanent verwijderd.
+            <strong>Waarschuwing:</strong> Deze actie kan niet ongedaan worden gemaakt. Alle
+            persoonlijke gegevens worden permanent verwijderd.
           </Alert>
 
           <div className="bg-red-50 p-4 rounded-lg">

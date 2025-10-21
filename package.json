@@ -15,12 +15,12 @@
   },
   "lint-staged": {
     "web/**/*.{js,jsx,ts,tsx}": [
-      "cd web && npm run lint:fix",
-      "cd web && npm run format",
-      "cd web && npx tsc --noEmit"
+      "bash -c 'cd web && npm run lint:fix'",
+      "bash -c 'cd web && npm run format'",
+      "bash -c 'cd web && npx tsc --noEmit'"
     ],
     "web/**/*.{json,md}": [
-      "cd web && npm run format"
+      "bash -c 'cd web && npm run format'"
     ]
   },
   "dependencies": {

@@ -45,7 +45,9 @@ if (isBrowser) {
 
 export const auth = isBrowser ? getAuth() : (null as unknown as ReturnType<typeof getAuth>);
 export const db = isBrowser ? getFirestore() : (null as unknown as ReturnType<typeof getFirestore>);
-export const storage = isBrowser ? getStorage() : (null as unknown as ReturnType<typeof getStorage>);
+export const storage = isBrowser
+  ? getStorage()
+  : (null as unknown as ReturnType<typeof getStorage>);
 
 // Initialize Analytics (only in browser and if supported)
 let analytics: ReturnType<typeof getAnalytics> | null = null;

@@ -15,7 +15,7 @@ export async function PATCH(
   { params }: { params: Promise<{ traId: string; commentId: string }> }
 ) {
   const { traId, commentId } = await params;
-  
+
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -32,9 +32,7 @@ export async function PATCH(
   }
   const data = parse.data;
 
-  const docRef = db
-    .collection(`organizations/${orgId}/tras/${traId}/comments`)
-    .doc(commentId);
+  const docRef = db.collection(`organizations/${orgId}/tras/${traId}/comments`).doc(commentId);
   const doc = await docRef.get();
   if (!doc.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const existing = doc.data();
@@ -86,16 +84,14 @@ export async function DELETE(
   { params }: { params: Promise<{ traId: string; commentId: string }> }
 ) {
   const { traId, commentId } = await params;
-  
+
   const auth = await requireOrgAuth(request).catch(() => null);
   if (!auth) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const orgId = auth.orgId;
   const uid = auth.uid;
 
-  const docRef = db
-    .collection(`organizations/${orgId}/tras/${traId}/comments`)
-    .doc(commentId);
+  const docRef = db.collection(`organizations/${orgId}/tras/${traId}/comments`).doc(commentId);
   const doc = await docRef.get();
   if (!doc.exists) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const existing = doc.data();

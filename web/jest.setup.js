@@ -460,7 +460,7 @@ afterEach(() => {
     // call clear helper if available to reset in-memory users
     // this ensures tests that expect an existing auth user will recreate it reliably
     // and prevents cross-test contamination.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+
     const authMock = require("firebase/auth");
     if (authMock && typeof authMock.clearAllUsers === "function") {
       authMock.clearAllUsers();

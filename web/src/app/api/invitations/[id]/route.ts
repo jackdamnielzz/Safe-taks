@@ -24,10 +24,7 @@ import { Errors } from "@/lib/api/errors";
 // GET /api/invitations/[id] - Get invitation by token (public)
 // ============================================================================
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { searchParams } = new URL(req.url);
     const token = searchParams.get("token");

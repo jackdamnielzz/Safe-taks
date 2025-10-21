@@ -30,7 +30,7 @@ export class CRMService {
       const leadData: Partial<Lead> = {
         ...formData,
         source: source || this.getSourceFromUrl(),
-        sourceUrl: typeof window !== 'undefined' ? window.location.href : '',
+        sourceUrl: typeof window !== "undefined" ? window.location.href : "",
         status: "new",
         createdAt: new Date(),
         leadScore: this.calculateLeadScore(formData),
@@ -318,7 +318,7 @@ export class CRMService {
    * Get source from current URL
    */
   private getSourceFromUrl(): string {
-    if (typeof window === 'undefined') return 'direct';
+    if (typeof window === "undefined") return "direct";
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get("utm_source") || urlParams.get("source") || "direct";
   }
@@ -327,7 +327,7 @@ export class CRMService {
    * Track page view for lead scoring
    */
   trackPageView(email?: string): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     this.trackActivity({
       type: "page_view",
       leadId: email,
@@ -345,7 +345,7 @@ export class CRMService {
    * Track CTA click for lead scoring
    */
   trackCTA(action: string, email?: string): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
     this.trackActivity({
       type: "cta_click",
       leadId: email,

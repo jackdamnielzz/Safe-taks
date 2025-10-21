@@ -105,7 +105,7 @@ export default function CameraCapture({
       setProgress(null);
       // leave pending entry so user can retry/sync later
       if (onError && err instanceof Error) onError(err);
-      // eslint-disable-next-line no-console
+
       console.error("Camera upload failed", err);
     }
   };

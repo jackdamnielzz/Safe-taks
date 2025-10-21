@@ -42,7 +42,7 @@ export async function compressImage(
     return compressed;
   } catch (err) {
     // On failure, return original file to avoid blocking uploads
-    // eslint-disable-next-line no-console
+
     console.warn("[imageCompression] compression failed, uploading original", err);
     return file;
   }

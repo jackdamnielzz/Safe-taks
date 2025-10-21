@@ -13,7 +13,7 @@ import { requireAuth } from "@/lib/api/auth";
 export const POST = requireAuth(
   async (request: NextRequest, user: any, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
-    
+
     try {
       // Check if user has permission to manage webhooks
       if (!["admin", "safety_manager"].includes(user.role || "")) {

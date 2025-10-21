@@ -3,12 +3,28 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AuthProvider, ProtectedRoute, useAuth } from "../../components/AuthProvider";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../components/ui/Card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Badge } from "../../components/ui/Badge";
 import { LoadingSpinner } from "../../components/ui/LoadingSpinner";
 import { Modal } from "../../components/ui/Modal";
-import { Plus, Search, Filter, Eye, Edit, Users, Calendar, AlertTriangle, CheckCircle } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Filter,
+  Eye,
+  Edit,
+  Users,
+  Calendar,
+  AlertTriangle,
+  CheckCircle,
+} from "lucide-react";
 import TraWizard from "../../components/forms/TraWizard";
 import type { TRA } from "../../lib/types/tra";
 
@@ -81,10 +97,11 @@ function TRAsContent() {
     // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter((tra) =>
-        tra.title.toLowerCase().includes(query) ||
-        tra.description?.toLowerCase().includes(query) ||
-        tra.status?.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (tra) =>
+          tra.title.toLowerCase().includes(query) ||
+          tra.description?.toLowerCase().includes(query) ||
+          tra.status?.toLowerCase().includes(query)
       );
     }
 
@@ -95,12 +112,14 @@ function TRAsContent() {
 
     // Sort by creation date (newest first)
     filtered.sort((a, b) => {
-      const aTime = a.createdAt && typeof a.createdAt === 'object' && 'seconds' in a.createdAt
-        ? a.createdAt.seconds * 1000
-        : new Date(a.createdAt as any).getTime();
-      const bTime = b.createdAt && typeof b.createdAt === 'object' && 'seconds' in b.createdAt
-        ? b.createdAt.seconds * 1000
-        : new Date(b.createdAt as any).getTime();
+      const aTime =
+        a.createdAt && typeof a.createdAt === "object" && "seconds" in a.createdAt
+          ? a.createdAt.seconds * 1000
+          : new Date(a.createdAt as any).getTime();
+      const bTime =
+        b.createdAt && typeof b.createdAt === "object" && "seconds" in b.createdAt
+          ? b.createdAt.seconds * 1000
+          : new Date(b.createdAt as any).getTime();
       return bTime - aTime;
     });
 
@@ -115,29 +134,29 @@ function TRAsContent() {
       draft: {
         color: "bg-gray-100 text-gray-800",
         label: "Concept",
-        icon: <Edit className="w-3 h-3" />
+        icon: <Edit className="w-3 h-3" />,
       },
       active: {
         color: "bg-green-100 text-green-800",
         label: "Actief",
-        icon: <CheckCircle className="w-3 h-3" />
+        icon: <CheckCircle className="w-3 h-3" />,
       },
       completed: {
         color: "bg-blue-100 text-blue-800",
         label: "Voltooid",
-        icon: <CheckCircle className="w-3 h-3" />
+        icon: <CheckCircle className="w-3 h-3" />,
       },
       archived: {
         color: "bg-red-100 text-red-800",
         label: "Gearchiveerd",
-        icon: <AlertTriangle className="w-3 h-3" />
-      }
+        icon: <AlertTriangle className="w-3 h-3" />,
+      },
     };
 
     const statusInfo = statusMap[status] || {
       color: "bg-gray-100 text-gray-800",
       label: status,
-      icon: null
+      icon: null,
     };
 
     return (
@@ -149,8 +168,8 @@ function TRAsContent() {
   };
 
   /**
-    * Handle TRA creation modal close
-    */
+   * Handle TRA creation modal close
+   */
   const handleCloseCreateModal = () => {
     setShowCreateModal(false);
     // Refresh the list after a short delay to allow for server processing
@@ -188,9 +207,7 @@ function TRAsContent() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              TRA's — Taak Risico Analyses
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900">TRA's — Taak Risico Analyses</h1>
             <p className="text-gray-600 mt-2">
               {filteredTras.length} van {tras?.length || 0} TRA's
             </p>
@@ -251,7 +268,11 @@ function TRAsContent() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredTras.map((tra) => (
-            <Card key={tra.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => router.push(`/tras/${tra.id}`)}>
+            <Card
+              key={tra.id}
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => router.push(`/tras/${tra.id}`)}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -260,9 +281,7 @@ function TRAsContent() {
                       {tra.description || "Geen beschrijving beschikbaar"}
                     </CardDescription>
                   </div>
-                  <div className="ml-2">
-                    {getStatusBadge(tra.status || "draft")}
-                  </div>
+                  <div className="ml-2">{getStatusBadge(tra.status || "draft")}</div>
                 </div>
               </CardHeader>
 
@@ -284,22 +303,22 @@ function TRAsContent() {
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="h-4 w-4" />
                   <span>
-                    Aangemaakt: {tra.createdAt ?
-                      (typeof tra.createdAt === 'object' && 'seconds' in tra.createdAt
+                    Aangemaakt:{" "}
+                    {tra.createdAt
+                      ? typeof tra.createdAt === "object" && "seconds" in tra.createdAt
                         ? new Date(tra.createdAt.seconds * 1000).toLocaleDateString("nl-NL")
                         : new Date(tra.createdAt as any).toLocaleDateString("nl-NL")
-                      ) : 'Onbekend'
-                    }
+                      : "Onbekend"}
                   </span>
                 </div>
 
                 {/* Last modified */}
                 {tra.updatedAt && (
                   <div className="text-xs text-gray-500">
-                    Laatst gewijzigd: {typeof tra.updatedAt === 'object' && 'seconds' in tra.updatedAt
+                    Laatst gewijzigd:{" "}
+                    {typeof tra.updatedAt === "object" && "seconds" in tra.updatedAt
                       ? new Date(tra.updatedAt.seconds * 1000).toLocaleDateString("nl-NL")
-                      : new Date(tra.updatedAt as any).toLocaleDateString("nl-NL")
-                    }
+                      : new Date(tra.updatedAt as any).toLocaleDateString("nl-NL")}
                   </div>
                 )}
               </CardContent>
@@ -332,9 +351,7 @@ export default function TRAsPageWrapper() {
               <p className="text-gray-600 mb-6">
                 Deze pagina vereist authenticatie. Log in om door te gaan.
               </p>
-              <Button onClick={() => window.location.href = "/account/signin"}>
-                Inloggen
-              </Button>
+              <Button onClick={() => (window.location.href = "/account/signin")}>Inloggen</Button>
             </div>
           </div>
         }

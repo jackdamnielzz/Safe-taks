@@ -15,7 +15,7 @@ import { requireAuth } from "@/lib/api/auth";
 export const GET = requireAuth(
   async (request: NextRequest, user: any, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
-    
+
     try {
       const webhook = await webhookService.getWebhook(id);
 
@@ -46,7 +46,7 @@ export const GET = requireAuth(
 export const PATCH = requireAuth(
   async (request: NextRequest, user: any, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
-    
+
     try {
       // Check if user has permission to manage webhooks
       if (!["admin", "safety_manager"].includes(user.role || "")) {
@@ -104,7 +104,7 @@ export const PATCH = requireAuth(
 export const DELETE = requireAuth(
   async (request: NextRequest, user: any, { params }: { params: Promise<{ id: string }> }) => {
     const { id } = await params;
-    
+
     try {
       // Check if user has permission to manage webhooks
       if (!["admin", "safety_manager"].includes(user.role || "")) {

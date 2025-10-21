@@ -1,6 +1,6 @@
 /**
  * Feature Gates Utility
- * 
+ *
  * Provides React hooks and utilities for checking feature access
  * and enforcing tier-based limitations in the UI.
  */
@@ -10,12 +10,12 @@
 import React, { useState, useEffect } from "react";
 import { getFirestore, doc, onSnapshot } from "firebase/firestore";
 import type { Organization, SubscriptionTier } from "../types/organization";
-import { 
-  isFeatureEnabled, 
-  getEnabledFeatures, 
+import {
+  isFeatureEnabled,
+  getEnabledFeatures,
   getDisabledFeatures,
-  type FeatureName 
-} from './usage-tracker';
+  type FeatureName,
+} from "./usage-tracker";
 
 /**
  * Hook to check if a feature is enabled for the current organization
@@ -39,7 +39,7 @@ export function useFeatureAccess(
     }
 
     const db = getFirestore();
-    const orgRef = doc(db, 'organizations', organizationId);
+    const orgRef = doc(db, "organizations", organizationId);
 
     const unsubscribe = onSnapshot(orgRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -60,9 +60,7 @@ export function useFeatureAccess(
 /**
  * Hook to get all enabled features for the current organization
  */
-export function useEnabledFeatures(
-  organizationId: string | null
-): {
+export function useEnabledFeatures(organizationId: string | null): {
   features: FeatureName[];
   tier: SubscriptionTier | null;
   loading: boolean;
@@ -78,7 +76,7 @@ export function useEnabledFeatures(
     }
 
     const db = getFirestore();
-    const orgRef = doc(db, 'organizations', organizationId);
+    const orgRef = doc(db, "organizations", organizationId);
 
     const unsubscribe = onSnapshot(orgRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -99,9 +97,7 @@ export function useEnabledFeatures(
 /**
  * Hook to get subscription tier information
  */
-export function useSubscriptionTier(
-  organizationId: string | null
-): {
+export function useSubscriptionTier(organizationId: string | null): {
   tier: SubscriptionTier | null;
   status: string | null;
   loading: boolean;
@@ -201,10 +197,10 @@ export function getTierDisplayName(tier: SubscriptionTier): string {
  */
 export function getTierColor(tier: SubscriptionTier): string {
   const colors: Record<SubscriptionTier, string> = {
-    trial: 'gray',
-    starter: 'blue',
-    professional: 'purple',
-    enterprise: 'gold',
+    trial: "gray",
+    starter: "blue",
+    professional: "purple",
+    enterprise: "gold",
   };
   return colors[tier];
 }
@@ -212,10 +208,7 @@ export function getTierColor(tier: SubscriptionTier): string {
 /**
  * Check if tier is higher than another
  */
-export function isTierHigherThan(
-  tier1: SubscriptionTier,
-  tier2: SubscriptionTier
-): boolean {
+export function isTierHigherThan(tier1: SubscriptionTier, tier2: SubscriptionTier): boolean {
   const hierarchy: Record<SubscriptionTier, number> = {
     trial: 0,
     starter: 1,

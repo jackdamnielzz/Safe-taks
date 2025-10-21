@@ -26,7 +26,7 @@ import {
   getSubscriptionTierName,
   type Organization,
   type OrganizationUsage,
-  type OrganizationLimits
+  type OrganizationLimits,
 } from "@/lib/types/organization";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -131,7 +131,7 @@ export default function AccountPage() {
       try {
         const orgRef = doc(db, "organizations", userProfile.organizationId);
         const orgSnap = await getDoc(orgRef);
-        
+
         if (orgSnap.exists()) {
           setOrganization(orgSnap.data() as Organization);
         }
@@ -152,9 +152,10 @@ export default function AccountPage() {
   };
 
   const usage = organization?.usage;
-  const limits = organization?.limits || SUBSCRIPTION_TIER_LIMITS[organization?.subscription?.tier || 'trial'];
-  const subscriptionTier = organization?.subscription?.tier || 'trial';
-  const subscriptionStatus = organization?.subscription?.status || 'trial';
+  const limits =
+    organization?.limits || SUBSCRIPTION_TIER_LIMITS[organization?.subscription?.tier || "trial"];
+  const subscriptionTier = organization?.subscription?.tier || "trial";
+  const subscriptionStatus = organization?.subscription?.status || "trial";
 
   const handleProfileSave = async () => {
     setSaving(true);
@@ -216,7 +217,7 @@ export default function AccountPage() {
       });
 
       if (response.ok) {
-        setPrivacy(prev => ({ ...prev, dataExportRequested: true }));
+        setPrivacy((prev) => ({ ...prev, dataExportRequested: true }));
         setShowExportModal(false);
         // Show success message
       }
@@ -254,16 +255,15 @@ export default function AccountPage() {
     }
   };
 
-  const canManageOrganization = userProfile?.role === "admin" || userProfile?.role === "safety_manager";
+  const canManageOrganization =
+    userProfile?.role === "admin" || userProfile?.role === "safety_manager";
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Account Dashboard</h1>
-        <p className="text-gray-600">
-          Volledig overzicht en beheer van je SafeWork Pro account
-        </p>
+        <p className="text-gray-600">Volledig overzicht en beheer van je SafeWork Pro account</p>
       </div>
 
       {/* Quick Overview Cards */}
@@ -307,28 +307,31 @@ export default function AccountPage() {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="font-semibold text-gray-900">Abonnement</h3>
-                <p className="text-sm text-gray-600">
-                  {getSubscriptionTierName(subscriptionTier)}
-                </p>
+                <p className="text-sm text-gray-600">{getSubscriptionTierName(subscriptionTier)}</p>
               </div>
               <Badge
                 className={
-                  subscriptionStatus === 'trial'
-                    ? 'bg-blue-100 text-blue-800'
-                    : subscriptionStatus === 'active'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800'
+                  subscriptionStatus === "trial"
+                    ? "bg-blue-100 text-blue-800"
+                    : subscriptionStatus === "active"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-100 text-gray-800"
                 }
               >
-                {subscriptionStatus === 'trial' && 'Proefperiode'}
-                {subscriptionStatus === 'active' && 'Actief'}
-                {subscriptionStatus === 'past_due' && 'Achterstallig'}
-                {subscriptionStatus === 'canceled' && 'Geannuleerd'}
+                {subscriptionStatus === "trial" && "Proefperiode"}
+                {subscriptionStatus === "active" && "Actief"}
+                {subscriptionStatus === "past_due" && "Achterstallig"}
+                {subscriptionStatus === "canceled" && "Geannuleerd"}
               </Badge>
             </div>
-            {subscriptionStatus === 'trial' && organization?.subscription?.trialEndsAt && (
+            {subscriptionStatus === "trial" && organization?.subscription?.trialEndsAt && (
               <p className="text-xs text-orange-600 mb-2">
-                Proefperiode eindigt over {Math.ceil((new Date(organization.subscription.trialEndsAt as any).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} dagen
+                Proefperiode eindigt over{" "}
+                {Math.ceil(
+                  (new Date(organization.subscription.trialEndsAt as any).getTime() - Date.now()) /
+                    (1000 * 60 * 60 * 24)
+                )}{" "}
+                dagen
               </p>
             )}
             <Button
@@ -355,14 +358,15 @@ export default function AccountPage() {
                 </div>
               </div>
               <div className="text-right">
-                <Badge variant="success" className="mb-2">Actief</Badge>
+                <Badge variant="success" className="mb-2">
+                  Actief
+                </Badge>
                 <p className="text-xs text-gray-500">GDPR Compliant</p>
               </div>
             </div>
           </div>
         </Card>
       </div>
-
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
@@ -372,7 +376,12 @@ export default function AccountPage() {
           onClick={() => router.push("/tras")}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
           </svg>
           <span className="text-sm">Nieuwe TRA</span>
         </Button>
@@ -383,7 +392,12 @@ export default function AccountPage() {
           onClick={() => router.push("/mobile")}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+            />
           </svg>
           <span className="text-sm">LMRA Starten</span>
         </Button>
@@ -394,7 +408,12 @@ export default function AccountPage() {
           onClick={() => router.push("/reports")}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            />
           </svg>
           <span className="text-sm">Rapporten</span>
         </Button>
@@ -405,7 +424,12 @@ export default function AccountPage() {
           onClick={() => router.push("/team")}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+            />
           </svg>
           <span className="text-sm">Team Beheer</span>
         </Button>
@@ -429,7 +453,9 @@ export default function AccountPage() {
                   {userProfile?.firstName?.[0] || "J"}
                 </div>
                 <div>
-                  <div className="font-medium">{userProfile?.firstName} {userProfile?.lastName}</div>
+                  <div className="font-medium">
+                    {userProfile?.firstName} {userProfile?.lastName}
+                  </div>
                   <div className="text-sm text-gray-600">{userProfile?.email}</div>
                 </div>
               </div>
@@ -489,8 +515,18 @@ export default function AccountPage() {
               onClick={() => router.push("/settings")}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
               </svg>
               <span className="text-sm">Gedetailleerde Instellingen</span>
             </Button>
@@ -501,7 +537,12 @@ export default function AccountPage() {
               onClick={() => setShowExportModal(true)}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l4-4m-4 4l-4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 10v6m0 0l4-4m-4 4l-4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
               </svg>
               <span className="text-sm">Gegevens Exporteren</span>
             </Button>
@@ -512,7 +553,12 @@ export default function AccountPage() {
               onClick={() => setShowDeleteModal(true)}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
               </svg>
               <span className="text-sm">Account Verwijderen</span>
             </Button>
@@ -561,8 +607,8 @@ export default function AccountPage() {
       >
         <div className="space-y-4">
           <p className="text-gray-600">
-            We zullen alle persoonlijke gegevens die we over je hebben verzamelen en deze
-            binnen 24 uur naar je e-mailadres sturen.
+            We zullen alle persoonlijke gegevens die we over je hebben verzamelen en deze binnen 24
+            uur naar je e-mailadres sturen.
           </p>
 
           <div className="bg-blue-50 p-4 rounded-lg">
@@ -597,8 +643,8 @@ export default function AccountPage() {
       >
         <div className="space-y-4">
           <Alert variant="error">
-            <strong>Waarschuwing:</strong> Deze actie kan niet ongedaan worden gemaakt.
-            Alle persoonlijke gegevens worden permanent verwijderd.
+            <strong>Waarschuwing:</strong> Deze actie kan niet ongedaan worden gemaakt. Alle
+            persoonlijke gegevens worden permanent verwijderd.
           </Alert>
 
           <div className="bg-red-50 p-4 rounded-lg">
