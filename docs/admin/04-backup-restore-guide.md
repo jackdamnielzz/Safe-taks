@@ -1,179 +1,398 @@
-# Backup & Restore Guide
+# Backup & Restore Guide - SafeWork Pro
 
-Dit document beschrijft hoe je backups en restores uitvoert voor zowel lokale ontwikkeling met de Firebase Emulators als voor productie (Firestore + Cloud Storage). Het bevat concrete commando's, best practices, beveiligingsrichtlijnen en een test-restore checklist.
+## Overview
 
-## Overzicht
+SafeWork Pro implements a comprehensive automated backup system for all Firestore data with 30-day retention and point-in-time recovery capabilities.
 
-Scope:
-- Lokale emulator exports/imports
-- CI patterns voor emulator-backed tests
-- Productie exports (Firestore → GCS) en imports (restore)
-- Cloud Storage backups en synchronisatie
-- Automatisering, retentie en IAM-vereisten
-- Test-restore en emergency rollback procedures
+## Automated Backup System
 
-## Emulator backups (lokale ontwikkeling)
+### Daily Scheduled Backups
 
-1) Exporteren van emulator data
+- **Schedule**: Every day at 3:00 AM UTC
+- **Retention**: 30 days (automatically cleaned up)
+- **Collections Backed Up**:
+  - organizations
+  - users
+  - projects
+  - tras
+  - templates
+  - lmra-sessions
+  - hazards
+  - controls
+  - invitations
+  - uploads
+  - audit-logs
+  - webhooks
 
-Gebruik de Firebase CLI om een snapshot van alle emulator-data te maken:
+### Backup Storage
 
-Voorbeeld:
-firebase emulators:export ./emulator-backups/20250930 --project=hale-ripsaw-403915
+- **Location**: Google Cloud Storage bucket (`{project-id}-backups`)
+- **Format**: Firestore export format
+- **Naming**: `backup-{type}-{timestamp}`
+- **Metadata**: Tracked in `backup-metadata` collection
 
-Tip: gebruik een pad dat buiten de repo staat (bijv. een gedeelde artefact-map of CI-artifact). Voeg lokale backup-mappen toe aan `.gitignore`.
+## Manual Backup Creation
 
-2) Importeren / terugzetten in emulator
+### Via Admin UI
 
-Start emulators en laad een export terug in:
+1. Navigate to **Admin Hub** → **Backup & Restore**
+2. Click **Create Backup Now**
+3. Confirm the operation
+4. Wait for completion notification
 
-Voorbeeld:
-firebase emulators:start --import=./emulator-backups/20250930
+### Via Cloud Function
 
-Dit laadt Firestore, Auth en Storage data terug zoals opgeslagen tijdens export.
+```javascript
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
-Tips:
-- Gebruik datum-gebaseerde mappen (YYYYMMDD) voor overzicht.
-- Houd meerdere snapshots voor snelle rollback naar recente testgegevens.
-- Versleutel backups wanneer je ze bewaart in gedeelde opslag.
+const functions = getFunctions();
+const createBackup = httpsCallable(functions, 'createBackupOnDemand');
 
-## CI: emulator export & restore pattern
+const result = await createBackup();
+console.log('Backup created:', result.data.backupName);
+```
 
-In CI workflows wil je emulators starten, tests draaien en -optioneel- exports bewaren.
+## Listing Available Backups
 
-Voorbeeld (GitHub Actions, pseudo-steps):
-- actions/checkout@v3
-- name: Install deps
-  run: npm ci
-- name: Start emulators
-  run: firebase emulators:start --only firestore,auth,storage --project=hale-ripsaw-403915 --export-on-exit=./emulator-backups/ci
-- name: Run tests
-  run: npm run test:emulated
-- name: Upload backup artifact
-  uses: actions/upload-artifact@v4
-  with:
-    name: emulator-backup
-    path: ./emulator-backups/ci
+### Via Admin UI
 
-Gebruik `--export-on-exit` om automatisch een export te maken wanneer de emulator stopt. Upload het resultaat als CI-artifact voor debugging.
+1. Navigate to **Admin Hub** → **Backup & Restore**
+2. View list of all available backups
+3. Filter by date, type (scheduled/manual), or status
 
-## Productie backups (Firestore → Google Cloud Storage)
+### Via Cloud Function
 
-Gebruik de gcloud CLI voor consistente, managed exports van Firestore naar een GCS-bucket.
+```javascript
+const listBackups = httpsCallable(functions, 'listBackups');
 
-1) Handmatige export (selectieve collecties)
-gcloud firestore export gs://my-bucket/backups/tra-backup-20250930 --project=hale-ripsaw-403915 --collection-ids="organizations"
+const result = await listBackups({ limit: 50 });
+console.log('Available backups:', result.data.backups);
+```
 
-2) Volledige export (alle collecties)
-gcloud firestore export gs://my-bucket/backups/tra-backup-20250930 --project=hale-ripsaw-403915
+## Restoring from Backup
 
-Opmerkingen:
-- Zorg dat `gcloud` is geconfigureerd met een service account dat de juiste permissies heeft.
-- Gebruik object lifecycle regels in GCS om oudere backups automatisch te verwijderen (retentie).
-- Plan exports via Cloud Scheduler of een cron-job in een beheerproject.
+### ⚠️ WARNING: Destructive Operation
 
-## Productie restore
+Restoring from a backup will **overwrite all current data** in the specified collections. This operation cannot be undone.
 
-Herstellen van een export:
+### Prerequisites
 
-gcloud firestore import gs://my-bucket/backups/tra-backup-20250930 --project=hale-ripsaw-403915
+1. **Create a current backup first** before restoring
+2. **Notify all users** of planned downtime
+3. **Verify backup integrity** before proceeding
+4. **Have rollback plan** ready
 
-Veiligheidsmaatregelen:
-- Schakel, indien mogelijk, schrijfverkeer tijdelijk uit of zet de applicatie in onderhoudsmodus.
-- Herstel eerst naar een staging- of testproject om integriteit te valideren.
-- Monitor operationele kosten tijdens het importproces (restore kan data-/ops-kosten veroorzaken).
+### Restoration Process
 
-## Backups voor Storage (bestanden)
+#### Via Admin UI
 
-Cloud Storage bevat vaak foto’s en bijlagen; deze moeten apart geback-upt worden.
+1. Navigate to **Admin Hub** → **Backup & Restore**
+2. Find the backup you want to restore
+3. Click **Restore** button
+4. **Read all warnings carefully**
+5. Type confirmation phrase: `RESTORE BACKUP`
+6. Click **Confirm Restore**
+7. Wait for completion (may take several minutes)
 
-1) Lokale copy van een bucket-object:
-gsutil -m cp -r gs://my-bucket/path ./local-backup
+#### Via Cloud Function
 
-2) Synchronisatie tussen buckets:
-gsutil -m rsync -r gs://source-bucket gs://backup-bucket
+```javascript
+const restoreBackup = httpsCallable(functions, 'restoreFromBackup');
 
-Opmerkingen:
-- Gebruik `-m` (multithreaded) voor performance.
-- Overweeg versiebeheer (Object Versioning) op GCS-buckets voor extra veiligheid.
-- Voor GDPR-compliance: documenteer waar persoonlijke gegevens worden opgeslagen en hoe ze worden verwijderd.
+const result = await restoreBackup({
+  backupName: 'backup-manual-2025-10-21T15-30-00-000Z'
+});
 
-## Automatisering & schema
+console.log('Restoration result:', result.data);
+```
 
-Aanbevelingen:
-- Dagelijkse exports: Cloud Scheduler → Cloud Function / Cloud Run job die `gcloud firestore export` uitvoert.
-- Retentiebeleid: standaard 30 dagen (pas aan op basis van compliance).
-- Bewaar langere termijn snapshots (bijv. maandelijkse) voor audits.
-- Beheer opslagkosten via lifecycle rules (delete/nearline/ coldline transitions).
+## Backup Metadata
 
-## IAM & security
+Each backup includes the following metadata:
 
-Service accounts en permissies:
-- Maak een dedicated backup service account met minimale rechten.
-- Nodige rollen (voor export/import): roles/datastore.importExportAdmin (of geïnteresseerde granular roles) en storage.objectAdmin op de target bucket.
-- Gebruik korte-lived credentials of Workload Identity voor Cloud Run/Functions.
-- Versleutel backups (Customer-Managed Encryption Keys) als dat vereist is door compliance.
+```typescript
+interface BackupMetadata {
+  timestamp: Timestamp;           // When backup was created
+  type: 'scheduled' | 'manual';   // Backup type
+  triggeredBy: string;            // User ID or 'system'
+  status: 'in_progress' | 'completed' | 'failed';
+  collections: string[];          // Collections included
+  backupPath: string;             // GCS path
+  startedAt: Timestamp;
+  completedAt?: Timestamp;
+  duration?: number;              // Milliseconds
+  documentCount?: number;
+  sizeBytes?: number;
+  error?: string;                 // If failed
+}
+```
 
-## Test-restore checklist
+## Backup Verification
 
-Voer deze checklist uit voordat je een restore in productie doet:
+### Manual Verification Steps
 
-1. Verifieer projectId en bucket naam.
-2. Schakel schrijfverkeer tijdelijk uit (of plan downtime).
-3. Restore eerst naar een staging-project en voer end-to-end checks uit.
-4. Vergelijk document counts en steekproef data (bijv. aantal organizations, users).
-5. Valideer security rules en storage toegangsregels na restore.
-6. Test kritieke user flows (login, TRA zoeken, LMRA uitvoeren).
-7. Log en documenteer exacte stappen en tijdstempels in [`PROJECT_MEMORY.md`](PROJECT_MEMORY.md:1).
+1. **Check backup metadata**:
+   ```
+   - Status should be 'completed'
+   - No error messages
+   - Reasonable duration
+   ```
 
-## Emergency rollback procedure
+2. **Verify GCS bucket**:
+   - Navigate to Google Cloud Console
+   - Open Storage → Buckets
+   - Find `{project-id}-backups`
+   - Verify backup folder exists
 
-Als een restore fout gaat of data corrupt raakt:
+3. **Test restoration** (optional):
+   - Create test Firebase project
+   - Restore backup to test project
+   - Verify data integrity
 
-1. Identificeer de meest recente goede backup (timestamp).
-2. Voer restore uit op staging en valideer integriteit.
-3. Communiceer geplande downtime met stakeholders.
-4. Perform restore in productie en voer validatiechecks uit (document counts, sanity checks).
-5. Documenteer alle acties en lessons learned in PROJECT_MEMORY.md.
+## Disaster Recovery Procedures
 
-## Best practices
+### Scenario 1: Data Corruption Detected
 
-- Test restores regelmatig (bijv. maandelijks) in een staging-omgeving.
-- Automatisch exporteren en bewaken (alerts op backup failures).
-- Houd backups buiten hetzelfde project als extra veiligheidslaag (optioneel).
-- Beperk toegang tot backup-artifact repositories en buckets.
-- Bewaar metadata over elke backup: timestamp, committer, git SHA, CI run id.
+1. **Immediate Actions**:
+   - Put application in maintenance mode
+   - Notify stakeholders
+   - Identify last known good backup
 
-## Retentie & compliance
+2. **Recovery Steps**:
+   - Create emergency backup of current state
+   - Restore from last known good backup
+   - Verify data integrity
+   - Resume normal operations
+   - Document incident
 
-- Aanbevolen standaardretentie: 30 dagen (aanpasbaar).
-- Houd langere retentie voor compliance-rechten (archivering).
-- Zorg voor GDPR-procedures: als gebruiker verwijderverzoeken nodig zijn, documenteer hoe dit in backups wordt afgehandeld.
+### Scenario 2: Accidental Data Deletion
 
-## Monitoring & alerting
+1. **Assessment**:
+   - Determine scope of deletion
+   - Identify affected collections/documents
+   - Find backup before deletion
 
-- Stel alerts in voor:
-  - Mislukte exports/imports
-  - GCS bucket storage growth
-  - Onverwachte restore-activiteiten
-- Integreer met Sentry/uptime/alerting stack en sla logs centraal op.
+2. **Selective Recovery**:
+   - Restore full backup to temporary project
+   - Export only affected data
+   - Import to production
+   - Verify restoration
+   - Document recovery
 
-## Appendix: Voorbeelden & relevante bestanden
+### Scenario 3: Complete System Failure
 
-- Referenties in deze repo:
-  - [`firebase.json`](firebase.json:1) — emulator configuratie en poorten
-  - [`FIREBASE_EMULATOR_GUIDE.md`](FIREBASE_EMULATOR_GUIDE.md:1) — uitgebreide emulator instructies
-  - [`web/src/lib/firebase-emulator.ts`](web/src/lib/firebase-emulator.ts:1) — helper voor emulator connectie en seeding
-  - API endpoints gerelateerd aan organisatie data: [`docs/backend/01-api-endpoints-guide.md`](docs/backend/01-api-endpoints-guide.md:1)
+1. **Emergency Response**:
+   - Activate disaster recovery team
+   - Assess system status
+   - Identify most recent backup
 
-## Contact & verantwoordelijkheid
+2. **Full System Restore**:
+   - Create new Firebase project (if needed)
+   - Configure all services
+   - Restore from backup
+   - Update DNS/endpoints
+   - Verify all functionality
+   - Resume operations
 
-- Backup owner / contact: ops@[TODO-YOUR-COMPANY].example (pas aan naar juiste contact)
-- Documenteer elke backup/restore gebeurtenis in [`PROJECT_MEMORY.md`](PROJECT_MEMORY.md:1) met:
-  - Datum/tijd
-  - Uitgevoerd door (CI job / gebruiker)
-  - Git SHA / CI run ID
-  - Resultaat (success/failure)
-  - Notities en follow-up acties
+## Retention Policy
 
-Einde van de handleiding.
+### Standard Retention: 30 Days
+
+- Daily backups kept for 30 days
+- Automatic cleanup of older backups
+- Metadata preserved for audit trail
+
+### Long-term Archival (Optional)
+
+For compliance or audit requirements:
+
+1. **Manual Archive Creation**:
+   - Copy backup from GCS to archive storage
+   - Document archive date and reason
+   - Store metadata separately
+
+2. **Archive Storage**:
+   - Google Cloud Storage Archive class
+   - Reduced cost for long-term storage
+   - Retrieval time: hours to days
+
+## Monitoring & Alerts
+
+### Backup Success Monitoring
+
+Configure Cloud Monitoring alerts for:
+
+- **Backup failures**: Alert if backup status = 'failed'
+- **Missing backups**: Alert if no backup in 25+ hours
+- **Long duration**: Alert if backup takes >1 hour
+
+### Alert Configuration
+
+```javascript
+// Example alert condition
+{
+  conditionThreshold: {
+    filter: 'resource.type="cloud_function" AND metric.type="cloudfunctions.googleapis.com/function/execution_count" AND resource.labels.function_name="scheduledBackup" AND metric.labels.status="error"',
+    comparison: 'COMPARISON_GT',
+    thresholdValue: 0,
+    duration: '60s'
+  },
+  displayName: 'Backup Failed Alert',
+  notification_channels: ['your-notification-channel-id']
+}
+```
+
+## Best Practices
+
+### 1. Regular Testing
+
+- **Monthly**: Verify automated backups completing
+- **Quarterly**: Test full restoration process
+- **Annually**: Disaster recovery drill
+
+### 2. Documentation
+
+- Keep backup logs for audit trail
+- Document all manual backups (reason, who, when)
+- Maintain recovery runbooks
+
+### 3. Security
+
+- **Access Control**: Only admins can restore
+- **Audit Logging**: All backup operations logged
+- **Encryption**: Backups encrypted at rest
+
+### 4. Performance
+
+- Schedule backups during low-traffic periods
+- Monitor backup duration trends
+- Optimize collection sizes if needed
+
+## Troubleshooting
+
+### Backup Failed
+
+**Symptoms**: Backup status = 'failed', error message in metadata
+
+**Common Causes**:
+- Insufficient permissions
+- GCS bucket full/missing
+- Firestore export quota exceeded
+
+**Solutions**:
+1. Check error message in backup metadata
+2. Verify GCS bucket permissions
+3. Check Firestore export quota
+4. Retry manual backup
+5. Contact support if persistent
+
+### Restoration Incomplete
+
+**Symptoms**: Some data missing after restoration
+
+**Solutions**:
+1. Check backup metadata for collection list
+2. Verify backup completed successfully
+3. Check for collection name changes
+4. Re-run restoration if safe
+5. Restore from different backup
+
+### Slow Backup Performance
+
+**Symptoms**: Backups taking >1 hour
+
+**Solutions**:
+1. Check total document count
+2. Review collection sizes
+3. Consider archiving old data
+4. Increase Cloud Function timeout
+5. Optimize Firestore structure
+
+## CLI Commands
+
+### Create Manual Backup
+
+```bash
+firebase deploy --only functions:createBackupOnDemand
+```
+
+### List Backups
+
+```bash
+# Via gcloud CLI
+gsutil ls gs://{project-id}-backups/
+```
+
+### Deploy Backup Functions
+
+```bash
+cd functions
+npm run build
+firebase deploy --only functions:scheduledBackup,functions:createBackupOnDemand,functions:listBackups,functions:restoreFromBackup
+```
+
+## Compliance & Audit
+
+### GDPR Compliance
+
+- User data included in backups
+- 30-day retention aligns with requirements
+- Data export capability for user requests
+- Backup deletion on request possible
+
+### Audit Trail
+
+All backup operations logged in `audit-logs` collection:
+
+```javascript
+{
+  timestamp: Timestamp,
+  actor: 'user-id-or-system',
+  action: 'backup_created' | 'backup_restored',
+  category: 'security',
+  severity: 'critical',
+  subject: 'backup-name',
+  metadata: {
+    backupPath: string,
+    collections: string[]
+  }
+}
+```
+
+## Support & Contact
+
+For backup-related issues:
+
+1. **Check documentation**: This guide + Firebase docs
+2. **Review logs**: Check Cloud Functions logs
+3. **Contact admin**: Notify system administrator
+4. **Emergency**: Use emergency contact procedures
+
+## Appendix
+
+### Firestore Export Format
+
+Backups use Firestore's native export format:
+- Binary protobuf format
+- Includes all document data
+- Preserves subcollections
+- Maintains document structure
+
+### Recovery Time Objectives
+
+- **RTO** (Recovery Time Objective): 4 hours
+- **RPO** (Recovery Point Objective): 24 hours (daily backups)
+- **Restoration Time**: 30 minutes - 2 hours (depending on size)
+
+### Cost Considerations
+
+- **Storage**: ~€0.02/GB/month (Standard Storage)
+- **Export Operations**: Free (within quota)
+- **Import Operations**: Free (within quota)
+- **Network Egress**: May apply for cross-region
+
+---
+
+**Last Updated**: October 21, 2025  
+**Version**: 1.0  
+**Maintained by**: SafeWork Pro DevOps Team

@@ -191,14 +191,50 @@
 
 ## 💡 Belangrijke Notities
 
+### 🚨 KRITIEKE WERKAFSPRAAK - ALTIJD VOLGEN 🚨
+**CHECKLIST.md UPDATES**: Na het voltooien van ELKE taak MOET de taak worden afgevinkt in CHECKLIST.md met:
+1. ✅ Checkbox updaten naar [x]
+2. **COMPLETED** status toevoegen met datum (bijv. "✅ **COMPLETED 2025-10-21**")
+3. Deliverables sectie toevoegen met alle gemaakte bestanden en lijnnummers
+4. Key Features Implemented sectie met bullet points
+5. Notes sectie met belangrijke deployment/setup informatie
+6. **NOOIT** voltooide taken verwijderen - historie moet altijd bewaard blijven
+
+**Waarom dit kritiek is**:
+- Gebruiker moet altijd kunnen zien wat er in het verleden is gedaan
+- Checklist is de single source of truth voor project voortgang
+- Memory resets betekenen dat de checklist het enige historische record is
+- Voltooide taken documenteren helpt bij troubleshooting en kennis behoud
+
+**Voorbeeld van correcte taak update**:
+```markdown
+- [x] **Task 9.4**: Set up automated backup system for Firestore data ✅ **COMPLETED 2025-10-21**
+  - **Completion Criteria**: Automated daily backups, backup testing, restoration procedures ✅
+  - **Dependencies**: Task 9.1
+  - **Time Estimate**: 2 days
+  - **Phase**: Advanced (Month 8)
+  - **Completed**: 2025-10-21
+  - **Deliverables**:
+    - [`functions/src/backupService.ts`](functions/src/backupService.ts:1) - Complete backup Cloud Functions (330 lines)
+    - [`functions/src/index.ts`](functions/src/index.ts:1) - Exported backup functions
+    - [`docs/admin/04-backup-restore-guide.md`](docs/admin/04-backup-restore-guide.md:1) - Comprehensive backup documentation (300+ lines)
+  - **Key Features Implemented**:
+    - Scheduled daily backups at 3 AM UTC with 30-day retention
+    - On-demand backup creation (admin only)
+    - [etc...]
+  - **Notes**: Ready for deployment. Requires GCS bucket creation before production use.
+```
+
 ### Lessons Learned (Laatste Week)
 1. **Vercel Monorepo**: Requires explicit directory paths in vercel.json
 2. **React 19 Compatibility**: Many packages need --force flag
 3. **Firebase Admin**: Cannot initialize at build-time without credentials
 4. **TypeScript Types**: Always check @types packages for third-party libraries
+4. **CHECKLIST.md Updates**: ALTIJD taken afvinken na voltooiing met volledige details
 
 ### Best Practices Nu Actief
 - **Memory Bank**: Volledige context in 5 bestanden
 - **Incremental Testing**: Test na elke feature
 - **Production-First**: Build fixes tested locally eerst
 - **Documentation**: All decisions documented in PROJECT_MEMORY.md
+- **CHECKLIST Updates**: Taken ALTIJD afvinken met deliverables en completion date

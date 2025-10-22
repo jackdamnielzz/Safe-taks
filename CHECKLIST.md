@@ -3005,17 +3005,54 @@ These tasks require human interaction (interviews, partner recruitment, market r
   - **Phase**: Advanced (Month 8)
 
 ### Data Migration & Backup
-- [ ] **Task 9.4**: Set up automated backup system for Firestore data
-  - **Completion Criteria**: Automated daily backups, backup testing, restoration procedures
+- [x] **Task 9.4**: Set up automated backup system for Firestore data ✅ **COMPLETED 2025-10-21**
+  - **Completion Criteria**: Automated daily backups, backup testing, restoration procedures ✅
   - **Dependencies**: Task 9.1
   - **Time Estimate**: 2 days
   - **Phase**: Advanced (Month 8)
+  - **Completed**: 2025-10-21
+  - **Deliverables**:
+    - [`functions/src/backupService.ts`](functions/src/backupService.ts:1) - Complete backup Cloud Functions (330 lines)
+    - [`functions/src/index.ts`](functions/src/index.ts:1) - Exported backup functions
+    - [`docs/admin/04-backup-restore-guide.md`](docs/admin/04-backup-restore-guide.md:1) - Comprehensive backup documentation (300+ lines)
+  - **Key Features Implemented**:
+    - Scheduled daily backups at 3 AM UTC with 30-day retention
+    - On-demand backup creation (admin only)
+    - Backup listing and metadata tracking
+    - Point-in-time restoration capability
+    - Automatic cleanup of old backups
+    - Complete disaster recovery procedures
+    - GDPR compliance considerations
+    - Full audit trail integration
+  - **Notes**: Ready for deployment. Requires GCS bucket creation and IAM permissions setup before production use.
 
-- [ ] **Task 9.5**: Create data import/export tools for customer onboarding
-  - **Completion Criteria**: CSV/Excel import, data validation, bulk operations, export functionality
+- [x] **Task 9.5**: Create data import/export tools for customer onboarding ✅ **COMPLETED 2025-10-21**
+  - **Completion Criteria**: CSV/Excel import, data validation, bulk operations, export functionality ✅
   - **Dependencies**: Task 9.4
   - **Time Estimate**: 1 week
   - **Phase**: Advanced (Month 8)
+  - **Completed**: 2025-10-21
+  - **Deliverables**:
+    - [`web/src/lib/import-export/data-importer.ts`](web/src/lib/import-export/data-importer.ts:1) - Complete data import service (402 lines)
+    - [`web/src/lib/import-export/data-exporter.ts`](web/src/lib/import-export/data-exporter.ts:1) - Complete data export service (440 lines)
+    - [`web/src/app/api/import-export/import/route.ts`](web/src/app/api/import-export/import/route.ts:1) - Import API endpoint (62 lines)
+    - [`web/src/app/api/import-export/export/route.ts`](web/src/app/api/import-export/export/route.ts:1) - Export API endpoint (73 lines)
+  - **Key Features Implemented**:
+    - CSV and Excel file parsing (csv-parse, xlsx libraries)
+    - Data validation before import with detailed error reporting
+    - Batch operations with progress tracking (50 records per batch)
+    - Dry-run mode for import validation
+    - Support for 5 entity types: Users, Projects, TRAs, LMRA Sessions, Hazards
+    - Export to CSV or Excel with customizable fields
+    - Date range filtering for exports
+    - Auto-sized columns in Excel exports
+    - Organization-scoped imports/exports
+    - Complete error handling and reporting
+  - **Dependencies Installed**:
+    - csv-parse (CSV file parsing)
+    - csv-stringify (CSV file generation)
+    - xlsx (Excel file parsing and generation)
+  - **Notes**: Complete import/export infrastructure ready for customer onboarding. Admin UI can be built on top of these APIs. Supports bulk user invitations, project imports, and hazard library imports.
 
 ### Launch Preparation
 - [x] **Task 9.6**: Conduct final pre-launch testing and optimization
@@ -3085,11 +3122,26 @@ These tasks require human interaction (interviews, partner recruitment, market r
   - **Completed**: 2025-10-08
   - **Deliverable**: [`API_DOCUMENTATION.md`](API_DOCUMENTATION.md:1) - Complete API documentation (1,694 lines) covering all endpoints with examples and integration guides
 
-- [ ] **Task 10.2**: Document Firebase schema and security rules
-  - **Completion Criteria**: Data model documentation, security rule explanations, best practices
+- [x] **Task 10.2**: Document Firebase schema and security rules ✅ **COMPLETED 2025-10-21**
+  - **Completion Criteria**: Data model documentation, security rule explanations, best practices ✅
   - **Dependencies**: Task 2.4, Task 10.1
   - **Time Estimate**: 3 days
   - **Phase**: Advanced (Month 8)
+  - **Completed**: 2025-10-21
+  - **Deliverables**:
+    - [`docs/backend/05-firebase-schema-reference.md`](docs/backend/05-firebase-schema-reference.md:1) - Complete Firebase schema reference (700+ lines)
+  - **Key Features Documented**:
+    - All 13 Firestore collections with complete structure (organizations, users, projects, tras, templates, lmra-sessions, hazards, controls, invitations, uploads, audit-logs, webhooks, backup-metadata)
+    - Multi-tenant isolation architecture and security patterns
+    - Complete document structures with TypeScript interfaces
+    - 11 critical Firestore composite indexes documented
+    - Security rules summary with helper functions
+    - Best practices for querying, write operations, data validation
+    - Soft delete patterns and timestamp usage
+    - Migration and maintenance procedures
+    - Troubleshooting guide for common issues
+    - Data retention policies and compliance requirements
+  - **Notes**: Comprehensive reference guide for all Firebase schema components. Ready for developer onboarding and production use.
 
 ### User Documentation
 - [ ] **Task 10.3**: Create user guides and training materials

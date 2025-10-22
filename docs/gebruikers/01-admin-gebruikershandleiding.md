@@ -1,182 +1,364 @@
-# Administrators Gebruikershandleiding
+[MEMORY BANK: ACTIVE]
 
-Deze handleiding richt zich op administrators van het systeem. Het beschrijft organisatorische setup, rollen en permissies, gebruikersbeheer, veelvoorkomende workflows in de admin-UI, en troubleshooting-tips. Waar relevant verwijzen we naar repository-bronnen en operationele procedures.
+# Administrators Gebruikershandleiding — Uitgebreide versie
 
-Belangrijke verwijzingen:
-- Zie project geheugen voor wijzigingen en beslissingen: [`PROJECT_MEMORY.md`](PROJECT_MEMORY.md:1)
-- API referentie: [`docs/backend/01-api-endpoints-guide.md`](docs/backend/01-api-endpoints-guide.md:1)
-- Organisatie beheer instructies: [`docs/admin/01-organisatie-beheer.md`](docs/admin/01-organisatie-beheer.md:1)
-- Gebruiker beheer instructies: [`docs/admin/02-gebruiker-beheer.md`](docs/admin/02-gebruiker-beheer.md:1)
+Deze handleiding is bedoeld voor administrators en Owners die verantwoordelijk zijn voor organisatiebeheer, gebruikersbeheer, configuratie en operationele workflows. De inhoud is in het Nederlands en bevat praktische instructies, UI-screenshots (plaatsaanduidingen), concrete API-snippets en voorbeeld-workflows die admins dagelijks nodig hebben.
 
-Voor wie is deze handleiding
-- System administrators
-- Owners / organisatiebeheerders
-- DevOps- en supportmedewerkers die administratieve taken uitvoeren
+Belangrijke verwijzingen
+- Project geheugen: PROJECT_MEMORY.md
+- API referentie: docs/backend/01-api-endpoints-guide.md
+- Onboarding gids: docs/gebruikers/05-onboarding-gids.md
+- Backup & restore: docs/admin/04-backup-restore-guide.md
+- Import/Export tools: web/src/lib/import-export/
 
-Voorwaarden en toegang
-- Admin-accounts hebben elevated privileges binnen de applicatie. Zorg dat admin-accounts beveiligd zijn met:
-  - Sterk wachtwoordbeleid en MFA (2FA)
-  - Beperkte toegang via e-mail-allowlist of SSO waar mogelijk
-  - Gebruik van dedicated admin service accounts voor scripts en CI
-
+Inhoudsopgave
 1. Organisatie aanmaken en configureren
-- Locatie in UI:
-  - Navigeer naar: Admin dashboard → Organisaties → 'Nieuwe organisatie'
-- Vereiste velden:
-  - Organisatienaam
-  - Land / regio
-  - Standaard tijdzone
-  - Standaard branding (optioneel)
-- Stappen:
-  1. Klik 'Nieuwe organisatie'
-  2. Vul de velden in en klik 'Opslaan'
-  3. Wijs een eigenaar toe (rol: Owner)
-  4. Controleer dat de organisatie zichtbaar is in de lijst en / of via de API:
-     - GET /api/organizations (zie [`docs/backend/01-api-endpoints-guide.md`](docs/backend/01-api-endpoints-guide.md:1))
+2. Rollen & permissies (UI + API)
+3. Gebruikers aanmaken, uitnodigen en bulk-import
+4. Voorbeeld-workflows (TRA lifecycle, LMRA, approvals) — inclusief API-voorbeelden
+5. UI-screenshots (plaatsvervangers) en toelichting
+6. Admin API en scripts — concrete curl & Node voorbeelden
+7. Troubleshooting & veelvoorkomende fouten
+8. Change management, auditing en release flow
+9. Appendix: paden in de repo en extra bronnen
 
-2. Rollen & permissies overzicht
-- Standaardrollen in het systeem:
-  - Owner (volledige rechten voor organisatie)
-  - Admin (beheer van gebruikers en instellingen)
-  - Safety Manager (processen en incident management)
-  - Supervisor (toezicht en goedkeuring)
-  - Field Worker (veldactiviteiten; beperkte toegang)
-- Role mapping:
-  - Rollen worden toegewezen via de Admin UI of via de API (`/api/auth/set-claims/route.ts` in repo).
-  - Voor programmatische toewijzing: gebruik de set-claims API of Firebase Admin SDK (zie [`docs/backend/02-firebase-admin-guide.md`](docs/backend/02-firebase-admin-guide.md:1)).
+1. Organisatie aanmaken en configureren (ui + API)
+UI-locatie
+- Admin dashboard → Organisaties → 'Nieuwe organisatie'
 
-3. Gebruikers aanmaken en beheren
-- Aanmaken via UI:
-  1. Admin dashboard → Gebruikers → 'Nieuwe gebruiker'
-  2. Vul naam, e-mail en (optioneel) telefoonnummer in
-  3. Wijs rol(en) en organisatie toe
-  4. Verstuur uitnodiging (e-mail met registratie-link)
-- Bulk import:
-  - Voor CSV import gebruik de admin CSV-import tool (indien aanwezig) of schrijf een kleine script die de Users endpoint en set-claims API gebruikt.
-- Wijzigen van gebruikers:
-  - Wijzig profielgegevens, rollen en organisatie-toewijzing via Admin UI of via PATCH /api/users/:id
-- Verwijderen of deactiveren:
-  - Prefer deactiveer i.p.v. verwijderen voor audit-doeleinden (set user.active = false)
-  - Verwijder pas wanneer verzekerd is dat er geen gekoppelde kritieke records zijn; documenteer in PROJECT_MEMORY.md.
+UI-stappen (kort)
+1. Ga naar Admin → Organisaties → 'Nieuwe organisatie'
+2. Vul: Organisatienaam, Land/Regio, Tijdzone, Contact e-mail, Branding
+3. Wijs Owner toe en klik Opslaan
+4. Controleer: GET /api/organizations (API) of de organisatie zichtbaar is
 
-4. Authenticatie & accounts herstellen
-- Wachtwoord reset:
-  - Admins kunnen een password-reset link sturen vanuit de gebruikersbeheer UI.
-  - Voor bulk resets: gebruik Firebase Auth console of Admin SDK.
-- Multi-factor / MFA:
-  - Aanbeveling om MFA verplicht te stellen voor admin-accounts.
-  - Documenteer MFA policies en recovery flows in interne security docs.
-- Account lockout en failover:
-  - Monitor verdachte login activiteit en configureer alerts (zie monitoring guide).
+API-check (concrete endpoints)
+- Route in repo: web/src/app/api/organizations/route.ts
+- Belangrijke endpoints (org-scoped):
+  - GET  /api/organizations                 -> haal organisatie details (auth required)
+  - POST /api/organizations                 -> maak nieuwe organisatie (admin)
+  - PATCH /api/organizations                -> update organisatie (admin)
+  - DELETE /api/organizations               -> soft-delete organisatie (admin)
 
-5. Rollen toewijzen via UI (stap-voor-stap)
-1. Open Admin dashboard → Gebruikers
-2. Zoek gebruiker op e-mail of naam
-3. Klik op gebruiker → 'Wijzig rollen'
-4. Vink de gewenste rol(len) aan en sla op
-5. Validatie: Vraag gebruiker uit te loggen en opnieuw in te loggen om claims te verversen
-6. Programmatic check:
-   - Controleer via API of via Firebase token claims dat rol correct is toegekend.
+- Voorbeeld curl (gebruik env var NEXT_PUBLIC_APP_URL of localhost):
+  curl -H "Authorization: Bearer $SERVICE_TOKEN" "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/organizations"
 
-6. Veelvoorkomende admin-workflows
-- Nieuwe organisatie onboarden:
-  1. Maak organisatie aan (zie sectie 1)
-  2. Maak initiele admin(s) aan en wijs Owner toe
-  3. Stel standaard instellingen in (e-mail templates, branding)
-  4. Seed standaard data via seeding scripts (indien beschikbaar)
-  5. Documenteer onboarding stappen in PROJECT_MEMORY.md
-- Gebruiker support / account issues:
-  - Reset wachtwoord, controleer role claims, controleer logs en last successful login.
-  - Als data ontbreekt, controleer backup (zie [`docs/admin/04-backup-restore-guide.md`](docs/admin/04-backup-restore-guide.md:1)) en volg test-restore checklist.
-- Incident management:
-  - Koppel support ticket aan incident en wijs eigenaar toe.
-  - Schakel accounts tijdelijk uit indien security incident.
+- Voorbeeld: organisatie aanmaken (server-side)
+  curl -X POST -H "Authorization: Bearer $SERVICE_TOKEN" -H "Content-Type: application/json" \
+    -d '{"name":"Acme Construction","country":"NL","timezone":"Europe/Amsterdam","contactEmail":"ops@acme.example"}' \
+    "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/organizations"
 
-7. Admin API en scripting
-- Relevante endpoints:
-  - GET /api/organizations
-  - POST /api/organizations
-  - GET /api/users
-  - PATCH /api/users/:id
-  - POST /api/auth/set-claims (zie code in `web/src/app/api/auth/set-claims/route.ts`: [`web/src/app/api/auth/set-claims/route.ts`](web/src/app/api/auth/set-claims/route.ts:1))
-- Voorbeelden:
-  - Toewijzen rol via API (pseudo):
-    - POST /api/auth/set-claims { uid: "USER_UID", claims: { role: "admin", orgId: "ORG_ID" } }
-  - Gebruik altijd service accounts / server-side autorisatie voor admin operaties.
+- Tip: de server-side implementation gebruikt Firebase Admin helpers (zie web/src/lib/firebase-admin.ts) en valideert dat de aanroepende gebruiker admin-permissies heeft.
 
-8. Auditing & logs
-- Admin acties loggen:
-  - Log: wie, wat, wanneer (user id, actie, timestamp, affected resources)
-  - Zorg dat logs bewaard worden in een centrale log- of observability stack
-- Toegangslogs:
-  - Controleer regelmatig wie admin-rechten heeft en roterende toegang (least privilege)
+Resultaat: response bevat orgId die je moet noteren:
+  {
+    "id": "org_abc123",
+    "name": "Acme Construction",
+    "createdAt": "2025-10-21T10:00:00Z"
+  }
 
-9. Security best practices
-- Least privilege: geef admins alleen de permissies die nodig zijn
-- MFA verplicht voor admin accounts
-- Gebruik policy-based toegang en review rollen regelmatig
-- Gebruik dedicated service accounts voor CI en scripting
-- Bewaar en roteer API keys en service account keys via secret manager
-- Documenteer alle admin veranderingen in PROJECT_MEMORY.md
+2. Rollen & permissies — UI en toewijzing via API
+Standaardrollen
+- Owner, Admin, Safety Manager, Supervisor, Field Worker
 
-10. Backups en restores (kort overzicht)
-- Raadpleeg de volledige backup & restore handleiding: [`docs/admin/04-backup-restore-guide.md`](docs/admin/04-backup-restore-guide.md:1)
-- Belangrijke punten:
-  - Test restores in staging
-  - Gebruik dedicated backup service account met minimaal benodigde IAM
-  - Schakel writes uit tijdens production restore waar mogelijk
+UI: Rollen toewijzen
+- Admin → Gebruikers → kies gebruiker → 'Wijzig rollen' → vink gewenste rollen aan → Opslaan
 
-11. Troubleshooting veelvoorkomende problemen
-- Gebruiker ziet geen admin features:
-  - Controleer rol claims in token
-  - Vraag gebruiker om uit-/inloggen (to force claim refresh)
-  - Controleer op caching of feature-flag restricties
-- API errors bij user management:
-  - Controleer logs, valideer payloads, controleer permissies van service account
-- Onverwachte data inconsistencies:
-  - Valideer tegen laatste backups en voer test-restore in staging
+API: set-claims (concreet)
+- Route in repo: web/src/app/api/auth/set-claims/route.ts
+- Endpoint: POST /api/auth/set-claims
+- Beschrijving: gebruikt door admins / service accounts om Firebase custom claims en org-scoped role claims te zetten via de Admin SDK wrapper (web/src/lib/firebase-admin.ts). Zorg dat je deze endpoint alleen vanaf een vertrouwde service-account of server-side environment aanroept.
 
-12. Change management en release flow
-- Documenteer schema wijzigingen of belangrijke admin changes in PROJECT_MEMORY.md
-- Voor grote wijzigingen: plan rollout in staging, run migration scripts en QA flows
-- Communiceer downtime met stakeholders en documenteer rollback-steps
+- Payload (JSON):
+  {
+    "uid": "firebaseUserId123",
+    "claims": { "role": "admin", "orgId": "org_abc123" }
+  }
 
-13. Toegangsproces en onboarding van admin-accounts
-- Onboarding checklist:
-  - Identiteitsverificatie (KYC / bedrijfs-e-mail)
-  - MFA setup
-  - Introductie training (admin UI, incident response)
-  - Toewijzen van opleiding materiaal en handleidingen (link naar gebruikershandleidingen)
-- Offboarding checklist:
-  - Deactiveer account, verwijder rollen, roteer secrets als nodig
+- Voorbeeld curl:
+  curl -X POST -H "Authorization: Bearer $SERVICE_TOKEN" -H "Content-Type: application/json" \
+    -d '{"uid":"firebaseUserId123","claims":{"role":"admin","orgId":"org_abc123"}}' \
+    "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/auth/set-claims"
 
-14. Rollen matrix (voorbeeld)
-- Owner: [manage org, manage users, view billing, restore backups]
-- Admin: [manage users, change settings, view logs]
-- Safety Manager: [manage incidents, view reports]
-- Supervisor: [approve workflows, view team data]
-- Field Worker: [submit reports, view assigned tasks]
+- Implementatiehint: de route gebruikt internal helper setCustomClaims (web/src/lib/firebase-admin.ts). Na het zetten van claims moet de gebruiker zijn token vernieuwen (uit-/inloggen) om de nieuwe claims te zien.
 
-15. FAQ
-- Q: Hoe wijzig ik de rol van meerdere gebruikers tegelijk?
-  - A: Gebruik een bulk import script of CSV importer; voer set-claims iteratief via Admin API.
-- Q: Hoe test ik of set-claims werkt?
-  - A: Wijs claim toe, vraag gebruiker token te verversen en inspecteer token payload (of roep /api/me aan).
-- Q: Wat te doen bij per ongeluk verwijderen van data?
-  - A: Stop writes, identificeer laatste goede backup en volg de test-restore checklist (zie backup handleiding).
+Node example (server-side, gebruik service account)
+- Gebruik web/src/lib/firebase-admin.ts voor referentie naar Admin SDK
+  import admin from 'path-to-web/src/lib/firebase-admin';
+  await admin.auth().setCustomUserClaims(uid, { role: 'admin', orgId: 'org_abc123' });
 
-16. Contact & escalatie
-- Eerste lijn support: support@[TODO-YOUR-COMPANY].example (pas aan)
-- Backup & ops owner: ops@[TODO-YOUR-COMPANY].example (pas aan)
-- Documenteer elke wijziging in PROJECT_MEMORY.md met:
-  - Datum/tijd, uitgevoerd door, Git SHA / CI run ID, resultaat en notities
+Verifiëren van claims (client)
+- Vraag gebruiker token te vernieuwen. Controleer via /api/me of inspecteer JWT:
 
-17. Appendix
-- Relevante bestanden en locaties in repo:
-  - Admin organisatie beheer instructies: [`docs/admin/01-organisatie-beheer.md`](docs/admin/01-organisatie-beheer.md:1)
-  - Admin gebruiker beheer: [`docs/admin/02-gebruiker-beheer.md`](docs/admin/02-gebruiker-beheer.md:1)
-  - Data manipulatie: [`docs/admin/03-data-manipulatie.md`](docs/admin/03-data-manipulatie.md:1)
-  - Backup & restore: [`docs/admin/04-backup-restore-guide.md`](docs/admin/04-backup-restore-guide.md:1)
-  - API endpoints: [`docs/backend/01-api-endpoints-guide.md`](docs/backend/01-api-endpoints-guide.md:1)
+  Authorization: Bearer <idToken>
+  GET /api/me
+  Response bevat claims: { role: "admin", orgId: "org_abc123" }
+
+3. Gebruikers aanmaken, uitnodigen en bulk-import
+UI: enkele gebruiker uitnodigen
+1. Admin → Gebruikers → 'Nieuwe gebruiker'
+2. Vul naam, e-mail, telefoon (optioneel)
+3. Wijs rol en organisatie toe
+4. Verstuur uitnodiging
+
+Bulk import — stappen
+- Bereid CSV voor: headers: email,firstName,lastName,role,orgId,phone
+- Voer dry-run via import API of Admin UI import tool
+- Controleer fouten en corrigeer CSV
+- Voer daadwerkelijke import uit (batch grootte 50 aanbevolen)
+
+API: import voorbeeld (pseudo)
+- POST /api/import/users
+- Gebruik multipart/form-data met csv-bestand of upload naar GCS en geef file reference
+
+Voorbeeld validatie (server-return)
+  {
+    "importId": "imp_2025_10_21_001",
+    "rows": 120,
+    "errors": [
+      { "row": 5, "error": "invalid email" },
+      { "row": 42, "error": "unknown role 'manager'" }
+    ],
+    "status": "dry-run"
+  }
+
+4. Voorbeeld-workflows — volledig uitgewerkt
+
+Workflow A: TRA aanmaken → review → goedkeuring → archivering (Admin focus)
+- Doel: laat admins zien hoe een TRA door de organisatie lifecycle beweegt en wanneer admin acties vereist zijn.
+
+Stap-voor-stap (UI)
+1. Field Worker maakt TRA aan (Mobiele UI) met trefwoorden, risico’s en controle maatregelen.
+2. TRA is in status "Draft" totdat ingediend.
+3. Supervisor ontvangt notificatie → bekijkt TRA → kan goedkeuren of terugsturen voor aanpassing.
+4. Na goedkeuring verandert status naar "Approved" en wordt TRA zichtbaar in rapporten.
+5. Admin kan TRA exporteren of verwijderen (gebruik 'deactivate' voorkeur).
+
+API flow (concreet — endpoints in repo)
+- Implementatiebestanden: web/src/app/api/tras/route.ts en gerelateerde route-bestanden (tras/draft, tras/:traId/*)
+- Belangrijke endpoints:
+  - POST /api/tras
+    - Doel: Maak een nieuwe TRA (draft of submit afhankelijk van payload)
+    - Voorbeeld curl:
+      curl -X POST -H "Authorization: Bearer $SERVICE_TOKEN" -H "Content-Type: application/json" \
+        -d '{"projectId":"proj_1","title":"Werk op hoogte - reparatie dak","hazards":[{"id":"haz_1","description":"valgevaar"}],"controls":[{"description":"gebruik valbeveiliging"}]}' \
+        "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/tras"
+    - Verwachte response: { "id": "<traId>", "status": "created" } of status "Draft"
+
+  - POST /api/tras/draft
+    - Doel: Sla een draft op en ontvang draftId
+    - Gebruik voor autosave/ontwerp-workflows
+
+  - POST /api/tras/{traId}/submit
+    - Doel: Submit een draft-TRA voor review
+    - Routebestand: web/src/app/api/tras/[traId]/submit/route.ts
+    - Voorbeeld curl:
+      curl -X POST -H "Authorization: Bearer $SERVICE_TOKEN" \
+        "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/tras/<traId>/submit"
+
+  - POST /api/tras/{traId}/approve
+    - Doel: Supervisor of approver keurt TRA goed
+    - Routebestand: web/src/app/api/tras/[traId]/approve/route.ts
+    - Payload voorbeeld: { "approvedBy":"supervisor_uid", "notes":"OK" }
+    - Voorbeeld curl:
+      curl -X POST -H "Authorization: Bearer $SERVICE_TOKEN" -H "Content-Type: application/json" \
+        -d '{"approvedBy":"supervisor_uid","notes":"OK"}' \
+        "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/tras/<traId>/approve"
+
+  - POST /api/tras/{traId}/signature
+    - Doel: Voeg handtekening/acceptatie toe (mobiele flows)
+    - Routebestand: web/src/app/api/tras/[traId]/signature/route.ts
+
+  - Comments: GET/POST /api/tras/{traId}/comments and /api/tras/{traId}/comments/{commentId}
+    - Routebestanden: web/src/app/api/tras/[traId]/comments/route.ts en comments/[commentId]/route.ts
+    - Gebruik voor discussie, resolutie en audit-trail
+
+  - GET /api/tras/{traId}/export?format=pdf|csv
+    - Doel: Exporteer TRA als PDF/CSV voor archivering/reporting
+    - Voorbeeld curl:
+      curl -H "Authorization: Bearer $SERVICE_TOKEN" \
+        "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/tras/<traId>/export?format=pdf" -o tra_<traId>.pdf
+
+- Extra tips:
+  - Alle tras endpoints zijn org-scoped; include orgId via auth token (requireOrgAuth in server-code).
+  - Raadpleeg web/src/app/api/tras/route.ts voor filtering, pagination en query parameters.
+
+Workflow B: LMRA uitvoering (voor admins: controleren & auditing)
+- Field Worker start LMRA via mobile → voegt foto's en observaties toe → signeert
+- LMRA wordt opgeslagen als completed session
+- Admins kunnen LMRA-sessies zoeken via filters (project, date, user) en downloaden
+
+API snippet: LMRA endpoints (concreet)
+- Implementatiebestanden: web/src/app/api/lmra-sessions/route.ts en web/src/app/api/lmra-sessions/[id]/route.ts, [id]/complete/route.ts
+- Belangrijke endpoints:
+  - POST /api/lmra-sessions
+    - Doel: Maak nieuwe LMRA session (field worker)
+    - Payload bevat: traId, projectId, teamMembers, observations, photos (storage links)
+    - Voorbeeld curl:
+      curl -X POST -H "Authorization: Bearer $SERVICE_TOKEN" -H "Content-Type: application/json" \
+        -d '{"traId":"<traId>","projectId":"proj_1","teamMembers":["uid1","uid2"],"observations":[{"text":"Check valbeveiliging"}]}' \
+        "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/lmra-sessions"
+
+  - GET /api/lmra-sessions
+    - Doel: List LMRA sessions met filtering, pagination (org-scoped)
+    - Query parameters: from, to, projectId, performedBy, pageSize, cursor
+    - Voorbeeld curl:
+      curl -H "Authorization: Bearer $SERVICE_TOKEN" \
+        "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/lmra-sessions?from=2025-10-01&to=2025-10-21"
+
+  - GET /api/lmra-sessions/{id}
+    - Doel: Haal details van een specifieke session (inclusief photo storage links)
+    - Voorbeeld curl:
+      curl -H "Authorization: Bearer $SERVICE_TOKEN" \
+        "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/lmra-sessions/<sessionId>"
+
+  - POST /api/lmra-sessions/{id}/complete
+    - Doel: Markeer session als complete (of voeg final sign-off toe)
+    - Routebestand: web/src/app/api/lmra-sessions/[id]/complete/route.ts
+
+  - PATCH /api/lmra-sessions/{id}
+    - Doel: Update session (admins en safety_managers kunnen bepaalde velden aanpassen)
+    - Routebestand: web/src/app/api/lmra-sessions/[id]/route.ts
+
+Admin handelingen (concreet)
+- Onderzoek een LMRA:
+  curl -H "Authorization: Bearer $SERVICE_TOKEN" "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/lmra-sessions/<sessionId>"
+
+- Open investigation / add comment:
+  POST /api/lmra-sessions/{id}/investigation (gebruik de investigation flow in UI of een dedicated endpoint in de repository)
+
+- Tips:
+  - Photos worden opgeslagen in Firebase Storage; API responses bevatten storage URLs.
+  - Gebruik filters (projectId/from/to) voor compliance rapportages.
+
+5. UI-screenshots en toelichting (plaatsvervangers)
+Let op: voeg daadwerkelijke screenshots toe in repo onder docs/assets/screenshots/ en update paden.
+
+6. Extra Admin API endpoints (invitations, members, import-export)
+- Invitations (bruikbare endpoints en repo-locatie)
+  - Implementatie: web/src/app/api/invitations/
+  - GET  /api/invitations                         -> lijst uitnodigingen (org-scoped, admin/safety_manager)
+  - POST /api/invitations                         -> maak nieuwe uitnodiging (admin/safety_manager)
+  - GET  /api/invitations/{id}                    -> details (public if token-based) / admin view
+  - POST /api/invitations/{id}/accept             -> acceptatie flow (public route)
+  - POST /api/invitations/{id}/decline            -> decline flow (public route)
+  - DELETE /api/invitations/{id}                  -> cancel invitation (admin)
+  - Voorbeeld curl (create invitation):
+    curl -X POST -H "Authorization: Bearer $SERVICE_TOKEN" -H "Content-Type: application/json" \
+      -d '{"email":"jan@acme.example","role":"field_worker","projectAccess":"assigned"}' \
+      "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/invitations"
+
+- Organization members (organisaties/leden)
+  - Implementatie: web/src/app/api/organizations/members/route.ts
+  - GET  /api/organizations/members               -> lijst members (org-scoped)
+  - POST /api/organizations/members               -> voeg member toe (admin/safety_manager)
+  - PATCH /api/organizations/members/{id}         -> update member (admin/safety_manager)
+  - DELETE /api/organizations/members/{id}        -> soft-delete / deactivate member (admin)
+  - Voorbeeld curl (add member):
+    curl -X POST -H "Authorization: Bearer $SERVICE_TOKEN" -H "Content-Type: application/json" \
+      -d '{"email":"piet@acme.example","firstName":"Piet","role":"field_worker"}' \
+      "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/organizations/members"
+
+- Import / Export (CSV / Excel)
+  - Implementatie: web/src/app/api/import-export/import/route.ts en web/src/app/api/import-export/export/route.ts
+  - POST /api/import-export/import                 -> upload CSV/XLSX for import (supports dry-run)
+    - Gebruik multipart/form-data (file field) or upload to storage and pass reference
+    - Voorbeeld (upload via curl, multipart):
+      curl -X POST -H "Authorization: Bearer $SERVICE_TOKEN" -F "file=@users.csv" \
+        "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/import-export/import?entity=users&dryRun=true"
+  - GET /api/import-export/export?entity=users&format=csv&orgId=<org>
+    - Doel: export entity data as CSV/Excel
+    - Voorbeeld curl:
+      curl -H "Authorization: Bearer $SERVICE_TOKEN" \
+        "${NEXT_PUBLIC_APP_URL:-http://localhost:3000}/api/import-export/export?entity=tras&format=csv" -o tras_export.csv
+
+- Notes:
+  - Import endpoint supports batch processing and returns validation errors in a structured format.
+  - Exports are org-scoped and may be large; use pagination or background job if needed (see web/src/lib/import-export/*).
+
+- Screenshot: Admin dashboard (docs/assets/screenshots/admin-dashboard.png)
+  Toelichting: overzicht van organisaties, actieve issues en snelle acties (create org, invite user)
+
+- Screenshot: Organisatie aanmaken (docs/assets/screenshots/admin-new-org.png)
+  Toelichting: velden en tips (gebruik korte naam, correcte timezone)
+
+- Screenshot: Gebruikersbeheer (docs/assets/screenshots/admin-users.png)
+  Toelichting: filters voor role/org, bulk actions en invite flow
+
+- Screenshot: TRA detail & approval modal (docs/assets/screenshots/tra-detail-approval.png)
+  Toelichting: waar admins supervisie en exports kunnen doen
+
+6. Admin API en scripting — concrete voorbeelden
+Algemene aanbeveling
+- Gebruik service-accounts met minimale scopes
+- Log alle admin-API calls (wie, wat, wanneer)
+- Gebruik retry- en backoff-logica voor batch imports
+
+Voorbeeld: Node script om meerdere gebruikers rollen toe te wijzen
+const fetch = require('node-fetch');
+const serviceToken = process.env.SERVICE_TOKEN;
+const users = [
+  { uid: 'uid1', role: 'admin' },
+  { uid: 'uid2', role: 'safety_manager' }
+];
+
+async function setClaims(uid, role, orgId) {
+  const res = await fetch('https://example.com/api/auth/set-claims', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${serviceToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ uid, claims: { role, orgId } })
+  });
+  return res.json();
+}
+
+(async () => {
+  for (const u of users) {
+    const r = await setClaims(u.uid, u.role, 'org_abc123');
+    console.log('setClaims result', r);
+  }
+})();
+
+Admin export script (bash)
+- Exporteer tras van afgelopen maand als CSV:
+  curl -H "Authorization: Bearer $SERVICE_TOKEN" "https://example.com/api/tras/export?orgId=org_abc123&from=2025-09-01&to=2025-09-30&format=csv" -o tras_sep_2025_09.csv
+
+7. Troubleshooting & veelvoorkomende fouten
+Probleem: gebruiker ziet geen admin functies na roltoewijzing
+- Oorzaken:
+  - Token claims niet ververst (vraag gebruiker uit te loggen/inloggen)
+  - Rol niet correct toegekend op orgId-level
+  - Cache / feature flags blokkeren toegang
+- Acties:
+  - Controleer via GET /api/users/:id en /api/me
+  - Inspecteer Firebase custom claims met Admin SDK
+  - Controleer server logs en auth service account permissies
+
+Probleem: Bulk import faalt met 'rate limit' of timeouts
+- Oorzaken: grote batches > memory/time limits
+- Acties:
+  - Verklein batchgrootte naar 50
+  - Gebruik background job queue (check import-service in web code)
+  - Controleer CSV op invalid characters en missing fields
+
+Probleem: Restore mislukt in productie
+- Oorzaken: insufficient IAM of ontbrekende service-account permissies, storage bucket issues
+- Acties:
+  - Volg docs/admin/04-backup-restore-guide.md exact
+  - Test restore in staging vóór productie
+
+8. Change management, auditing en release flow
+- Documenteer schema wijzigingen en admin-beleid in PROJECT_MEMORY.md
+- Voor grote schema / rules wijzigingen: feature-flag, staging rollout, migration script met rollback
+- Audit logs: log (userId, action, resource, timestamp, requestId)
+- Wekelijkse access review: export lijst van admins en owners en verifieer noodzaak
+
+9. Appendix — Relevante bestanden en locaties
+- Admin organisatie beheer instructies: docs/admin/01-organisatie-beheer.md
+- Admin gebruiker beheer: docs/admin/02-gebruiker-beheer.md
+- Data manipulatie: docs/admin/03-data-manipulatie.md
+- Backup & restore: docs/admin/04-backup-restore-guide.md
+- Import/Export implementatie: web/src/lib/import-export/
+- Firebase Admin helpers: web/src/lib/firebase-admin.ts
+- API endpoints: docs/backend/01-api-endpoints-guide.md
 
 Einde van handleiding.

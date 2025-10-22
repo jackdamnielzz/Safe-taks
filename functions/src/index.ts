@@ -8,5 +8,13 @@
 // Export thumbnail generation function
 export { generateThumbnails } from './thumbnailGenerator';
 
+// Export backup service functions
+export {
+  scheduledBackup,
+  createBackupOnDemand,
+  listBackups,
+  restoreFromBackup
+} from './backupService';
+
 // Future exports can be added here:
 // export { trasToAlgolia } from './indexers/tras-to-algolia';
