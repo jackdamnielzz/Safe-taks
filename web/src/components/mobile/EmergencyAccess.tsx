@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { useHapticFeedback } from "@/hooks/useTouchOptimized";
 
 /**
@@ -21,6 +22,7 @@ export function EmergencyAccess({
   isOnline = true,
   className = "",
 }: EmergencyAccessProps) {
+  const t = useTranslations();
   const { heavyTap } = useHapticFeedback();
 
   const handleStopWork = () => {
@@ -39,23 +41,23 @@ export function EmergencyAccess({
       <button
         onClick={handleStopWork}
         className="emergency-stop-btn"
-        aria-label="Stop Work Emergency"
-        title="Stop Work Emergency"
+        aria-label={t("emergency.stopWorkEmergency")}
+        title={t("emergency.stopWorkEmergency")}
       >
         <span className="emergency-icon">🚨</span>
         <span className="emergency-text">STOP WERK</span>
-        <span className="emergency-subtext">Noodstop</span>
+        <span className="emergency-subtext">{t("emergency.stopWork")}</span>
       </button>
 
       {/* Secondary Emergency Contact */}
       <button
         onClick={handleEmergencyContact}
         className="emergency-contact-btn"
-        aria-label="Emergency Contact"
-        title="Emergency Contact"
+        aria-label={t("emergency.emergencyContact")}
+        title={t("emergency.emergencyContact")}
       >
         <span className="emergency-icon">📞</span>
-        <span className="emergency-text">NOODGEVAL</span>
+        <span className="emergency-text">{t("emergency.emergencyContact").toUpperCase()}</span>
       </button>
 
       {/* Connection Status Indicator */}
@@ -81,6 +83,7 @@ export function FloatingEmergencyButton({
   isVisible = true,
   className = "",
 }: FloatingEmergencyButtonProps) {
+  const t = useTranslations();
   const { heavyTap } = useHapticFeedback();
 
   if (!isVisible) return null;
@@ -92,8 +95,8 @@ export function FloatingEmergencyButton({
         onClick();
       }}
       className={`floating-emergency-btn ${className}`}
-      aria-label="Emergency Stop Work"
-      title="Emergency Stop Work"
+      aria-label={t("emergency.emergencyStopWork")}
+      title={t("emergency.emergencyStopWork")}
     >
       <span className="emergency-icon">🚨</span>
     </button>
@@ -118,6 +121,7 @@ export function EmergencyStatusBanner({
   onAcknowledge,
   className = "",
 }: EmergencyStatusBannerProps) {
+  const t = useTranslations();
   if (!isEmergencyActive) return null;
 
   const getEmergencyColor = () => {
@@ -153,7 +157,7 @@ export function EmergencyStatusBanner({
           <button
             onClick={onAcknowledge}
             className="emergency-banner-acknowledge"
-            aria-label="Acknowledge Emergency"
+            aria-label={t("emergency.acknowledgeEmergency")}
           >
             ✓
           </button>

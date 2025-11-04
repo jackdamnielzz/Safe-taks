@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -22,13 +23,14 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     xl: "w-16 h-16 border-4",
   };
 
+  const t = useTranslations();
   const spinner = (
     <div
       className={`inline-block ${sizeClasses[size]} border-blue-600 border-t-transparent rounded-full animate-spin ${className}`}
       role="status"
-      aria-label="Loading"
+      aria-label={t("loading.ariaLabel")}
     >
-      <span className="sr-only">Loading...</span>
+      <span className="sr-only">{t("loading.ariaLabel")}</span>
     </div>
   );
 

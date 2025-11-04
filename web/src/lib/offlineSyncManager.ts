@@ -22,10 +22,29 @@ interface OfflineSyncDB extends DBSchema {
       timestamp: number;
       retryCount: number;
       lastError?: string;
+      priority?: "low" | "normal" | "high" | "critical";
     };
     indexes: {
       "by-timestamp": number;
       "by-retry-count": number;
+      "by-priority": string;
+    };
+  };
+
+  // Stop-work alerts waiting to sync
+  stopWorkQueue: {
+    key: string; // alertId
+    value: {
+      alertId: string;
+      alertData: any; // StopWorkAlert
+      timestamp: number;
+      retryCount: number;
+      lastError?: string;
+      notificationPending: boolean;
+    };
+    indexes: {
+      "by-timestamp": number;
+      "by-lmra": string;
     };
   };
 
@@ -120,6 +139,13 @@ export class OfflineSyncManager {
             projectStore.createIndex("by-timestamp", "timestamp");
             projectStore.createIndex("by-retry-count", "retryCount");
             projectStore.createIndex("by-operation", "operation");
+          }
+
+          // Stop-work alerts queue store
+          if (!db.objectStoreNames.contains("stopWorkQueue")) {
+            const stopWorkStore = db.createObjectStore("stopWorkQueue", { keyPath: "alertId" });
+            stopWorkStore.createIndex("by-timestamp", "timestamp");
+            stopWorkStore.createIndex("by-lmra", "alertData.lmraId");
           }
 
           // Sync metadata store

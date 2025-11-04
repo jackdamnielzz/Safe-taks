@@ -532,9 +532,11 @@ export function isTRAExpiringSoon(tra: TRA, daysThreshold: number = 30): boolean
   const validUntil =
     tra.validUntil instanceof Date ? tra.validUntil : (tra.validUntil as any).toDate();
   const now = new Date();
-  const threshold = new Date(now.getTime() + daysThreshold * 24 * 60 * 60 * 1000);
-
-  return validUntil <= threshold && validUntil > now;
+  
+  // Calculate days difference using UTC timestamps
+  const daysDiff = (validUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+  
+  return daysDiff > 0 && daysDiff <= daysThreshold;
 }
 
 /**

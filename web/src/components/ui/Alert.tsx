@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 
 type AlertVariant = "info" | "success" | "warning" | "error";
 
@@ -19,6 +20,7 @@ export const Alert: React.FC<AlertProps> = ({
   onClose,
   className = "",
 }) => {
+  const t = useTranslations();
   const variantStyles = {
     info: {
       container: "bg-blue-50 border-blue-200 text-blue-800",
@@ -75,7 +77,7 @@ export const Alert: React.FC<AlertProps> = ({
         <button
           onClick={onClose}
           className={`flex-shrink-0 ml-3 -mr-1 -mt-1 p-1 rounded-md hover:bg-opacity-20 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-transparent focus:ring-gray-500 ${styles.icon}`}
-          aria-label="Close alert"
+          aria-label={t("alert.closeButton", { default: "Sluit waarschuwing" })}
         >
           <svg
             className="w-4 h-4"
@@ -111,6 +113,7 @@ export const Toast: React.FC<ToastProps> = ({
   duration = 5000,
   position = "top-right",
 }) => {
+  const t = useTranslations();
   React.useEffect(() => {
     if (isVisible && duration > 0) {
       const timer = setTimeout(() => {
@@ -150,7 +153,7 @@ export const Toast: React.FC<ToastProps> = ({
         <button
           onClick={onClose}
           className="flex-shrink-0 p-1 rounded hover:bg-white hover:bg-opacity-20 focus:outline-none focus:ring-2 focus:ring-white"
-          aria-label="Close notification"
+          aria-label={t("alert.closeNotification", { default: "Sluit melding" })}
         >
           <svg
             className="w-4 h-4"

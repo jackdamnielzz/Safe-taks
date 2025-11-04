@@ -1,0 +1,224 @@
+{
+  "id": "template-hot-work",
+  "name": "Heet Werk (Lassen, Snijden, Slijpen)",
+  "description": "VCA-compliant template voor heet werk inclusief lassen, snijden, slijpen en andere vonkproducerende werkzaamheden",
+  "industry": "construction",
+  "category": "hot_work",
+  "vcaCompliant": true,
+  "vcaVersion": "VCA 2017 v5.1",
+  "validityPeriod": 12,
+  "createdBy": "system",
+  "version": 1,
+  "steps": [
+    {
+      "order": 1,
+      "title": "Voorbereiding en Werkvergunning",
+      "description": "Controleer werkplek op brandbare materialen en onderteken werkvergunning voor heet werk",
+      "duration": 20,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    },
+    {
+      "order": 2,
+      "title": "Afscherming en Brandbeveiliging",
+      "description": "Plaats afschermingen en zorg voor brandblussers en water in de buurt",
+      "duration": 15,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    },
+    {
+      "order": 3,
+      "title": "Persoonlijke Beschermingsmiddelen",
+      "description": "Zet alle vereiste PBM aan (lashelm, handschoenen, schort, veiligheidsschoenen)",
+      "duration": 10,
+      "requiredPersonnel": 1,
+      "location": "Werkplek"
+    },
+    {
+      "order": 4,
+      "title": "Gereedschappen en Apparatuur Check",
+      "description": "Controleer lasapparatuur, snijbranders en andere gereedschappen op veiligheid",
+      "duration": 10,
+      "requiredPersonnel": 1,
+      "location": "Werkplek"
+    },
+    {
+      "order": 5,
+      "title": "Heet Werk Uitvoeren",
+      "description": "Voer lassen, snijden of slijpen uit volgens werkplan",
+      "duration": 180,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    },
+    {
+      "order": 6,
+      "title": "Afkoeling en Controle",
+      "description": "Laat werkstuk afkoelen en controleer op restbranden",
+      "duration": 30,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    },
+    {
+      "order": 7,
+      "title": "Opruimen en Nazorg",
+      "description": "Ruim werkplek op en controleer op restbranden gedurende 30 minuten na werk",
+      "duration": 20,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    }
+  ],
+  "hazards": [
+    {
+      "id": "hazard-burn",
+      "name": "Brandwonden",
+      "category": "thermal",
+      "description": "Risico op brandwonden door contact met hete materialen, vonken of vlammen",
+      "typicalEffect": 15,
+      "typicalExposure": 6,
+      "typicalProbability": 3,
+      "controlMeasures": [
+        {
+          "description": "Dragen van vuurvaste kleding (schort, mouwen, broek)",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        },
+        {
+          "description": "Dragen van lashelm met juiste donkerheid",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        },
+        {
+          "description": "Dragen van hittebestendige handschoenen",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        },
+        {
+          "description": "Afscherming van werkgebied met vuurvaste schermen",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        }
+      ]
+    },
+    {
+      "id": "hazard-fire",
+      "name": "Brandgevaar",
+      "category": "fire_explosion",
+      "description": "Risico op brand door vonken of vlammen die brandbare materialen ontsteken",
+      "typicalEffect": 40,
+      "typicalExposure": 3,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Verwijdering van brandbare materialen uit werkgebied",
+          "type": "elimination",
+          "responsible": "Supervisor",
+          "verificationMethod": "Werkplek inspectie"
+        },
+        {
+          "description": "Afscherming van werkgebied met vuurvaste schermen",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Aanwezigheid van brandblussers en water",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Brandwacht gedurende 30 minuten na werk",
+          "type": "administrative",
+          "responsible": "Brandwacht",
+          "verificationMethod": "Aanwezigheid brandwacht"
+        }
+      ]
+    },
+    {
+      "id": "hazard-eye-damage",
+      "name": "Oogbeschadiging",
+      "category": "physical",
+      "description": "Risico op oogbeschadiging door UV-straling of vonken",
+      "typicalEffect": 7,
+      "typicalExposure": 6,
+      "typicalProbability": 2,
+      "controlMeasures": [
+        {
+          "description": "Dragen van lashelm met juiste donkerheid (DIN 10-14)",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        },
+        {
+          "description": "Dragen van veiligheidsbril onder lashelm",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        }
+      ]
+    },
+    {
+      "id": "hazard-inhalation",
+      "name": "Inhalatie van schadelijke dampen",
+      "category": "chemical",
+      "description": "Risico op inhalatie van lasrook, ozongas of andere schadelijke dampen",
+      "typicalEffect": 7,
+      "typicalExposure": 6,
+      "typicalProbability": 2,
+      "controlMeasures": [
+        {
+          "description": "Zorg voor voldoende ventilatie of afzuiging",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Gebruik van lasrookafzuiging bij gesloten ruimten",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Dragen van ademhalingsmasker bij onvoldoende ventilatie",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        }
+      ]
+    },
+    {
+      "id": "hazard-explosion",
+      "name": "Explosiegevaar",
+      "category": "fire_explosion",
+      "description": "Risico op explosie bij lassen van gesloten containers of in explosieve atmosfeer",
+      "typicalEffect": 100,
+      "typicalExposure": 1,
+      "typicalProbability": 0.5,
+      "controlMeasures": [
+        {
+          "description": "Nooit lassen op gesloten containers zonder voorbereiding",
+          "type": "elimination",
+          "responsible": "Supervisor",
+          "verificationMethod": "Werkvergunning"
+        },
+        {
+          "description": "Controleer op explosieve atmosfeer",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Gasmeting"
+        }
+      ]
+    }
+  ],
+  "requiredCompetencies": [
+    "VCA Basis Veiligheid",
+    "Lasdiploma (voor lassen)",
+    "Heet Werk Training",
+    "Eerste Hulp"
+  ],
+  "notes": "Deze template is van toepassing op heet werk inclusief lassen, snijden, slijpen en andere vonkproducerende werkzaamheden. Werkvergunning is verplicht. Brandwacht moet aanwezig zijn gedurende en 30 minuten na het werk. Raadpleeg NEN 3140 voor technische eisen."
+}

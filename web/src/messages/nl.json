@@ -1,558 +1,324 @@
 {
-  "nav": {
-    "main": {
-      "dashboard": "Overzicht",
-      "tras": "TRA's",
-      "lmras": "LMRA's",
-      "projects": "Projecten",
-      "team": "Team",
-      "reports": "Rapporten",
-      "settings": "Instellingen",
-      "help": "Help",
-      "mobile": "Mobiele App",
-      "admin": "Beheer",
-      "analytics": "Analyses",
-      "cohorts": "Cohorten",
-      "performance": "Prestaties",
-      "security": "Beveiliging",
-      "pwa": "PWA Tests",
-      "riskAnalysis": "Risicoanalyse",
-      "lmraAnalytics": "LMRA Analyses"
+  "modal": {
+    "confirm": "Bevestigen",
+    "cancel": "Annuleren",
+    "closeButton": "Sluit dialoog"
+  },
+  "alert": {
+    "closeButton": "Sluit waarschuwing",
+    "closeNotification": "Sluit melding"
+  },
+  "loading": {
+    "ariaLabel": "Laden"
+  },
+  "badge": {
+    "removeAria": "Verwijderen",
+    "suspended": "Geschorst",
+    "archived": "Gearchiveerd",
+    "draft": "Concept",
+    "review": "Ter beoordeling",
+    "active": "Actief",
+    "pending": "In behandeling",
+    "completed": "Voltooid"
+  },
+  "search": {
+    "button": "Zoeken",
+    "noResults": "Geen resultaten gevonden. Probeer uw zoektermen of filters aan te passen.",
+    "title": "TRA zoeken",
+    "inputPlaceholder": "Zoek TRAs op titel, beschrijving, project...",
+    "sort": {
+      "relevance": "Relevantie",
+      "createdAt": "Aanmaakdatum",
+      "updatedAt": "Bijgewerkt",
+      "name": "Naam",
+      "riskScore": "Risicoscore",
+      "desc": "Aflopend",
+      "asc": "Oplopend"
     },
-    "user": {
-      "profile": "Profiel",
-      "logout": "Uitloggen"
-    }
+    "filters": {
+      "title": "Filters",
+      "status": "Status",
+      "riskLevel": "Risiconiveau"
+    },
+    "noResultsShort": "Geen resultaten",
+    "enterInstructions": "Voer zoektermen in om TRAs, templates, gevaren of projecten te vinden.",
+    "found": "Gevonden {count} resultaten",
+    "loadMore": "Laad meer",
+    "relevance": "Relevantie:",
+    "matched": "Gevonden velden:"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "tras": "TRA's",
+    "projects": "Projecten",
+    "reports": "Rapporten",
+    "team": "Team",
+    "settings": "Instellingen",
+    "templates": "Templates",
+    "lmra": "LMRA sessies",
+    "mobile": "Mobiel",
+    "accountMenu": "Accountmenu"
+  },
+  "wizard": {
+    "steps": {
+      "basic": "Basis",
+      "steps": "Stappen",
+      "team": "Team",
+      "review": "Beoordeling"
+    },
+    "titleLabel": "Titel",
+    "titlePlaceholder": "Voer een titel in",
+    "createTitle": "TRA aanmaken — Stap {step} van {total}",
+    "descriptionLabel": "Beschrijving",
+    "back": "Terug",
+    "next": "Volgende",
+    "createButton": "TRA aanmaken",
+    "saving": "Opslaan...",
+    "saved": "Opgeslagen",
+    "saveFailed": "Opslaan mislukt"
   },
   "auth": {
-    "login": {
-      "title": "Inloggen",
-      "subtitle": "Log in op uw SafeWork Pro account",
-      "email": {
-        "label": "E-mailadres",
-        "placeholder": "Voer uw e-mailadres in"
-      },
-      "password": {
-        "label": "Wachtwoord",
-        "placeholder": "Voer uw wachtwoord in"
-      },
-      "rememberMe": "Onthoud mij",
-      "submit": "Inloggen",
-      "forgotPassword": "Wachtwoord vergeten?",
-      "noAccount": "Nog geen account?",
-      "signUp": "Registreer hier"
-    },
-    "register": {
-      "title": "Registreren",
-      "subtitle": "Maak een nieuw SafeWork Pro account",
-      "firstName": {
-        "label": "Voornaam",
-        "placeholder": "Voer uw voornaam in"
-      },
-      "lastName": {
-        "label": "Achternaam",
-        "placeholder": "Voer uw achternaam in"
-      },
-      "email": {
-        "label": "E-mailadres",
-        "placeholder": "voorbeeld@bedrijf.nl"
-      },
-      "password": {
-        "label": "Wachtwoord",
-        "placeholder": "Minimaal 8 tekens"
-      },
-      "confirmPassword": {
-        "label": "Bevestig wachtwoord",
-        "placeholder": "Herhaal uw wachtwoord"
-      },
-      "organization": {
-        "label": "Organisatie",
-        "placeholder": "Naam van uw bedrijf"
-      },
-      "role": {
-        "label": "Functie",
-        "placeholder": "Kies uw functie"
-      },
-      "agree": "Ik ga akkoord met de",
-      "terms": "voorwaarden",
-      "and": "en",
-      "privacy": "privacybeleid",
-      "submit": "Account aanmaken",
-      "hasAccount": "Al een account?",
-      "signIn": "Log hier in"
-    },
-    "forgotPassword": {
-      "title": "Wachtwoord vergeten",
-      "subtitle": "Voer uw e-mailadres in om een reset link te ontvangen",
-      "email": {
-        "label": "E-mailadres",
-        "placeholder": "Voer uw e-mailadres in"
-      },
-      "submit": "Reset link versturen",
-      "backToLogin": "Terug naar inloggen",
-      "success": "We hebben een reset link naar uw e-mailadres gestuurd"
-    },
-    "verifyEmail": {
-      "title": "E-mail bevestigen",
-      "subtitle": "We hebben een bevestigingslink naar uw e-mailadres gestuurd",
-      "instruction": "Klik op de link in de e-mail om uw account te activeren",
-      "notReceived": "E-mail niet ontvangen?",
-      "resend": "Verstuur opnieuw",
-      "success": "Uw e-mailadres is succesvol bevestigd!"
+    "signIn": "Inloggen",
+    "signingIn": "Bezig met inloggen..."
+  },
+  "seo": {
+    "home": "Startpagina"
+  },
+  "risk": {
+    "low": "Laag risico",
+    "medium": "Medium risico",
+    "high": "Hoog risico",
+    "critical": "Kritiek risico"
+  },
+  "buttons": {
+    "loadMore": "Laad meer"
+  },
+  "form": {
+    "exampleTitle": "Voorbeeldformulier met validatie",
+    "projectNameLabel": "Projectnaam",
+    "projectNamePlaceholder": "Voer projectnaam in",
+    "emailLabel": "E-mailadres",
+    "emailPlaceholder": "uw.email@voorbeeld.com",
+    "descriptionLabel": "Beschrijving",
+    "descriptionPlaceholder": "Voer een gedetailleerde beschrijving in...",
+    "submit": "Verzenden",
+    "reset": "Opnieuw instellen",
+    "validation": {
+      "titleMin": "Titel moet minstens 3 tekens zijn",
+      "titleMax": "Titel mag maximaal 100 tekens zijn",
+      "descriptionMin": "Beschrijving moet minstens 10 tekens zijn",
+      "invalidEmail": "Ongeldig e-mailadres",
+      "projectNameRequired": "Projectnaam is verplicht"
     }
   },
-  "common": {
-    "buttons": {
-      "save": "Opslaan",
-      "cancel": "Annuleren",
-      "delete": "Verwijderen",
-      "edit": "Bewerken",
-      "view": "Bekijken",
-      "download": "Downloaden",
-      "upload": "Uploaden",
-      "previous": "Vorige",
-      "next": "Volgende",
-      "finish": "Voltooien",
-      "close": "Sluiten",
-      "confirm": "Bevestigen",
-      "back": "Terug"
-    },
-    "status": {
-      "loading": "Laden...",
-      "saving": "Opslaan...",
-      "saved": "Opgeslagen",
-      "error": "Fout opgetreden",
-      "success": "Gelukt",
-      "pending": "In afwachting",
-      "approved": "Goedgekeurd",
-      "rejected": "Afgewezen"
-    },
-    "actions": {
-      "search": "Zoeken",
-      "filter": "Filteren",
-      "sort": "Sorteren",
-      "export": "Exporteren",
-      "print": "Printen",
-      "share": "Delen",
-      "copy": "Kopiëren"
-    },
-    "time": {
-      "today": "Vandaag",
-      "yesterday": "Gisteren",
-      "tomorrow": "Morgen",
-      "thisWeek": "Deze week",
-      "lastWeek": "Vorige week",
-      "thisMonth": "Deze maand",
-      "lastMonth": "Vorige maand"
-    }
+  "header": {
+    "myAccount": "Mijn Account",
+    "settings": "Instellingen",
+    "adminHub": "Beheer Hub",
+    "signOut": "Uitloggen",
+    "accountMenu": "Accountmenu",
+    "defaultName": "Jan"
   },
-  "validation": {
-    "required": "Dit veld is verplicht",
-    "email": {
-      "invalid": "Voer een geldig e-mailadres in",
-      "required": "E-mailadres is verplicht"
-    },
-    "password": {
-      "tooShort": "Wachtwoord moet minimaal 8 tekens hebben",
-      "noMatch": "Wachtwoorden komen niet overeen",
-      "required": "Wachtwoord is verplicht"
-    },
-    "name": {
-      "tooShort": "Naam moet minimaal 2 tekens hebben",
-      "required": "Naam is verplicht"
-    },
-    "phone": {
-      "invalid": "Voer een geldig telefoonnummer in"
-    },
-    "date": {
-      "invalid": "Voer een geldige datum in"
-    },
-    "number": {
-      "tooLow": "Waarde moet minimaal {min} zijn",
-      "tooHigh": "Waarde mag maximaal {max} zijn",
-      "invalid": "Voer een geldig getal in"
-    }
+  "editor": {
+    "traTitle": "TRA titel",
+    "traDescription": "TRA beschrijving...",
+    "autoSaved": "Automatisch opgeslagen — gezamenlijk",
+    "noCollaborators": "Geen medewerkers",
+    "remoteSnapshot": "Remote TRA snapshot:"
   },
-  "errors": {
-    "general": "Er is iets misgegaan. Probeer het opnieuw.",
-    "network": "Geen internetverbinding. Controleer uw verbinding.",
-    "unauthorized": "U bent niet gemachtigd voor deze actie.",
-    "forbidden": "Toegang geweigerd. Neem contact op met uw beheerder.",
-    "notFound": "De opgevraagde pagina kon niet worden gevonden.",
-    "serverError": "Serverfout. Probeer het later opnieuw.",
-    "validation": "Controleer de ingevoerde gegevens en probeer opnieuw.",
-    "login": {
-      "failed": "Inloggen mislukt. Controleer uw e-mailadres en wachtwoord.",
-      "blocked": "Account tijdelijk geblokkeerd. Probeer het later opnieuw.",
-      "notVerified": "E-mailadres nog niet bevestigd. Controleer uw inbox."
-    },
-    "upload": {
-      "tooLarge": "Bestand is te groot. Maximaal {maxSize} toegestaan.",
-      "invalidType": "Bestandstype niet toegestaan.",
-      "failed": "Upload mislukt. Probeer het opnieuw."
-    }
-  },
-  "safety": {
-    "tra": {
-      "title": "Taak Risicoanalyse",
-      "shortTitle": "TRA",
-      "description": "Uitgebreide risicoanalyse voor werktaken",
-      "new": "Nieuwe TRA",
-      "edit": "TRA bewerken",
-      "view": "TRA bekijken",
-      "status": {
-        "draft": "Concept",
-        "review": "In beoordeling",
-        "approved": "Goedgekeurd",
-        "active": "Actief",
-        "expired": "Verlopen"
-      }
-    },
-    "lmra": {
-      "title": "Last Minute Risicoanalyse",
-      "shortTitle": "LMRA",
-      "description": "Laatste veiligheidscheck voor aanvang werkzaamheden",
-      "new": "Nieuwe LMRA",
-      "execute": "LMRA uitvoeren",
-      "complete": "LMRA voltooien"
-    },
-    "risk": {
-      "level": {
-        "trivial": "Verwaarloosbaar",
-        "tolerable": "Aanvaardbaar",
-        "moderate": "Matig",
-        "substantial": "Aanzienlijk",
-        "intolerable": "Onaanvaardbaar"
-      },
-      "assessment": "Risicobeoordeling",
-      "score": "Risicoscore",
-      "probability": "Kans",
-      "exposure": "Blootstelling",
-      "consequence": "Gevolg"
-    },
-    "hazard": {
-      "title": "Gevaar",
-      "identify": "Gevaren identificeren",
-      "description": "Beschrijving van het gevaar",
-      "category": "Categorie",
-      "controlMeasures": "Beheersingsmaatregelen"
-    },
-    "ppe": {
-      "title": "Persoonlijke Beschermingsmiddelen",
-      "shortTitle": "PBM",
-      "required": "Verplichte PBM",
-      "helmet": "Veiligheidshelm",
-      "glasses": "Veiligheidsbril",
-      "gloves": "Handschoenen",
-      "boots": "Veiligheidsschoenen",
-      "vest": "Hesje",
-      "mask": "Mondmasker"
-    }
+  "menu": {
+    "toggleMenu": "Menu in-/uitschakelen",
+    "mobile": "Mobiel",
+    "reports": "Rapporten",
+    "settings": "Instellingen",
+    "viewAccount": "Account weergeven"
   },
   "dashboard": {
-    "welcome": "Welkom terug",
-    "overview": "Overzicht",
-    "quickActions": "Snelle acties",
-    "recentActivity": "Recente activiteit",
-    "stats": {
-      "totalTras": "Totaal TRA's",
-      "activeTras": "Actieve TRA's",
-      "completedLmras": "Voltooide LMRA's",
-      "pendingApprovals": "Wachtend op goedkeuring"
-    }
+    "closeSidebar": "Sluit zijbalk",
+    "openSidebar": "Open zijbalk",
+    "notifications": "Meldingen",
+    "markAllAsRead": "Alles als gelezen markeren",
+    "noNotifications": "Geen meldingen",
+    "dismissNotification": "Melding verwijderen",
+    "viewAllNotifications": "Alle meldingen bekijken →",
+    "help": "Help"
   },
-  "tour": {
-    "welcome": {
-      "title": "Welkom bij SafeWork Pro!",
-      "content": "Laat ons u wegwijs maken in de belangrijkste functies van SafeWork Pro. Deze rondleiding duurt slechts een paar minuten en helpt u snel op weg."
-    },
-    "createTra": {
-      "title": "TRA's Aanmaken",
-      "content": "Hier kunt u nieuwe Taak Risicoanalyses (TRA's) aanmaken. Selecteer een sjabloon, voeg gevaren toe en bepaal beheersingsmaatregelen voor veilig werken."
-    },
-    "executeLmra": {
-      "title": "LMRA's Uitvoeren",
-      "content": "Voer Last Minute Risicoanalyses uit op de werkplek. Controleer omgevingsfactoren, teamleden en uitrusting voordat u begint met werken."
-    },
-    "viewReports": {
-      "title": "Rapporten Bekijken",
-      "content": "Bekijk uitgebreide rapporten over veiligheidsprestaties, risicotrends en compliance. Exporteer gegevens voor verdere analyse."
-    },
-    "navigation": {
-      "title": "Navigatie",
-      "content": "Gebruik het hoofdmenu om tussen verschillende onderdelen te navigeren. Uw profiel en instellingen vindt u rechtsboven."
-    },
-    "buttons": {
-      "skip": "Overslaan",
-      "back": "Terug",
-      "next": "Volgende",
-      "last": "Voltooien"
-    },
-    "completed": {
-      "title": "Rondleiding Voltooid!",
-      "content": "U bent nu klaar om SafeWork Pro te gebruiken. Heeft u vragen? Bekijk de help-sectie of neem contact op met ons support team."
-    }
+  "fab": {
+    "actionButton": "Actieknop",
+    "closeActions": "Sluiten",
+    "actions": "Acties"
   },
-  "help": {
-    "quickStart": {
-      "title": "Quick Start Wizard",
-      "description": "De wizard helpt u snel aan de slag te gaan met SafeWork Pro"
-    },
-    "tra": {
-      "title": "Taak Risicoanalyse (TRA)",
-      "description": "Een TRA is een systematische analyse van risico's bij werktaken",
-      "howToCreate": "Klik op 'Nieuwe TRA' en selecteer een sjabloon of begin vanaf nul",
-      "kinney": "We gebruiken de Kinney & Wiruth methode voor risicobeoordeling"
-    },
-    "lmra": {
-      "title": "Last Minute Risicoanalyse (LMRA)",
-      "description": "Een LMRA is een laatste veiligheidscheck voor aanvang werkzaamheden",
-      "whenToUse": "Voer altijd een LMRA uit voordat u met werken begint"
-    },
-    "riskAssessment": {
-      "title": "Risicobeoordeling",
-      "effect": "Gevolg: De ernst van het letsel of schade",
-      "exposure": "Blootstelling: Hoe vaak wordt iemand blootgesteld",
-      "probability": "Kans: De waarschijnlijkheid dat het risico zich voordoet"
-    },
-    "common": {
-      "needHelp": "Hulp nodig?",
-      "viewDocs": "Bekijk documentatie",
-      "contactSupport": "Neem contact op met support"
-    }
+  "offline": {
+    "forceSync": "Synchronisatie forceren",
+    "dismissBanner": "Sluit offline banner",
+    "dismissOfflineBanner": "Sluit offline banner"
   },
-  "quickStart": {
-    "welcome": "Welkom bij SafeWork Pro",
-    "step1": {
-      "title": "Organisatie details",
-      "description": "Vul de basisgegevens van uw organisatie in"
-    },
-    "step2": {
-      "title": "Team toevoegen",
-      "description": "Nodig teamleden uit voor uw organisatie"
-    },
-    "step3": {
-      "title": "Eerste project",
-      "description": "Maak uw eerste project aan"
-    },
-    "step4": {
-      "title": "Eerste TRA",
-      "description": "Kies een sjabloon voor uw eerste TRA"
-    },
-    "skip": "Overslaan",
-    "complete": "Voltooien"
-  },
-  "projects": {
-    "title": "Projecten",
-    "subtitle": "{count} van {total} projecten",
-    "new": "Nieuw Project",
-    "edit": "Project bewerken",
-    "create": "Project aanmaken",
-    "search": "Zoek projecten...",
-    "filter": {
-      "all": "Alle Projecten",
-      "active": "Alleen Actieve"
-    },
-    "empty": {
-      "title": "Geen projecten gevonden",
-      "search": "Probeer uw zoekopdracht aan te passen of de filters te wijzigen.",
-      "create": "Maak uw eerste project aan om te beginnen met TRA en LMRA workflows.",
-      "cta": "Eerste Project Aanmaken"
-    },
-    "fields": {
-      "name": "Projectnaam",
-      "description": "Beschrijving",
-      "location": "Locatie",
-      "city": "Stad",
-      "address": "Adres",
-      "country": "Land",
-      "isActive": "Actief",
-      "members": "Leden",
-      "stats": "Statistieken",
-      "memberCount": "leden",
-      "trasCount": "TRA's",
-      "lastActivity": "Laatste activiteit"
-    },
-    "roles": {
-      "owner": "Eigenaar",
-      "manager": "Manager",
-      "contributor": "Medewerker",
-      "reader": "Lezer"
-    },
-    "actions": {
-      "manageMembers": "Leden beheren",
-      "edit": "Bewerken",
-      "delete": "Verwijderen",
-      "archive": "Archiveren"
-    },
-    "help": "Beheer uw projecten en teamleden voor georganiseerde TRA/LMRA workflows"
+  "emergency": {
+    "stopWork": "Noodstop",
+    "emergencyContact": "Noodgeval",
+    "stopWorkEmergency": "Stop werk noodstop",
+    "emergencyStopWork": "Noodstop werkstop",
+    "acknowledgeEmergency": "Bevestig noodgeval"
   },
   "reports": {
-    "title": "Rapporten",
-    "subtitle": "Gedetailleerde analyses en rapportages",
-    "export": "Exporteren",
-    "generate": "Genereren",
-    "download": "Downloaden",
-    "print": "Printen",
-    "empty": "Geen rapporten gevonden",
-    "types": {
-      "tra": "TRA Rapport",
-      "lmra": "LMRA Rapport",
-      "analytics": "Analyserapport",
-      "compliance": "Compliance Rapport",
-      "risk": "Risicoanalyse Rapport"
-    },
-    "formats": {
-      "pdf": "PDF",
-      "excel": "Excel",
-      "csv": "CSV"
-    }
+    "title": "Rapporten — Analytics",
+    "overview": "Overzicht",
+    "totalTRAs": "Totaal TRA's",
+    "totalCreated": "Totaal aangemaakt",
+    "averageRisk": "Gemiddeld risico",
+    "averageRiskScore": "Gemiddelde risicoscore",
+    "compliance": "Naleving",
+    "overallCompliance": "Totale naleving",
+    "riskTrend": "Risictrend (30d)",
+    "changeVsPrevious": "Wijziging ten opzichte van vorige periode",
+    "last30Days": "afgelopen 30 dagen",
+    "riskDistribution": "Risicoverdeling"
   },
-  "admin": {
-    "title": "Beheer",
-    "subtitle": "Systeembeheer en configuratie",
-    "analytics": {
-      "title": "Analyses",
-      "subtitle": "Gedetailleerde prestatiegegevens"
-    },
-    "performance": {
-      "title": "Prestaties",
-      "subtitle": "Systeemprestaties en monitoring"
-    },
-    "security": {
-      "title": "Beveiliging",
-      "subtitle": "Beveiligingsaudit en compliance"
-    },
-    "pwa": {
-      "title": "PWA Tests",
-      "subtitle": "Progressive Web App functionaliteit"
-    }
-  },
-  "lmra": {
-    "title": "LMRA",
-    "subtitle": "Last Minute Risicoanalyse",
-    "new": "Nieuwe LMRA",
-    "execute": "LMRA uitvoeren",
-    "complete": "LMRA voltooien",
-    "status": {
-      "draft": "Concept",
-      "inProgress": "Bezig",
-      "completed": "Voltooid",
-      "stopped": "Gestopt"
-    },
-    "steps": {
-      "location": "Locatie verificatie",
-      "environment": "Omgevingsfactoren",
-      "personnel": "Personeel controle",
-      "equipment": "Uitrusting inspectie",
-      "hazards": "Gevaren beoordeling",
-      "decision": "Beslissing",
-      "documentation": "Documentatie",
-      "signature": "Handtekening"
-    },
-    "decisions": {
-      "safe": "Veilig om door te gaan",
-      "caution": "Voorzichtig doorgaan",
-      "stop": "Werk stoppen"
-    },
-    "fields": {
-      "location": "Locatie",
-      "weather": "Weer",
-      "temperature": "Temperatuur",
-      "wind": "Wind",
-      "teamSize": "Team grootte",
-      "equipment": "Uitrusting",
-      "hazards": "Gevaren",
-      "controls": "Beheersmaatregelen",
-      "decision": "Beslissing",
-      "reason": "Reden",
-      "photos": "Foto's"
-    }
-  },
-  "organizations": {
-    "title": "Organisaties",
-    "new": "Nieuwe Organisatie",
-    "edit": "Organisatie bewerken",
-    "fields": {
-      "name": "Naam",
-      "description": "Beschrijving",
-      "subscription": "Abonnement",
-      "members": "Leden",
-      "projects": "Projecten",
-      "created": "Aangemaakt"
-    },
-    "subscription": {
-      "starter": "Starter",
-      "professional": "Professional",
-      "enterprise": "Enterprise"
-    }
+  "auth": {
+    "register": {
+      "title": "Maak uw account aan",
+      "subtitle": "Start uw gratis proefperiode van 14 dagen. Geen creditcard nodig.",
+      "companyName": "Bedrijfsnaam",
+      "companyNamePlaceholder": "Acme Corporation",
+      "fullName": "Volledige naam",
+      "fullNamePlaceholder": "Jan Jansen",
+      "workEmail": "Werkmail",
+      "workEmailPlaceholder": "u@bedrijf.nl",
+      "password": "Wachtwoord",
+      "passwordPlaceholder": "••••••••",
+      "passwordHint": "Minimaal 8 tekens met hoofdletter, kleine letter en cijfer",
+      "confirmPassword": "Wachtwoord bevestigen",
+      "confirmPasswordPlaceholder": "••••••••",
+      "agreeToTerms": "Ik ga akkoord met de",
+      "termsOfService": "Servicevoorwaarden",
+      "and": "en",
+      "privacyPolicy": "Privacybeleid",
+      "createAccount": "Account aanmaken",
+      "creatingAccount": "Account wordt aangemaakt...",
+      "orSignUpWith": "Of meld u aan met",
+      "alreadyHaveAccount": "Hebt u al een account?",
+      "signIn": "Inloggen",
+      "required": "Verplicht",
+      "companyNameError": "Bedrijfsnaam moet minstens 2 tekens zijn",
+      "fullNameError": "Volledige naam moet minstens 2 tekens zijn",
+      "emailError": "Voer een geldig e-mailadres in",
+      "passwordError": "Wachtwoord moet minstens 8 tekens zijn met hoofdletter, kleine letter en cijfer",
+      "passwordMismatch": "Wachtwoorden komen niet overeen",
+      "agreeToTermsError": "U moet akkoord gaan met de voorwaarden"
   },
   "templates": {
-    "title": "Sjablonen",
-    "new": "Nieuw Sjabloon",
-    "edit": "Sjabloon bewerken",
-    "fields": {
-      "name": "Naam",
-      "description": "Beschrijving",
-      "industry": "Branche",
-      "tasks": "Taken",
-      "hazards": "Gevaren",
-      "controls": "Beheersmaatregelen"
-    }
-  },
-  "notifications": {
-    "title": "Meldingen",
-    "empty": "Geen meldingen",
-    "markAsRead": "Markeer als gelezen",
-    "markAllAsRead": "Markeer alle als gelezen",
-    "types": {
-      "tra": "TRA Update",
-      "lmra": "LMRA Update",
-      "approval": "Goedkeuring Vereist",
-      "system": "Systeem Update"
-    }
-  },
-  "performance": {
-    "title": "Prestaties",
-    "metrics": {
-      "pageLoad": "Pagina Laadtijd",
-      "apiResponse": "API Reactie",
-      "bundleSize": "Bundle Grootte",
-      "cacheHitRate": "Cache Trefferpercentage"
+    "selector": {
+      "title": "Selecteer een TRA Template",
+      "subtitle": "Kies een voorgedefinieerde template om snel aan de slag te gaan",
+      "search": "Zoeken naar templates...",
+      "allCategories": "Alle categorieën",
+      "results": "{count} template(s) gevonden",
+      "noResults": "Geen templates gevonden die aan uw criteria voldoen",
+      "hazards": "gevaren",
+      "steps": "stappen"
     },
-    "thresholds": {
-      "good": "Goed",
-      "needsImprovement": "Verbetering nodig",
-      "poor": "Slecht"
+    "preview": {
+      "taskSteps": "Taakstappen",
+      "hazards": "Gevaren",
+      "controlMeasures": "Controlemaatregelen",
+      "requiredCompetencies": "Vereiste competenties",
+      "useTemplate": "Deze template gebruiken",
+      "effect": "Effect",
+      "exposure": "Blootstelling",
+      "probability": "Waarschijnlijkheid",
+      "riskVeryHigh": "Zeer Hoog",
+      "riskHigh": "Hoog",
+      "riskSubstantial": "Aanzienlijk",
+      "riskPossible": "Mogelijk",
+      "riskLow": "Laag",
+      "notes": "Opmerkingen",
+      "steps": "stappen",
+      "hierarchy": {
+        "elimination": "Eliminatie",
+        "substitution": "Vervanging",
+        "engineering": "Technische maatregel",
+        "administrative": "Administratieve maatregel",
+        "ppe": "Persoonlijke beschermingsmiddelen"
+      }
+    },
+    "list": {
+      "loading": "Templates laden...",
+      "empty": "Geen templates beschikbaar",
+      "showing": "Toont {start} tot {end} van {total} templates",
+      "itemsPerPage": "Items per pagina",
+      "name": "Naam",
+      "industry": "Industrie",
+      "hazards": "Gevaren",
+      "steps": "Stappen",
+      "vca": "VCA",
+      "actions": "Acties",
+      "view": "Bekijken",
+      "edit": "Bewerken",
+      "delete": "Verwijderen",
+      "previous": "Vorige",
+      "next": "Volgende"
     }
   },
-  "security": {
-    "title": "Beveiliging",
-    "audit": "Beveiligingsaudit",
-    "tests": {
-      "authentication": "Authenticatie",
-      "authorization": "Autorisatie",
-      "dataIsolation": "Data Isolatie",
-      "encryption": "Versleuteling",
-      "headers": "Security Headers"
+  "approvals": {
+    "page": {
+      "title": "Goedkeuringen",
+      "subtitle": "Bekijk en beheer TRA goedkeuringsverzoeken die uw aandacht vereisen",
+      "description": "Beheer TRA goedkeuringsverzoeken"
+    },
+    "detail": {
+      "title": "Goedkeuringsdetails",
+      "description": "Bekijk en verwerk goedkeuringsverzoek",
+      "backToList": "Terug naar goedkeuringen"
+    },
+    "inbox": {
+      "title": "Goedkeuringsverzoeken",
+      "empty": "Geen goedkeuringen in afwachting",
+      "view": "Open"
+    },
+    "editor": {
+      "title": "Goedkeuringsworkflow configureren",
+      "remove": "Verwijder",
+      "stepName": "Stap naam",
+      "role": "Approver rol",
+      "approverId": "Optioneel: gebruiker id",
+      "addStep": "Voeg stap toe",
+      "save": "Opslaan workflow",
+      "saving": "Opslaan..."
     },
     "status": {
-      "passed": "Geslaagd",
-      "failed": "Mislukt",
-      "warning": "Waarschuwing"
-    }
-  },
-  "pwa": {
-    "title": "PWA Tests",
-    "install": "Installeer App",
-    "offline": "Offline Modus",
-    "tests": {
-      "manifest": "Manifest",
-      "serviceWorker": "Service Worker",
-      "installation": "Installatie",
-      "offline": "Offline",
-      "security": "Beveiliging",
-      "performance": "Prestaties"
+      "pending": "In afwachting",
+      "approved": "Goedgekeurd",
+      "rejected": "Afgewezen",
+      "cancelled": "Geannuleerd",
+      "fullyApproved": "TRA volledig goedgekeurd",
+      "fullyRejected": "TRA afgewezen",
+      "approvedMessage": "Alle goedkeuringsstappen zijn voltooid",
+      "rejectedMessage": "Deze TRA moet worden herzien en opnieuw ingediend"
+    },
+    "steps": {
+      "title": "Goedkeuringsstappen",
+      "stepNumber": "Stap {number}",
+      "current": "Huidige stap",
+      "role": "Rol: {role}",
+      "approvedBy": "Goedgekeurd door",
+      "rejectedBy": "Afgewezen door",
+      "comments": "Opmerkingen:",
+      "dueDate": "Deadline: {date}"
+    },
+    "decision": {
+      "title": "Uw beslissing",
+      "approve": "Goedkeuren",
+      "reject": "Afwijzen",
+      "requestChanges": "Wijzigingen vragen",
+      "confirmApprove": "U staat op het punt deze TRA goed te keuren",
+      "confirmReject": "U staat op het punt deze TRA af te wijzen",
+      "confirmRequestChanges": "U vraagt wijzigingen aan deze TRA",
+      "commentsLabel": "Opmerkingen",
+      "commentsPlaceholder": "Voeg uw opmerkingen toe...",
+      "submit": "Bevestigen",
+      "submitting": "Bezig...",
+      "cancel": "Annuleren"
     }
   }
+}
 }

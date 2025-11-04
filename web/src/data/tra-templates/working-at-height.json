@@ -1,0 +1,181 @@
+{
+  "id": "template-working-at-height",
+  "name": "Werken op Hoogte (Steigers, Ladders, Platforms)",
+  "description": "VCA-compliant template voor werkzaamheden op hoogte, inclusief steiger- en ladderwerk",
+  "industry": "construction",
+  "category": "height",
+  "vcaCompliant": true,
+  "vcaVersion": "VCA 2017 v5.1",
+  "validityPeriod": 12,
+  "createdBy": "system",
+  "version": 1,
+  "steps": [
+    {
+      "order": 1,
+      "title": "Voorbereiding en Inspectie",
+      "description": "Inspecteer steiger, ladder of platform op veiligheid en stabiliteit",
+      "duration": 20,
+      "requiredPersonnel": 2,
+      "location": "Werkplek op hoogte"
+    },
+    {
+      "order": 2,
+      "title": "Persoonlijke Beschermingsmiddelen Aanleggen",
+      "description": "Zet veiligheidsharnas, helm en andere PBM aan",
+      "duration": 10,
+      "requiredPersonnel": 1,
+      "location": "Voet van steiger/ladder"
+    },
+    {
+      "order": 3,
+      "title": "Veiligheidscheck Team",
+      "description": "Controleer dat alle teamleden correct uitgerust zijn en begrijpen de werkprocedure",
+      "duration": 10,
+      "requiredPersonnel": 2,
+      "location": "Werkplek op hoogte"
+    },
+    {
+      "order": 4,
+      "title": "Werkzaamheden Uitvoeren",
+      "description": "Voer werkzaamheden uit op hoogte volgens werkplan",
+      "duration": 180,
+      "requiredPersonnel": 2,
+      "location": "Werkplek op hoogte"
+    },
+    {
+      "order": 5,
+      "title": "Controle en Afbouw",
+      "description": "Controleer afgewerkte werkzaamheden en zorg voor veilige afbouw",
+      "duration": 20,
+      "requiredPersonnel": 2,
+      "location": "Werkplek op hoogte"
+    },
+    {
+      "order": 6,
+      "title": "Opruimen en Inspectie",
+      "description": "Ruim werkplek op en inspecteer steiger/ladder op beschadigingen",
+      "duration": 15,
+      "requiredPersonnel": 2,
+      "location": "Werkplek op hoogte"
+    }
+  ],
+  "hazards": [
+    {
+      "id": "hazard-fall",
+      "name": "Valgevaar",
+      "category": "mechanical",
+      "description": "Risico op vallen van hoogte met ernstig letsel of dood tot gevolg",
+      "typicalEffect": 40,
+      "typicalExposure": 6,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Gebruik van veiligheidsharnas met valbeveiliging",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        },
+        {
+          "description": "Installatie van vangnetwerk of valdempers",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Regelmatige inspectie van steiger/ladder",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Inspectie rapport"
+        }
+      ]
+    },
+    {
+      "id": "hazard-unstable-structure",
+      "name": "Instabiele steiger of ladder",
+      "category": "mechanical",
+      "description": "Risico op instabiliteit van steiger of ladder door slechte opbouw of onderhoud",
+      "typicalEffect": 40,
+      "typicalExposure": 3,
+      "typicalProbability": 0.5,
+      "controlMeasures": [
+        {
+          "description": "Inspectie van steiger/ladder voor gebruik",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Inspectie checklist"
+        },
+        {
+          "description": "Correcte opbouw volgens NEN 2484 (steigers) of NEN 2520 (ladders)",
+          "type": "engineering",
+          "responsible": "Steigerbouwer",
+          "verificationMethod": "Certificaat steigerbouwer"
+        }
+      ]
+    },
+    {
+      "id": "hazard-object-fall",
+      "name": "Vallende voorwerpen",
+      "category": "mechanical",
+      "description": "Risico op letsel door vallende gereedschappen of materialen van hoogte",
+      "typicalEffect": 15,
+      "typicalExposure": 3,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Gebruik van gereedschapsgordel of veilige opslag",
+          "type": "administrative",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        },
+        {
+          "description": "Afzetting van werkgebied onder hoogte",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Dragen van veiligheidshelm",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        }
+      ]
+    },
+    {
+      "id": "hazard-weather",
+      "name": "Slechte weersomstandigheden",
+      "category": "environmental",
+      "description": "Risico op uitglijden of vallen door regen, ijs of wind",
+      "typicalEffect": 40,
+      "typicalExposure": 2,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Monitoring van weersvoorspelling",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Weerrapport"
+        },
+        {
+          "description": "Werk staken bij ongunstige weersomstandigheden",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Werklog"
+        },
+        {
+          "description": "Gebruik van anti-slip schoenen",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        }
+      ]
+    }
+  ],
+  "requiredCompetencies": [
+    "VCA Basis Veiligheid",
+    "Werken op Hoogte Training",
+    "Veiligheidsharnas Training",
+    "Eerste Hulp"
+  ],
+  "notes": "Deze template is van toepassing op werkzaamheden op hoogte boven 2 meter. Voor werk boven 6 meter zijn aanvullende maatregelen vereist. Raadpleeg NEN 2484 (steigers) en NEN 2520 (ladders) voor technische eisen."
+}

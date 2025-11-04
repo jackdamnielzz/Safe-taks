@@ -212,7 +212,7 @@ function TRAsContent() {
               {filteredTras.length} van {tras?.length || 0} TRA's
             </p>
           </div>
-          <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+          <Button onClick={() => setShowCreateModal(true)} className="flex flex-row items-center gap-2 px-5 py-2 text-sm font-medium">
             <Plus className="h-4 w-4" />
             Nieuwe TRA
           </Button>
@@ -258,12 +258,6 @@ function TRAsContent() {
               ? "Probeer uw zoekopdracht aan te passen of de filters te wijzigen."
               : "Maak uw eerste TRA aan om te beginnen met risicoanalyses."}
           </p>
-          {!searchQuery && statusFilter === "all" && (
-            <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Eerste TRA Aanmaken
-            </Button>
-          )}
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

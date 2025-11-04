@@ -1,10 +1,12 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { StatsGrid, StatsCard } from "@/components/dashboard/StatsCard";
 import AnalyticsCharts from "@/components/dashboard/AnalyticsCharts";
 
 export default function ReportsPage() {
+  const t = useTranslations("reports");
   // Placeholder static data for MVP dashboard
   const totalTRAs = 124;
   const avgRisk = 72;
@@ -14,38 +16,38 @@ export default function ReportsPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Reports — Analytics</h1>
+        <h1 className="text-2xl font-semibold">{t("title")}</h1>
       </div>
 
       <div className="grid gap-6">
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-medium mb-4">Overview</h2>
+          <h2 className="text-lg font-medium mb-4">{t("overview")}</h2>
           <StatsGrid columns={4}>
             <StatsCard
-              title="Total TRAs"
+              title={t("totalTRAs")}
               value={totalTRAs}
-              subtitle="Total created"
+              subtitle={t("totalCreated")}
               variant="info"
             />
             <StatsCard
-              title="Average Risk"
+              title={t("averageRisk")}
               value={avgRisk}
-              subtitle="Average risk score"
+              subtitle={t("averageRiskScore")}
               variant="warning"
             />
             <StatsCard
-              title="Compliance"
+              title={t("compliance")}
               value={`${complianceRate}%`}
-              subtitle="Overall compliance"
+              subtitle={t("overallCompliance")}
               variant="success"
             />
             <StatsCard
-              title="Risk Trend (30d)"
+              title={t("riskTrend")}
               value={`${trending}%`}
-              subtitle="Change vs previous period"
+              subtitle={t("changeVsPrevious")}
               trend={{
                 value: trending,
-                label: "last 30 days",
+                label: t("last30Days"),
                 direction: trending >= 0 ? "up" : "down",
               }}
             />
@@ -53,7 +55,7 @@ export default function ReportsPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-medium mb-4">Risk Distribution</h2>
+          <h2 className="text-lg font-medium mb-4">{t("riskDistribution")}</h2>
           <AnalyticsCharts />
         </div>
       </div>

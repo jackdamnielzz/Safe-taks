@@ -20,8 +20,12 @@ let analytics: Analytics | null = null;
  * Only works in browser environment
  */
 function getAnalyticsInstance(): Analytics | null {
-  if (typeof window === "undefined") {
-    return null; // Analytics only works in browser
+  // In test environment (NODE_ENV=test or process.env.JEST_WORKER_ID exists),
+  // skip the window check and let mocks handle it
+  const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined;
+  
+  if (!isTestEnv && typeof window === "undefined") {
+    return null; // Analytics only works in browser (except in tests)
   }
 
   if (!analytics) {

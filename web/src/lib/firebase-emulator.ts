@@ -53,6 +53,9 @@ if (typeof global !== "undefined") {
   }
 }
 
+// Singleton auth instance for tests - ensures mock and tests use same object
+let _singletonAuth: any = null;
+
 /**
  * Initialize Firebase app and connect to emulators where possible.
  * Returns initialized services used by tests: { auth, firestore, storage? }
@@ -69,7 +72,11 @@ export function initializeEmulatorApp(): { auth: any; firestore: any; storage: a
 
   const app = getApp();
 
-  const auth = firebaseGetAuth(app);
+  // Use singleton auth instance to ensure mock and tests reference same object
+  if (!_singletonAuth) {
+    _singletonAuth = firebaseGetAuth(app);
+  }
+  const auth = _singletonAuth;
   const firestore = firebaseGetFirestore(app);
   let storage = null;
 
@@ -142,6 +149,18 @@ export async function clearEmulatorData(): Promise<void> {
       } catch (e) {
         // ignore per-collection failures in tests
       }
+    }
+
+    // Clear in-memory auth mock state if present (jest __mocks__/firebase-auth)
+    try {
+      const authMock = require("../__mocks__/firebase-auth.ts");
+      if (authMock && authMock.__mockUsers && typeof authMock.__mockUsers === "object") {
+        for (const k of Object.keys(authMock.__mockUsers)) {
+          delete authMock.__mockUsers[k];
+        }
+      }
+    } catch (e) {
+      // ignore if mock not present or require path differs
     }
   } catch (e) {
     // last-resort noop

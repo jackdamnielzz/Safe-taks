@@ -1,465 +1,757 @@
 /**
- * LMRA (Last Minute Risk Analysis) Type Definitions
- * Based on FIRESTORE_DATA_MODEL.md LMRA Sessions schema
+ * LMRA (Last Minute Risk Assessment) Type Definitions
+ * 8-step workflow for field workers to assess risks before task execution
+ * Based on VCA 2017 v5.1 and ISO 45001 standards
+ *
+ * Generated to match patterns used in web/src/lib/types/tra.ts
  */
 
-import { Timestamp, GeoPoint } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 
 // ============================================================================
 // CORE ENUMS AND TYPES
 // ============================================================================
 
-/**
- * Location verification status
- */
-export type LocationVerificationStatus =
-  | "verified" // GPS verified within acceptable range
-  | "approximate" // GPS available but accuracy is poor
-  | "manual_override"; // Manual override by user
+export type LMRAStatus =
+  | "draft"
+  | "in_progress"
+  | "submitted"
+  | "approved"
+  | "rejected"
+  | "completed"
+  | "cancelled";
+
+export type LMRAStepNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+
+export type GoNoGoDecision = "go" | "no_go" | "pending";
+
+export type WeatherSeverity = "clear" | "moderate" | "severe" | "extreme";
+
+export type EquipmentStatus = "available" | "unavailable" | "damaged" | "maintenance";
+
+export type CompetencyLevel = "certified" | "trained" | "supervised" | "not_qualified";
+
+export type SignatureType = "image" | "typed" | "consent_checkbox";
+
+// ============================================================================
+// STEP INTERFACES (1..8)
+// ============================================================================
 
 /**
- * Check status for various LMRA verification steps
+ * Step 1: TRA Selection
  */
-export type CheckStatus =
-  | "pass" // Check passed successfully
-  | "fail" // Check failed
-  | "caution" // Check passed with caution
-  | "not_applicable"; // Check not applicable for this session
+export interface LMRAStep1_TraSelection {
+  traId: string;
+  traTitle?: string;
+  traVersion?: number;
+  templateId?: string;
+  selectedAt?: Timestamp | Date;
+}
 
 /**
- * Equipment condition status
+ * Step 2: Location Verification (GPS)
  */
-export type EquipmentCondition =
-  | "good" // Equipment in good condition
-  | "acceptable" // Equipment acceptable for use
-  | "damaged" // Equipment damaged
-  | "expired"; // Equipment inspection expired
+export interface LMRAStep2_LocationVerification {
+  latitude?: number;
+  longitude?: number;
+  accuracyMeters?: number;
+  deviceTimestamp?: Timestamp | Date;
+  verifiedBy?: string; // userId
+  verifiedAt?: Timestamp | Date;
+  gpsNotes?: string;
+  locationName?: string; // denormalized
+}
 
 /**
- * Overall LMRA assessment result
+ * Step 3: Weather Conditions
  */
-export type LMRAAssessment =
-  | "safe_to_proceed" // Safe to proceed with work
-  | "proceed_with_caution" // Proceed but with extra caution
-  | "stop_work"; // Stop work - unsafe conditions
+export interface LMRAStep3_WeatherConditions {
+  provider?: string; // e.g., "openweathermap"
+  observationTimestamp?: Timestamp | Date;
+  temperatureC?: number | null;
+  humidityPct?: number | null;
+  windSpeedMs?: number | null;
+  windDirectionDeg?: number | null;
+  precipitationMm?: number | null;
+  weatherDescription?: string;
+  severity?: WeatherSeverity;
+  manualOverride?: boolean; // if user overrides API
+  manualNotes?: string;
+}
 
 /**
- * LMRA photo categories
+ * Step 4: Team Competencies
  */
-export type PhotoCategory =
-  | "work_area"
-  | "equipment"
-  | "hazard"
-  | "team"
+export interface TeamMemberCompetency {
+  userId: string;
+  displayName?: string;
+  competencyLevel: CompetencyLevel;
+  certifications?: string[]; // list of certification ids or names
+  validUntil?: Timestamp | Date | null;
+  notes?: string;
+}
+
+export interface LMRAStep4_TeamCompetencies {
+  requiredCompetencies: string[]; // from TRA
+  teamMembers: TeamMemberCompetency[];
+  allQualified?: boolean;
+  notes?: string;
+}
+
+/**
+ * Step 5: Equipment Verification
+ */
+export interface EquipmentCheck {
+  equipmentId?: string;
+  name?: string;
+  status: EquipmentStatus;
+  serialNumber?: string;
+  inspectedBy?: string;
+  inspectedAt?: Timestamp | Date;
+  notes?: string;
+}
+
+export interface LMRAStep5_EquipmentVerification {
+  equipmentList: EquipmentCheck[];
+  allEquipmentAvailable?: boolean;
+  notes?: string;
+}
+
+/**
+ * Step 6: Hazard Assessment
+ */
+export type HazardCategory =
+  | "electrical"
+  | "mechanical"
+  | "chemical"
+  | "biological"
+  | "physical"
+  | "ergonomic"
+  | "psychosocial"
+  | "fire_explosion"
   | "environmental"
   | "other";
 
 /**
- * Competency validation status
+ * Kinney & Wiruth style scores (reuse simplified numeric approach)
  */
-export type CompetencyStatus = "valid" | "expiring_soon" | "expired" | "missing";
+export type LMRAEffectScore = 1 | 3 | 7 | 15 | 40 | 100;
+export type LMRAExposureScore = 0.5 | 1 | 2 | 3 | 6 | 10;
+export type LMRAProbabilityScore = 0.1 | 0.2 | 0.5 | 1 | 3 | 6 | 10;
+export type LMRARiskScore = number;
 
-/**
- * Offline sync status
- */
-export type SyncStatus =
-  | "synced" // Fully synced with server
-  | "pending_sync" // Waiting to sync
-  | "sync_failed"; // Sync failed, needs retry
+export type LMRARiskLevel =
+  | "trivial"
+  | "acceptable"
+  | "possible"
+  | "substantial"
+  | "high"
+  | "very_high";
 
-// ============================================================================
-// COMPONENT INTERFACES
-// ============================================================================
+export interface LMRAStep6_Hazard {
+  id: string;
+  description: string;
+  category: HazardCategory;
+  effectScore: LMRAEffectScore;
+  exposureScore: LMRAExposureScore;
+  probabilityScore: LMRAProbabilityScore;
+  riskScore: LMRARiskScore;
+  riskLevel: LMRARiskLevel;
+  controlMeasures?: {
+    id: string;
+    description: string;
+    responsible?: string;
+    status?: "planned" | "in_progress" | "completed" | "verified";
+  }[];
+  notes?: string;
+  createdAt?: Timestamp | Date;
+}
 
-/**
- * Location verification data
- */
-export interface LocationVerification {
-  coordinates: GeoPoint;
-  accuracy: number; // GPS accuracy in meters
-  verificationStatus: LocationVerificationStatus;
-  manualOverrideReason?: string;
-  capturedAt: Timestamp | Date;
+export interface LMRAStep6_HazardAssessment {
+  hazards: LMRAStep6_Hazard[];
+  identifiedAt?: Timestamp | Date;
+  notes?: string;
 }
 
 /**
- * Weather conditions from API
+ * Step 7: Go / No-Go Decision
+ */
+export interface LMRAStep7_GoNoGo {
+  decision: GoNoGoDecision;
+  decidedBy?: string;
+  decidedAt?: Timestamp | Date;
+  reason?: string;
+  mitigationRequired?: boolean;
+  mitigationNotes?: string;
+}
+
+/**
+ * Step 8: Digital Signatures
+ */
+export interface LMRAStep8_Signature {
+  signerId: string;
+  signerName?: string;
+  signatureType: SignatureType;
+  signatureData: string; // base64 image, typed name or consent marker
+  signedAt: Timestamp | Date;
+  role?: string; // e.g., "field_worker", "supervisor"
+  notes?: string;
+}
+
+export interface LMRAStep8_Signatures {
+  signatures: LMRAStep8_Signature[];
+  completedAt?: Timestamp | Date;
+  notes?: string;
+}
+
+// ============================================================================
+// MAIN LMRA INTERFACE
+// ============================================================================
+
+export interface LMRA {
+  id: string;
+  organizationId: string;
+  projectId?: string;
+  traId?: string;
+
+  status: LMRAStatus;
+  currentStep: LMRAStepNumber;
+
+  // optional step payloads
+  step1?: LMRAStep1_TraSelection;
+  step2?: LMRAStep2_LocationVerification;
+  step3?: LMRAStep3_WeatherConditions;
+  step4?: LMRAStep4_TeamCompetencies;
+  step5?: LMRAStep5_EquipmentVerification;
+  step6?: LMRAStep6_HazardAssessment;
+  step7?: LMRAStep7_GoNoGo;
+  step8?: LMRAStep8_Signatures;
+
+  // metadata
+  createdBy: string;
+  createdByName?: string;
+  createdAt: Timestamp | Date;
+  updatedAt?: Timestamp | Date;
+  submittedAt?: Timestamp | Date;
+  submittedBy?: string;
+  approvedAt?: Timestamp | Date;
+  approvedBy?: string;
+
+  // derived fields
+  overallRiskScore?: LMRARiskScore;
+  overallRiskLevel?: LMRARiskLevel;
+  isOffline?: boolean;
+  version?: number;
+  notes?: string;
+}
+
+// ============================================================================
+// API REQUEST / RESPONSE TYPES
+// ============================================================================
+
+export interface CreateLMRARequest {
+  projectId?: string;
+  traId?: string;
+  organizationId: string;
+  createdBy: string;
+  initialStep?: LMRAStep1_TraSelection;
+}
+
+export interface UpdateLMRARequest {
+  lmraId: string;
+  status?: LMRAStatus;
+  currentStep?: LMRAStepNumber;
+  stepPayload?: Partial<
+    | LMRAStep1_TraSelection
+    | LMRAStep2_LocationVerification
+    | LMRAStep3_WeatherConditions
+    | LMRAStep4_TeamCompetencies
+    | LMRAStep5_EquipmentVerification
+    | LMRAStep6_HazardAssessment
+    | LMRAStep7_GoNoGo
+    | LMRAStep8_Signatures
+  >;
+  updatedBy: string;
+}
+
+export interface SubmitLMRARequest {
+  lmraId: string;
+  submittedBy: string;
+  comments?: string;
+}
+
+// ============================================================================
+// HELPERS
+// ============================================================================
+
+export function calculateLMRARiskScore(
+  effect: LMRAEffectScore,
+  exposure: LMRAExposureScore,
+  probability: LMRAProbabilityScore
+): LMRARiskScore {
+  return effect * exposure * probability;
+}
+
+export function getLMRARiskLevel(score: LMRARiskScore): LMRARiskLevel {
+  if (score <= 20) return "trivial";
+  if (score <= 70) return "acceptable";
+  if (score <= 200) return "possible";
+  if (score <= 400) return "substantial";
+  if (score <= 1000) return "high";
+  return "very_high";
+}
+
+export function getLMRARiskColor(level: LMRARiskLevel): string {
+  const map: Record<LMRARiskLevel, string> = {
+    trivial: "#10B981",
+    acceptable: "#84CC16",
+    possible: "#F59E0B",
+    substantial: "#F97316",
+    high: "#EF4444",
+    very_high: "#DC2626",
+  };
+  return map[level];
+}
+
+export function computeOverallLMRARiskScore(hazardAssessment?: LMRAStep6_HazardAssessment): LMRARiskScore {
+  if (!hazardAssessment || !hazardAssessment.hazards || hazardAssessment.hazards.length === 0) return 0;
+  return Math.max(...hazardAssessment.hazards.map((h) => h.riskScore || 0));
+}
+
+export function isLMRAValid(lmra: LMRA, now: Date = new Date()): boolean {
+  // Basic validity: must have been signed (step8) and not cancelled
+  if (lmra.status === "cancelled") return false;
+  if (lmra.status === "completed" || lmra.status === "approved") return true;
+  return false;
+}
+
+/**
+ * Lightweight checker to determine if LMRA can progress to next step
+ */
+export function canAdvanceFromStep(lmra: LMRA, step: LMRAStepNumber): boolean {
+  switch (step) {
+    case 1:
+      return !!lmra.step1?.traId;
+    case 2:
+      return !!lmra.step2?.latitude && !!lmra.step2?.longitude;
+    case 3:
+      // weather can be optional if manual override is set
+      return !!lmra.step3;
+    case 4:
+      return !!lmra.step4?.teamMembers && lmra.step4.teamMembers.length > 0;
+    case 5:
+      return !!lmra.step5?.equipmentList && lmra.step5.equipmentList.length > 0;
+    case 6:
+      return !!lmra.step6?.hazards && lmra.step6.hazards.length > 0;
+    case 7:
+      return lmra.step7?.decision !== undefined;
+    case 8:
+      return !!lmra.step8?.signatures && lmra.step8.signatures.length > 0;
+    default:
+      return false;
+  }
+}
+
+// ============================================================================
+// ADDITIONAL TYPES FOR LMRA SESSIONS
+// ============================================================================
+
+/**
+ * LMRASession - Extended LMRA with session-specific data
+ * Used for tracking active LMRA executions in the field
+ * 
+ * IMPORTANT: This interface includes derived/computed properties for backward compatibility
+ * with legacy code. These properties are computed from step data and should be considered
+ * deprecated for new code. Use step payloads directly instead.
+ */
+export interface LMRASession extends LMRA {
+  sessionId?: string;
+  startedAt?: Timestamp | Date;
+  pausedAt?: Timestamp | Date;
+  resumedAt?: Timestamp | Date;
+  completedAt?: Timestamp | Date;
+  duration?: number; // in seconds
+  isPaused?: boolean;
+  deviceInfo?: {
+    userAgent?: string;
+    platform?: string;
+    isOnline?: boolean;
+  };
+  
+  // ============================================================================
+  // DERIVED PROPERTIES (for backward compatibility with legacy code)
+  // These are computed from step data and should be considered deprecated
+  // ============================================================================
+  
+  /**
+   * @deprecated Use createdBy instead
+   */
+  performedBy?: string;
+  
+  /**
+   * @deprecated Use createdByName instead
+   */
+  performedByName?: string;
+  
+  /**
+   * @deprecated Compute from step7.decision
+   */
+  overallAssessment?: "safe_to_proceed" | "proceed_with_caution" | "stop_work";
+  
+  /**
+   * @deprecated Use step2.latitude and step2.longitude
+   */
+  location?: {
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+    accuracy?: number;
+    locationName?: string;
+  };
+  
+  /**
+   * @deprecated Use step4.teamMembers
+   */
+  teamMembers?: TeamMemberCompetency[];
+  
+  /**
+   * @deprecated Use step3 (WeatherConditions)
+   */
+  weatherConditions?: WeatherConditions;
+  
+  /**
+   * @deprecated Photos should be stored separately with lmraId reference
+   */
+  photos?: LMRAPhoto[];
+  
+  /**
+   * @deprecated Use step7 data
+   */
+  stopWorkTriggeredBy?: string;
+  
+  /**
+   * @deprecated Use step7.reason
+   */
+  stopWorkReason?: string;
+  
+  /**
+   * @deprecated Use step8 signatures
+   */
+  stopWorkAcknowledgedBy?: string;
+  
+  /**
+   * @deprecated Use notes field or step-specific notes
+   */
+  comments?: string;
+  
+  /**
+   * @deprecated Environmental checks should be part of step6 hazards
+   */
+  environmentalChecks?: EnvironmentalCheck[];
+  
+  /**
+   * @deprecated Personnel checks should be part of step4 team competencies
+   */
+  personnelChecks?: PersonnelCheck[];
+  
+  /**
+   * @deprecated Equipment checks are in step5
+   */
+  equipmentChecks?: EquipmentCheck[];
+  
+  /**
+   * @deprecated Sync status for offline support
+   */
+  syncStatus?: SyncStatus;
+  
+  /**
+   * @deprecated Sync error message
+   */
+  syncError?: string;
+}
+
+/**
+ * LMRAAssessment - Simplified assessment data for reporting
+ */
+export interface LMRAAssessment {
+  id: string;
+  traId?: string;
+  traTitle?: string;
+  organizationId: string;
+  projectId?: string;
+  status: LMRAStatus;
+  overallRiskScore?: LMRARiskScore;
+  overallRiskLevel?: LMRARiskLevel;
+  goNoGoDecision?: GoNoGoDecision;
+  createdBy: string;
+  createdByName?: string;
+  createdAt: Timestamp | Date;
+  submittedAt?: Timestamp | Date;
+  completedAt?: Timestamp | Date;
+  location?: {
+    latitude: number;
+    longitude: number;
+    locationName?: string;
+  };
+  weather?: {
+    temperatureC?: number;
+    weatherDescription?: string;
+    severity?: WeatherSeverity;
+  };
+  teamSize?: number;
+  hazardCount?: number;
+  photoCount?: number;
+}
+
+/**
+ * WeatherConditions - Standalone weather data type
  */
 export interface WeatherConditions {
-  temperature: number; // Celsius
-  humidity: number; // Percentage 0-100
-  windSpeed: number; // km/h
-  visibility: number; // km
-  conditions: string; // e.g., "Clear", "Rainy", "Foggy"
-  description?: string; // Detailed description
-  apiSource: string; // e.g., "OpenWeather"
-  fetchedAt: Timestamp | Date;
-  iconCode?: string; // Weather icon code
+  provider?: string;
+  observationTimestamp?: Timestamp | Date;
+  temperatureC?: number | null;
+  humidityPct?: number | null;
+  windSpeedMs?: number | null;
+  windDirectionDeg?: number | null;
+  precipitationMm?: number | null;
+  weatherDescription?: string;
+  severity?: WeatherSeverity;
+  manualOverride?: boolean;
+  manualNotes?: string;
 }
 
 /**
- * Environmental check item
+ * EnvironmentalCheck - Environmental conditions assessment
  */
 export interface EnvironmentalCheck {
-  checkType: string; // e.g., "Gas levels", "Noise", "Lighting"
-  required: boolean;
-  status: CheckStatus;
-  measurement?: string;
+  id: string;
+  checkType: "noise" | "air_quality" | "lighting" | "temperature" | "other";
+  description: string;
+  measurement?: number;
+  unit?: string;
+  isAcceptable: boolean;
   notes?: string;
-  photoURL?: string;
+  checkedBy?: string;
   checkedAt?: Timestamp | Date;
 }
 
 /**
- * Competency status for a team member
- */
-export interface CompetencyValidation {
-  competencyName: string;
-  status: CompetencyStatus;
-  expiryDate?: Timestamp | Date;
-  certificateNumber?: string;
-}
-
-/**
- * Personnel check for team member
+ * PersonnelCheck - Personnel safety verification
  */
 export interface PersonnelCheck {
   userId: string;
   displayName?: string;
-  competenciesVerified: boolean;
-  competencyStatus: CompetencyValidation[];
-  checkedIn: boolean;
-  checkInTime: Timestamp | Date;
-  digitalSignature?: string; // Base64 encoded signature
+  checkType: "ppe" | "medical" | "training" | "authorization" | "other";
+  isCompliant: boolean;
   notes?: string;
+  verifiedBy?: string;
+  verifiedAt?: Timestamp | Date;
 }
 
 /**
- * Equipment verification check
- */
-export interface EquipmentCheck {
-  equipmentName: string;
-  equipmentId?: string;
-  required: boolean;
-  available: boolean;
-  condition: EquipmentCondition;
-  inspectionDate?: Timestamp | Date;
-  qrCode?: string; // Equipment QR code scanned
-  photoURL?: string;
-  notes?: string;
-  checkedBy?: string; // User ID
-}
-
-/**
- * LMRA photo documentation
+ * LMRAPhoto - Photo metadata for LMRA documentation
  */
 export interface LMRAPhoto {
   id: string;
-  url: string; // Cloud Storage URL
-  thumbnailURL?: string;
-  category: PhotoCategory;
+  lmraId: string;
+  stepNumber: LMRAStepNumber;
+  url?: string;
+  localPath?: string;
+  thumbnailUrl?: string;
   caption?: string;
-  location?: GeoPoint;
-  takenAt: Timestamp | Date;
-  takenBy: string; // User ID
-  uploadStatus?: "pending" | "uploaded" | "failed";
-}
-
-// ============================================================================
-// MAIN LMRA SESSION INTERFACE
-// ============================================================================
-
-/**
- * LMRA Session - Complete execution record
- */
-export interface LMRASession {
-  // Identity
-  id: string;
-
-  // Relationships
-  traId: string; // Associated TRA
-  projectId: string; // For direct project queries
-  organizationId: string; // For security/queries
-
-  // Execution Details
-  performedBy: string; // User ID (field worker)
-  performedByName?: string; // Denormalized for display
-  teamMembers: string[]; // All team member User IDs
-  teamMembersInfo?: {
-    // Denormalized team info
-    userId: string;
-    displayName: string;
-    role?: string;
-  }[];
-
-  // Location Verification
-  location: LocationVerification;
-
-  // Weather Conditions (from API)
-  weatherConditions?: WeatherConditions;
-
-  // Environmental Checks (from TRA hazards)
-  environmentalChecks: EnvironmentalCheck[];
-
-  // Personnel Verification
-  personnelChecks: PersonnelCheck[];
-
-  // Equipment Verification
-  equipmentChecks: EquipmentCheck[];
-
-  // Photos & Documentation
-  photos: LMRAPhoto[];
-
-  // Final Assessment
-  overallAssessment: LMRAAssessment;
-  stopWorkReason?: string;
-  additionalHazards?: string; // Unforeseen hazards identified
-  comments?: string;
-
-  // Stop Work Authority
-  stopWorkTriggeredBy?: string; // User ID
-  stopWorkTriggeredByName?: string; // Denormalized
-  stopWorkAcknowledgedBy?: string; // Supervisor ID
-  stopWorkAcknowledgedByName?: string;
-  workResumedAt?: Timestamp | Date;
-  resumeApprovedBy?: string;
-  resumeApprovedByName?: string;
-
-  // Timing
-  startedAt: Timestamp | Date;
-  completedAt?: Timestamp | Date;
-  duration?: number; // Seconds
-
-  // Offline Sync Status
-  syncStatus: SyncStatus;
-  offlineCreatedAt?: Timestamp | Date;
-  syncedAt?: Timestamp | Date;
-  syncError?: string;
-  retryCount?: number;
-
-  // Metadata
-  createdAt: Timestamp | Date;
-  updatedAt?: Timestamp | Date;
-  version?: number; // For conflict resolution
-}
-
-// ============================================================================
-// API REQUEST/RESPONSE TYPES
-// ============================================================================
-
-/**
- * Create LMRA Session Request
- */
-export interface CreateLMRARequest {
-  traId: string;
-  projectId: string;
-  teamMembers: string[];
-  location: Omit<LocationVerification, "capturedAt">;
+  uploadedBy: string;
+  uploadedAt: Timestamp | Date;
+  metadata?: {
+    width?: number;
+    height?: number;
+    size?: number;
+    mimeType?: string;
+    latitude?: number;
+    longitude?: number;
+  };
+  syncStatus?: SyncStatus;
 }
 
 /**
- * Update LMRA Session Request
- */
-export interface UpdateLMRARequest {
-  weatherConditions?: WeatherConditions;
-  environmentalChecks?: EnvironmentalCheck[];
-  personnelChecks?: PersonnelCheck[];
-  equipmentChecks?: EquipmentCheck[];
-  photos?: LMRAPhoto[];
-  overallAssessment?: LMRAAssessment;
-  stopWorkReason?: string;
-  additionalHazards?: string;
-  comments?: string;
-}
-
-/**
- * Complete LMRA Session Request
- */
-export interface CompleteLMRARequest {
-  sessionId: string;
-  overallAssessment: LMRAAssessment;
-  comments?: string;
-  digitalSignature?: string;
-}
-
-/**
- * Stop Work Request
- */
-export interface StopWorkRequest {
-  sessionId: string;
-  reason: string;
-  triggeredBy: string;
-}
-
-/**
- * LMRA List Response
- */
-export interface ListLMRAResponse {
-  items: LMRASession[];
-  nextCursor?: string;
-  totalCount?: number;
-  hasMore: boolean;
-}
-
-/**
- * LMRA Summary for lists
+ * LMRASummary - Lightweight summary for lists and dashboards
  */
 export interface LMRASummary {
   id: string;
-  traId: string;
-  traTitle?: string;
-  projectId: string;
-  projectName?: string;
-  performedBy: string;
-  performedByName?: string;
-  overallAssessment: LMRAAssessment;
-  startedAt: Timestamp | Date;
-  completedAt?: Timestamp | Date;
-  location: {
-    accuracy: number;
-    verificationStatus: LocationVerificationStatus;
-  };
-  photoCount: number;
-  teamMemberCount: number;
-}
-
-// ============================================================================
-// FILTER OPTIONS
-// ============================================================================
-
-/**
- * LMRA Filter options for queries
- */
-export interface LMRAFilters {
   traId?: string;
+  traTitle?: string;
+  status: LMRAStatus;
+  currentStep: LMRAStepNumber;
+  overallRiskLevel?: LMRARiskLevel;
+  goNoGoDecision?: GoNoGoDecision;
+  createdBy: string;
+  createdByName?: string;
+  createdAt: Timestamp | Date;
+  updatedAt?: Timestamp | Date;
+  location?: string;
+  isOffline?: boolean;
+}
+
+/**
+ * SyncStatus - Offline sync status
+ */
+export type SyncStatus = "pending" | "pending_sync" | "syncing" | "synced" | "sync_failed" | "error";
+
+// ============================================================================
+// STOP-WORK AUTHORITY TYPES
+// ============================================================================
+
+/**
+ * StopWorkAlert - Emergency work stoppage alert
+ */
+export interface StopWorkAlert {
+  id: string;
+  lmraId: string;
+  organizationId: string;
   projectId?: string;
-  performedBy?: string;
-  overallAssessment?: LMRAAssessment | LMRAAssessment[];
-  dateFrom?: Date;
-  dateTo?: Date;
-  syncStatus?: SyncStatus;
-  hasStopWork?: boolean;
-}
-
-// ============================================================================
-// STATISTICS
-// ============================================================================
-
-/**
- * LMRA Statistics
- */
-export interface LMRAStatistics {
-  totalSessions: number;
-  byAssessment: Record<LMRAAssessment, number>;
-  stopWorkCount: number;
-  averageDuration: number; // seconds
-  completionRate: number; // percentage
-  byProject: {
-    projectId: string;
-    projectName: string;
-    sessionCount: number;
-  }[];
-}
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-/**
- * Check if LMRA session is complete
- */
-export function isLMRAComplete(session: LMRASession): boolean {
-  return !!session.completedAt && !!session.overallAssessment;
-}
-
-/**
- * Check if LMRA has stop work triggered
- */
-export function hasStopWork(session: LMRASession): boolean {
-  return session.overallAssessment === "stop_work" || !!session.stopWorkTriggeredBy;
-}
-
-/**
- * Calculate LMRA duration in seconds
- */
-export function calculateDuration(session: LMRASession): number | null {
-  if (!session.completedAt) return null;
-
-  const start =
-    session.startedAt instanceof Date ? session.startedAt : (session.startedAt as any).toDate();
-  const end =
-    session.completedAt instanceof Date
-      ? session.completedAt
-      : (session.completedAt as any).toDate();
-
-  return Math.floor((end.getTime() - start.getTime()) / 1000);
-}
-
-/**
- * Get LMRA status color
- */
-export function getLMRAStatusColor(assessment: LMRAAssessment): string {
-  const colors: Record<LMRAAssessment, string> = {
-    safe_to_proceed: "#10B981", // Green
-    proceed_with_caution: "#F59E0B", // Yellow/Orange
-    stop_work: "#EF4444", // Red
+  traId?: string;
+  
+  // Who triggered
+  triggeredBy: string;
+  triggeredByName: string;
+  triggeredAt: Timestamp | Date;
+  
+  // Why
+  reason: string;
+  severity: 'moderate' | 'high' | 'critical';
+  category: 'weather' | 'equipment' | 'personnel' | 'hazard' | 'other';
+  
+  // Evidence
+  description: string;
+  photoIds: string[];
+  
+  // Location
+  location?: {
+    latitude: number;
+    longitude: number;
+    locationName?: string;
   };
-  return colors[assessment];
+  
+  // Signature
+  signature: {
+    signerId: string;
+    signerName: string;
+    signatureData: string;
+    signedAt: Timestamp | Date;
+  };
+  
+  // Status
+  status: 'active' | 'acknowledged' | 'resolved';
+  acknowledgedBy?: string;
+  acknowledgedAt?: Timestamp | Date;
+  resolvedBy?: string;
+  resolvedAt?: Timestamp | Date;
+  resolutionNotes?: string;
+  
+  // Notifications
+  notifiedUsers: string[];
+  notificationsSent: boolean;
+  notificationError?: string;
+  
+  // Sync
+  syncStatus?: SyncStatus;
+  createdAt: Timestamp | Date;
+  updatedAt?: Timestamp | Date;
 }
 
 /**
- * Get location accuracy quality
+ * CreateStopWorkRequest - Request to create stop-work alert
  */
-export function getLocationAccuracyQuality(
-  accuracy: number
-): "excellent" | "good" | "fair" | "poor" {
-  if (accuracy < 5) return "excellent";
-  if (accuracy < 10) return "good";
-  if (accuracy < 20) return "fair";
-  return "poor";
+export interface CreateStopWorkRequest {
+  lmraId: string;
+  triggeredBy: string;
+  triggeredByName: string;
+  reason: string;
+  severity: 'moderate' | 'high' | 'critical';
+  category: 'weather' | 'equipment' | 'personnel' | 'hazard' | 'other';
+  description: string;
+  photoIds?: string[];
+  location?: { 
+    latitude: number; 
+    longitude: number;
+    locationName?: string;
+  };
+  signature: {
+    signerId: string;
+    signerName: string;
+    signatureData: string;
+  };
 }
 
 /**
- * Check if all required personnel checks are complete
+ * StopWorkSummary - Lightweight summary for lists
  */
-export function arePersonnelChecksComplete(checks: PersonnelCheck[]): boolean {
-  return (
-    checks.length > 0 && checks.every((check) => check.checkedIn && check.competenciesVerified)
-  );
+export interface StopWorkSummary {
+  id: string;
+  lmraId: string;
+  severity: 'moderate' | 'high' | 'critical';
+  category: 'weather' | 'equipment' | 'personnel' | 'hazard' | 'other';
+  reason: string;
+  triggeredBy: string;
+  triggeredByName: string;
+  triggeredAt: Timestamp | Date;
+  status: 'active' | 'acknowledged' | 'resolved';
+  location?: string;
 }
 
 /**
- * Check if all required equipment checks are complete
+ * ListLMRAResponse - API response for listing LMRAs
  */
-export function areEquipmentChecksComplete(checks: EquipmentCheck[]): boolean {
-  const requiredChecks = checks.filter((c) => c.required);
-  return requiredChecks.every(
-    (check) => check.available && (check.condition === "good" || check.condition === "acceptable")
-  );
+export interface ListLMRAResponse {
+  lmras: LMRASession[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
+// ============================================================================
+// ADDITIONAL HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * Calculate duration of LMRA session in seconds
+ */
+export function calculateDuration(lmra: LMRASession): number {
+  if (!lmra.startedAt) return 0;
+  
+  const start = lmra.startedAt instanceof Date 
+    ? lmra.startedAt.getTime() 
+    : lmra.startedAt.toMillis();
+  
+  const end = lmra.completedAt 
+    ? (lmra.completedAt instanceof Date 
+        ? lmra.completedAt.getTime() 
+        : lmra.completedAt.toMillis())
+    : Date.now();
+  
+  return Math.floor((end - start) / 1000);
 }
 
 /**
- * Check if LMRA can be completed (all checks done)
+ * Check if LMRA can be completed (all steps valid)
  */
-export function canCompleteLMRA(session: LMRASession): boolean {
-  return (
-    !!session.location &&
-    session.environmentalChecks.length > 0 &&
-    arePersonnelChecksComplete(session.personnelChecks) &&
-    areEquipmentChecksComplete(session.equipmentChecks)
-  );
+export function canCompleteLMRA(lmra: LMRA): boolean {
+  // Must have all 8 steps completed
+  if (!lmra.step1?.traId) return false;
+  if (!lmra.step2?.latitude || !lmra.step2?.longitude) return false;
+  if (!lmra.step3) return false;
+  if (!lmra.step4?.teamMembers || lmra.step4.teamMembers.length === 0) return false;
+  if (!lmra.step5?.equipmentList || lmra.step5.equipmentList.length === 0) return false;
+  if (!lmra.step6?.hazards || lmra.step6.hazards.length === 0) return false;
+  if (!lmra.step7?.decision || lmra.step7.decision === "pending") return false;
+  if (!lmra.step8?.signatures || lmra.step8.signatures.length === 0) return false;
+  
+  // If decision is "no_go", LMRA is complete but work cannot proceed
+  // Still return true as the LMRA itself is complete
+  return true;
 }
 
-/**
- * Get pending sync count from sessions
- */
-export function getPendingSyncCount(sessions: LMRASession[]): number {
-  return sessions.filter((s) => s.syncStatus === "pending_sync").length;
-}
-
-/**
- * Get failed sync sessions
- */
-export function getFailedSyncSessions(sessions: LMRASession[]): LMRASession[] {
-  return sessions.filter((s) => s.syncStatus === "sync_failed");
-}
+// ============================================================================
+// EXPORTS
+// ============================================================================

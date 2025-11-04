@@ -7,10 +7,17 @@
     "deploy:preview": "./scripts/deploy-preview.sh",
     "deploy:production": "./scripts/deploy-production.sh",
     "deploy:verify": "./scripts/verify-deployment.sh",
-    "deploy:rollback": "./scripts/rollback-deployment.sh"
+    "deploy:rollback": "./scripts/rollback-deployment.sh",
+    "test": "cd web && npm test"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/preset-env": "^7.28.3",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "babel-jest": "^30.2.0",
     "husky": "^9.1.7",
+    "jest-environment-jsdom": "^30.2.0",
     "lint-staged": "^15.2.10"
   },
   "lint-staged": {

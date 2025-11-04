@@ -3,8 +3,10 @@ import React from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import type { Metadata } from "next";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { AuthProvider } from "@/components/AuthProvider";
-import { Header } from "../components/Header";
+import { Header } from "@/components/Header";
 
 // Temporarily disabled - react-joyride incompatible with React 19
 // import { TourProvider } from '../components/onboarding/ProductTour';
@@ -15,20 +17,25 @@ export const metadata: Metadata = {
     "Complete oplossing voor Taak Risicoanalyses (TRA) en Last Minute Risicoanalyses (LMRA)",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="nl">
+    <html lang={locale}>
       <body className="min-h-screen antialiased bg-slate-50 text-slate-900">
-        <AuthProvider>
-          {/* Temporarily disabled TourProvider - react-joyride incompatible with React 19 */}
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-              {children}
-            </main>
-            <Footer />
-          </div>
-        </AuthProvider>
+        <NextIntlClientProvider messages={messages}>
+          <AuthProvider>
+            {/* Temporarily disabled TourProvider - react-joyride incompatible with React 19 */}
+            <div className="min-h-screen flex flex-col">
+              <Header />
+              <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </AuthProvider>
+        </NextIntlClientProvider>
         <Analytics />
         <SpeedInsights />
       </body>
@@ -47,7 +54,7 @@ function Footer() {
               © {new Date().getFullYear()} SafeWork Pro
             </span>
             <span className="mx-2">•</span>
-            <span>Built for field safety (TRA & LMRA)</span>
+            <span>Gebouwd voor veldveiligheid (TRA & LMRA)</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-gray-500">
             <a href="/privacy" className="hover:text-indigo-600 transition-colors">
@@ -55,11 +62,11 @@ function Footer() {
             </a>
             <span>•</span>
             <a href="/terms" className="hover:text-indigo-600 transition-colors">
-              Terms
+              Voorwaarden
             </a>
             <span>•</span>
             <a href="/support" className="hover:text-indigo-600 transition-colors">
-              Support
+              Ondersteuning
             </a>
           </div>
         </div>

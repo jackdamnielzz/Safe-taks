@@ -44,6 +44,15 @@ describe("LocationService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorageMock.getItem.mockReturnValue(null);
+    localStorageMock.setItem.mockClear();
+    localStorageMock.removeItem.mockClear();
+    localStorageMock.clear.mockClear();
+    
+    // Reset the locationService instance to clear cache and state
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (locationService as any).cache.clear();
+    (locationService as any).isWatching = false;
+    (locationService as any).watchId = null;
   });
 
   describe("getCurrentLocation", () => {
@@ -212,9 +221,13 @@ describe("LocationService", () => {
     it("should stop watching location", () => {
       // Mock watchId
       mockGeolocation.watchPosition.mockReturnValue(123);
+      
+      // Start watching first to set watchId
+      const callback = jest.fn();
+      locationService.startWatchingLocation(callback);
 
       locationService.stopWatchingLocation();
-      expect(mockGeolocation.clearWatch).toHaveBeenCalled();
+      expect(mockGeolocation.clearWatch).toHaveBeenCalledWith(123);
     });
   });
 
@@ -257,6 +270,7 @@ describe("LocationService", () => {
 
     it("should retrieve cached locations", () => {
       // Mock cached data in localStorage
+      const now = new Date();
       const cachedData = JSON.stringify([
         {
           id: "loc_123",
@@ -268,9 +282,9 @@ describe("LocationService", () => {
               accuracy: 5,
             },
             timestamps: {
-              capturedAt: new Date().toISOString(),
-              expiresAt: new Date(Date.now() + 3600000).toISOString(),
-              lastVerifiedAt: new Date().toISOString(),
+              capturedAt: now.toISOString(),
+              expiresAt: new Date(now.getTime() + 3600000).toISOString(),
+              lastVerifiedAt: now.toISOString(),
             },
             metadata: {
               source: "gps",

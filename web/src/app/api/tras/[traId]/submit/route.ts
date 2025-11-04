@@ -19,7 +19,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tra
   const parse = SubmitTRASchema.safeParse({ traId: traId, comments: body.comments });
   if (!parse.success) {
     return NextResponse.json(
-      { error: "Invalid payload", details: parse.error.flatten() },
+      { error: "Ongeldige aanvraag", details: parse.error.flatten() },
       { status: 400 }
     );
   }
@@ -75,11 +75,74 @@ export async function POST(request: Request, { params }: { params: Promise<{ tra
     updatedAt: now,
   };
 
+  // If requested, create an approval record and link it to the TRA
+  let approvalId: string | null = null;
+  if (body.createApproval) {
+    try {
+      // Inline approval creation using same shape as /api/approvals/create
+      const approvalRef = db.collection(`organizations/${orgId}/approvals`).doc();
+      const approvalDoc = {
+        traId,
+        traTitle: tra.title || null,
+        organizationId: orgId,
+        requestedBy: userId,
+        requestedByName: userName,
+        status: "pending",
+        createdAt: now,
+        updatedAt: now,
+        workflow: workflow,
+        comments: body.comments || null,
+      };
+      await approvalRef.set(approvalDoc);
+      approvalId = approvalRef.id;
+
+      // attach to TRA; set status to in_review when approval is created
+      update.approvalId = approvalId;
+      update.approvalWorkflow = workflow;
+      update.status = "in_review";
+
+      // placeholder: notify approvers (no external integration yet)
+      try {
+        // write a notification placeholder document
+        const notifRef = db.collection(`organizations/${orgId}/notifications`).doc();
+        await notifRef.set({
+          type: "approval_requested",
+          approvalId,
+          traId,
+          orgId,
+          createdAt: now,
+          read: false,
+          meta: {
+            requestedBy: userName,
+          },
+        });
+      } catch (e) {
+        // swallow notification failures but write audit log
+        await writeAuditLog(orgId, traId, userId, "notification.placeholder_failed", {
+          error: (e as any).message || String(e),
+        });
+      }
+    } catch (e) {
+      return NextResponse.json(
+        { error: "Fout bij het aanmaken van de goedkeuring", details: (e as any).message || null },
+        { status: 500 }
+      );
+    }
+  }
+
   await traRef.update(update);
   await writeAuditLog(orgId, traId, userId, "tra.submit", {
     comments: body.comments || null,
+    approvalCreated: !!approvalId,
+    approvalId: approvalId,
   });
 
   const updated = await traRef.get();
-  return NextResponse.json({ item: updated.data() }, { status: 200 });
+  const responseItem: any = updated.data();
+  // Localize status message for client visibility if needed
+  const message = body.createApproval
+    ? "TRA is ingediend en in review geplaatst"
+    : "TRA is ingediend";
+
+  return NextResponse.json({ item: responseItem, message }, { status: 200 });
 }

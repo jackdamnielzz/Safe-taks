@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { AuthLayout } from "@/components/layouts/FormContainer";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
@@ -36,6 +37,7 @@ const registerSchema = z
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+  const t = useTranslations("auth.register");
   const router = useRouter();
   const { signUp, signInWithGoogle, loading, error, clearError } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
@@ -100,8 +102,8 @@ export default function RegisterPage() {
 
   return (
     <AuthLayout
-      title="Create your account"
-      subtitle="Start your 14-day free trial. No credit card required."
+      title={t("title")}
+      subtitle={t("subtitle")}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {error && (
@@ -113,7 +115,7 @@ export default function RegisterPage() {
         <div className="space-y-4">
           <div>
             <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-1">
-              Company Name
+              {t("companyName")}
               <span className="text-red-500 ml-1">*</span>
             </label>
             <input
@@ -124,7 +126,7 @@ export default function RegisterPage() {
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.companyName ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="Acme Corporation"
+              placeholder={t("companyNamePlaceholder")}
               disabled={isLoading}
             />
             {errors.companyName && (
@@ -134,7 +136,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
-              Full Name
+              {t("fullName")}
               <span className="text-red-500 ml-1">*</span>
             </label>
             <input
@@ -145,7 +147,7 @@ export default function RegisterPage() {
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.fullName ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="John Doe"
+              placeholder={t("fullNamePlaceholder")}
               disabled={isLoading}
             />
             {errors.fullName && (
@@ -155,7 +157,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Work Email
+              {t("workEmail")}
               <span className="text-red-500 ml-1">*</span>
             </label>
             <input
@@ -166,7 +168,7 @@ export default function RegisterPage() {
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.email ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="you@company.com"
+              placeholder={t("workEmailPlaceholder")}
               disabled={isLoading}
             />
             {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
@@ -174,7 +176,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
+              {t("password")}
               <span className="text-red-500 ml-1">*</span>
             </label>
             <input
@@ -185,14 +187,14 @@ export default function RegisterPage() {
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.password ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="••••••••"
+              placeholder={t("passwordPlaceholder")}
               disabled={isLoading}
             />
             {errors.password && (
               <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
             )}
             <p className="mt-1 text-xs text-gray-500">
-              Must be 8+ characters with uppercase, lowercase, and number
+              {t("passwordHint")}
             </p>
           </div>
 
@@ -201,7 +203,7 @@ export default function RegisterPage() {
               htmlFor="confirmPassword"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Confirm Password
+              {t("confirmPassword")}
               <span className="text-red-500 ml-1">*</span>
             </label>
             <input
@@ -212,7 +214,7 @@ export default function RegisterPage() {
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                 errors.confirmPassword ? "border-red-500" : "border-gray-300"
               }`}
-              placeholder="••••••••"
+              placeholder={t("confirmPasswordPlaceholder")}
               disabled={isLoading}
             />
             {errors.confirmPassword && (
@@ -230,13 +232,13 @@ export default function RegisterPage() {
             disabled={isLoading}
           />
           <label htmlFor="agreeToTerms" className="ml-2 block text-sm text-gray-700">
-            I agree to the{" "}
+            {t("agreeToTerms")}{" "}
             <Link href="/terms" className="text-blue-600 hover:text-blue-500">
-              Terms of Service
+              {t("termsOfService")}
             </Link>{" "}
-            and{" "}
+            {t("and")}{" "}
             <Link href="/privacy" className="text-blue-600 hover:text-blue-500">
-              Privacy Policy
+              {t("privacyPolicy")}
             </Link>
             <span className="text-red-500 ml-1">*</span>
           </label>
@@ -252,7 +254,7 @@ export default function RegisterPage() {
           disabled={isLoading || loading}
           className="w-full"
         >
-          {isLoading || loading ? "Creating account..." : "Create account"}
+          {isLoading || loading ? t("creatingAccount") : t("createAccount")}
         </Button>
 
         <div className="relative">
@@ -260,7 +262,7 @@ export default function RegisterPage() {
             <div className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or sign up with</span>
+            <span className="px-2 bg-white text-gray-500">{t("orSignUpWith")}</span>
           </div>
         </div>
 
@@ -297,9 +299,9 @@ export default function RegisterPage() {
         </div>
 
         <p className="text-center text-sm text-gray-600">
-          Already have an account?{" "}
+          {t("alreadyHaveAccount")}{" "}
           <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-            Sign in
+            {t("signIn")}
           </Link>
         </p>
       </form>

@@ -2,6 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { MobileMenu } from "@/components/MobileMenu";
 import { NotificationHeader } from "@/app/components/NotificationHeader";
 import { useAuth } from "@/components/AuthProvider";
@@ -27,7 +29,9 @@ interface DropdownItem {
 }
 
 export function Header() {
+  const t = useTranslations();
   const { userProfile } = useAuth();
+  const pathname = usePathname();
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
@@ -75,7 +79,7 @@ export function Header() {
   const dropdownItems: DropdownItem[] = [
     {
       id: "account",
-      label: "Mijn Account",
+      label: t("header.myAccount"),
       href: "/account",
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +94,7 @@ export function Header() {
     },
     {
       id: "settings",
-      label: "Instellingen",
+      label: t("header.settings"),
       href: "/settings",
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +115,7 @@ export function Header() {
     },
     {
       id: "admin",
-      label: "Beheer Hub",
+      label: t("header.adminHub"),
       href: "/admin/hub",
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,7 +131,7 @@ export function Header() {
     },
     {
       id: "signout",
-      label: "Uitloggen",
+      label: t("header.signOut"),
       onClick: handleSignOut,
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,16 +169,13 @@ export function Header() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-2" data-tour="navigation">
-            <NavLink href="/tras" data-tour="create-tra">
-              TRAs
+            <NavLink href="/tras" isActive={pathname === "/tras"} data-tour="create-tra">
+              {t("nav.tras")}
             </NavLink>
-            <NavLink href="/mobile" data-tour="execute-lmra">
-              Mobile
+            <NavLink href="/reports" isActive={pathname === "/reports"} data-tour="view-reports">
+              {t("nav.reports")}
             </NavLink>
-            <NavLink href="/reports" data-tour="view-reports">
-              Reports
-            </NavLink>
-            <NavLink href="/team">Team</NavLink>
+            <NavLink href="/team" isActive={pathname === "/team"}>{t("nav.team")}</NavLink>
           </nav>
 
           {/* User actions */}
@@ -185,13 +186,13 @@ export function Header() {
               <button
                 onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-all group"
-                aria-label="Account menu"
+                aria-label={t("nav.accountMenu")}
               >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                  {userProfile?.firstName?.[0] || "J"}
+                  {userProfile?.firstName?.[0] || t("header.defaultName")?.[0]}
                 </div>
                 <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600">
-                  {userProfile?.firstName || "John"}
+                  {userProfile?.firstName || t("header.defaultName")}
                 </span>
                 <svg
                   className={`w-4 h-4 text-gray-400 transition-transform ${accountDropdownOpen ? "rotate-180" : ""}`}
@@ -221,7 +222,7 @@ export function Header() {
                   <div className="p-3 border-b border-gray-200">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold shadow-md">
-                        {userProfile?.firstName?.[0] || "J"}
+                        {userProfile?.firstName?.[0] || t("header.defaultName")?.[0]}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
@@ -286,20 +287,28 @@ export function Header() {
 function NavLink({
   href,
   children,
+  isActive,
   ...props
 }: {
   href: string;
   children: React.ReactNode;
+  isActive?: boolean;
   [key: string]: any;
 }) {
   return (
     <Link
       href={href}
-      className="relative px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all group"
+      className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all group ${
+        isActive
+          ? "text-indigo-600 bg-indigo-50 font-semibold"
+          : "text-gray-700 hover:text-indigo-600 hover:bg-indigo-50"
+      }`}
       {...props}
     >
       {children}
-      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
+      <span className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 transition-all duration-300 ${
+        isActive ? "w-full" : "w-0 group-hover:w-full"
+      }`}></span>
     </Link>
   );
 }

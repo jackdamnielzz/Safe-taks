@@ -1,4 +1,3 @@
-import { notFound } from "next/navigation";
 import { getRequestConfig } from "next-intl/server";
 
 // Can be imported from a shared config
@@ -9,11 +8,12 @@ export type Locale = (typeof locales)[number];
 
 export default getRequestConfig(async ({ locale }) => {
   // Validate that the incoming `locale` parameter is valid
-  if (!locales.includes(locale as Locale)) notFound();
+  // Note: notFound() cannot be used in root layout context, so we default to "nl"
+  const validLocale = locales.includes(locale as Locale) ? (locale as Locale) : defaultLocale;
 
   return {
-    locale: locale as Locale,
-    messages: (await import(`../messages/${locale}.json`)).default,
+    locale: validLocale,
+    messages: (await import(`../messages/${validLocale}.json`)).default,
     timeZone: "Europe/Amsterdam",
     now: new Date(),
   };

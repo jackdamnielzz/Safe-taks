@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 // Notification types
 interface Notification {
@@ -54,15 +55,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
   ]);
   const pathname = usePathname();
 
+  const t = useTranslations();
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: "📊" },
-    { name: "TRAs", href: "/tras", icon: "📋" },
-    { name: "Projects", href: "/projects", icon: "🏗️" },
-    { name: "Templates", href: "/templates", icon: "📝" },
-    { name: "LMRA Sessions", href: "/lmra", icon: "📱" },
-    { name: "Reports", href: "/reports", icon: "📈" },
-    { name: "Team", href: "/team", icon: "👥" },
-    { name: "Settings", href: "/settings", icon: "⚙️" },
+    { name: t("nav.dashboard"), href: "/dashboard", icon: "📊" },
+    { name: t("nav.tras"), href: "/tras", icon: "📋" },
+    { name: t("nav.projects"), href: "/projects", icon: "🏗️" },
+    { name: t("nav.templates"), href: "/templates", icon: "📝" },
+    { name: t("nav.lmra"), href: "/lmra", icon: "📱" },
+    { name: t("nav.reports"), href: "/reports", icon: "📈" },
+    { name: t("nav.team"), href: "/team", icon: "👥" },
+    { name: t("nav.settings"), href: "/settings", icon: "⚙️" },
   ];
 
   const isActive = (href: string) =>
@@ -179,7 +181,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
+            aria-label={sidebarOpen ? t("dashboard.closeSidebar") : t("dashboard.openSidebar")}
           >
             <svg
               className="w-6 h-6"
@@ -197,7 +199,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
           <div className="flex-1 ml-6">
             <input
               type="search"
-              placeholder="Search TRAs, projects, or templates..."
+              placeholder={t("search.placeholder")}
               className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -208,7 +210,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
               <button
                 onClick={testNotificationClick}
                 className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                aria-label="Notifications"
+                aria-label={t("dashboard.notifications")}
               >
                 <svg
                   className="w-6 h-6"
@@ -231,13 +233,13 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                   <div className="p-4 border-b border-gray-200">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-gray-900">Meldingen</h3>
+                      <h3 className="text-lg font-semibold text-gray-900">{t("dashboard.notifications")}</h3>
                       {unreadCount > 0 && (
                         <button
                           onClick={markAllAsRead}
                           className="text-sm text-blue-600 hover:text-blue-800"
                         >
-                          Alles als gelezen markeren
+                          {t("dashboard.markAllAsRead")}
                         </button>
                       )}
                     </div>
@@ -245,7 +247,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
 
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.length === 0 ? (
-                      <div className="p-4 text-center text-gray-500">Geen meldingen</div>
+                      <div className="p-4 text-center text-gray-500">{t("dashboard.noNotifications")}</div>
                     ) : (
                       notifications.map((notification) => (
                         <div
@@ -291,7 +293,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                                 dismissNotification(notification.id);
                               }}
                               className="p-1 text-gray-400 hover:text-gray-600"
-                              aria-label="Melding verwijderen"
+                              aria-label={t("dashboard.dismissNotification")}
                             >
                               <svg
                                 className="w-4 h-4"
@@ -319,7 +321,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
                         onClick={() => setNotificationsOpen(false)}
                         className="w-full text-center text-sm text-gray-600 hover:text-gray-800"
                       >
-                        Alle meldingen bekijken →
+                        {t("dashboard.viewAllNotifications")}
                       </button>
                     </div>
                   )}
@@ -330,7 +332,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) =>
             {/* Help */}
             <button
               className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Help"
+              aria-label={t("dashboard.help")}
             >
               <svg
                 className="w-6 h-6"

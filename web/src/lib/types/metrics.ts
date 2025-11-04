@@ -508,42 +508,83 @@ export function getPeriodDateRange(
   period: MetricPeriod,
   referenceDate: Date = new Date()
 ): { startDate: Date; endDate: Date } {
+  // Create dates in UTC to avoid timezone issues
   const endDate = new Date(referenceDate);
   const startDate = new Date(referenceDate);
 
   switch (period) {
     case "day":
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setHours(23, 59, 59, 999);
+      // Use UTC methods to avoid timezone issues
+      startDate.setUTCHours(0, 0, 0, 0);
+      endDate.setUTCHours(23, 59, 59, 999);
       break;
     case "week":
-      const dayOfWeek = startDate.getDay();
-      startDate.setDate(startDate.getDate() - dayOfWeek);
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setDate(startDate.getDate() + 6);
-      endDate.setHours(23, 59, 59, 999);
+      // Get start of week (Monday) in UTC - find Monday of current week
+      const currentDay = startDate.getUTCDay();
+      const daysSinceMonday = currentDay === 0 ? 6 : currentDay - 1; // Sunday = 0, so Monday is 1 day after Sunday
+      const mondayDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate() - daysSinceMonday));
+      
+      // End of week (Sunday) in UTC
+      const sundayDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), mondayDate.getUTCDate() + 6));
+      
+      // Copy back to main variables
+      startDate.setTime(mondayDate.getTime());
+      endDate.setTime(sundayDate.getTime());
       break;
     case "month":
-      startDate.setDate(1);
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setMonth(endDate.getMonth() + 1, 0);
-      endDate.setHours(23, 59, 59, 999);
+      // Start of month (1st) in UTC
+      startDate.setUTCDate(1);
+      startDate.setUTCMonth(startDate.getUTCMonth());
+      startDate.setUTCFullYear(startDate.getUTCFullYear());
+      startDate.setUTCHours(0, 0, 0, 0);
+      
+      // End of month (last day) in UTC
+      const year = startDate.getUTCFullYear();
+      const month = startDate.getUTCMonth();
+      const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0));
+      lastDayOfMonth.setUTCMilliseconds(-1); // Set to last day of current month
+      endDate.setUTCHours(23, 59, 59, 999);
+      
+      // Copy back to main variables
+      startDate.setTime(startDate.getTime());
+      endDate.setTime(lastDayOfMonth.getTime());
       break;
     case "quarter":
-      const quarter = Math.floor(startDate.getMonth() / 3);
-      startDate.setMonth(quarter * 3, 1);
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setMonth(quarter * 3 + 3, 0);
-      endDate.setHours(23, 59, 59, 999);
+      const quarter = Math.floor(startDate.getUTCMonth() / 3);
+      startDate.setUTCDate(1);
+      startDate.setUTCMonth(quarter * 3);
+      startDate.setUTCFullYear(startDate.getUTCFullYear());
+      startDate.setUTCHours(0, 0, 0, 0);
+      
+      const endQuarter = new Date(startDate);
+      endQuarter.setUTCDate(1);
+      endQuarter.setUTCMonth(quarter * 3 + 3);
+      endQuarter.setUTCFullYear(startDate.getUTCFullYear());
+      endQuarter.setUTCMilliseconds(-1); // Last day of quarter
+      endQuarter.setUTCHours(23, 59, 59, 999);
+      
+      // Copy back to main variables
+      startDate.setTime(startDate.getTime());
+      endDate.setTime(endQuarter.getTime());
       break;
     case "year":
-      startDate.setMonth(0, 1);
-      startDate.setHours(0, 0, 0, 0);
-      endDate.setMonth(11, 31);
-      endDate.setHours(23, 59, 59, 999);
+      startDate.setUTCDate(1);
+      startDate.setUTCMonth(0);
+      startDate.setUTCFullYear(startDate.getUTCFullYear());
+      startDate.setUTCHours(0, 0, 0, 0);
+      
+      const endYear = new Date(startDate);
+      endYear.setUTCDate(31);
+      endYear.setUTCMonth(11);
+      endYear.setUTCFullYear(startDate.getUTCFullYear());
+      endYear.setUTCHours(23, 59, 59, 999);
+      
+      // Copy back to main variables
+      startDate.setTime(startDate.getTime());
+      endDate.setTime(endYear.getTime());
       break;
     case "all_time":
-      startDate.setFullYear(2020, 0, 1); // SafeWork Pro launch date
+      startDate.setUTCFullYear(2020, 0, 1); // SafeWork Pro launch date
       break;
   }
 
@@ -557,29 +598,36 @@ export function getPreviousPeriodDateRange(
   period: MetricPeriod,
   currentStartDate: Date
 ): { startDate: Date; endDate: Date } {
+  // Use UTC methods to avoid timezone issues
   const startDate = new Date(currentStartDate);
   const endDate = new Date(currentStartDate);
-  endDate.setMilliseconds(-1); // End just before current period starts
+  endDate.setUTCMilliseconds(-1); // End just before current period starts
 
   switch (period) {
     case "day":
-      startDate.setDate(startDate.getDate() - 1);
+      startDate.setUTCDate(startDate.getUTCDate() - 1);
       break;
     case "week":
-      startDate.setDate(startDate.getDate() - 7);
+      startDate.setUTCDate(startDate.getUTCDate() - 7);
       break;
     case "month":
-      startDate.setMonth(startDate.getMonth() - 1);
+      startDate.setUTCDate(1);
+      startDate.setUTCMonth(startDate.getUTCMonth() - 1);
+      startDate.setUTCFullYear(startDate.getUTCFullYear());
       break;
     case "quarter":
-      startDate.setMonth(startDate.getMonth() - 3);
+      startDate.setUTCDate(1);
+      startDate.setUTCMonth(startDate.getUTCMonth() - 3);
+      startDate.setUTCFullYear(startDate.getUTCFullYear());
       break;
     case "year":
-      startDate.setFullYear(startDate.getFullYear() - 1);
+      startDate.setUTCDate(1);
+      startDate.setUTCMonth(0);
+      startDate.setUTCFullYear(startDate.getUTCFullYear() - 1);
       break;
     case "all_time":
       // No previous period for all_time
-      return { startDate: new Date(0), endDate: new Date(0) };
+      return { startDate: new Date(Date.UTC(0, 0, 1)), endDate: new Date(Date.UTC(0, 0, 1)) };
   }
 
   return { startDate, endDate };

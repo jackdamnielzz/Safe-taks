@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -69,8 +70,9 @@ export default function LoginPage() {
     }
   };
 
+  const t = useTranslations();
   return (
-    <AuthLayout title="Sign in to your account" subtitle="Welcome back to SafeWork Pro">
+    <AuthLayout title={t("auth.signIn")} subtitle={t("auth.welcomeBack")}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {error && (
           <Alert variant="error" onClose={clearError}>
@@ -149,7 +151,7 @@ export default function LoginPage() {
           disabled={isLoading || loading}
           className="w-full"
         >
-          {isLoading || loading ? "Signing in..." : "Sign in"}
+          {isLoading || loading ? t("auth.signingIn") : t("auth.signIn")}
         </Button>
 
         <div className="relative">

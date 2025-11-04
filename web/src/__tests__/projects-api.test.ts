@@ -12,36 +12,14 @@ jest.mock("next/server", () => ({
   },
 }));
 
-// Mock server helpers
+/**
+ * Use the global jest.setup.js Firestore mock for consistency.
+ * Replace initializeAdmin mock to return the global.mockFirestore used in jest.setup.js
+ * and keep requireOrgAuth as a mock that tests set per-case.
+ */
 jest.mock("@/lib/server-helpers", () => ({
   requireOrgAuth: jest.fn(),
-  initializeAdmin: jest.fn(() => ({
-    firestore: {
-      collection: jest.fn(() => ({
-        doc: jest.fn(() => ({
-          collection: jest.fn(() => ({
-            add: jest.fn(),
-            where: jest.fn(() => ({
-              get: jest.fn(),
-              orderBy: jest.fn(() => ({
-                get: jest.fn(),
-              })),
-            })),
-          })),
-          get: jest.fn(),
-          update: jest.fn(),
-          delete: jest.fn(),
-        })),
-        add: jest.fn(),
-        where: jest.fn(() => ({
-          get: jest.fn(),
-          orderBy: jest.fn(() => ({
-            get: jest.fn(),
-          })),
-        })),
-      })),
-    },
-  })),
+  initializeAdmin: jest.fn(() => ({ firestore: (global as any).mockFirestore, admin: {} as any })),
 }));
 
 // Mock audit logging
@@ -53,6 +31,11 @@ jest.mock("@/lib/audit", () => ({
 import { POST, GET } from "@/app/api/projects/route";
 import { requireOrgAuth, initializeAdmin } from "@/lib/server-helpers";
 import { writeAuditLog } from "@/lib/audit";
+
+// Type the mocked functions
+const mockRequireOrgAuth = requireOrgAuth as jest.MockedFunction<typeof requireOrgAuth>;
+const mockInitializeAdmin = initializeAdmin as jest.MockedFunction<typeof initializeAdmin>;
+const mockWriteAuditLog = writeAuditLog as jest.MockedFunction<typeof writeAuditLog>;
 
 // Mock data
 const mockProject = {
@@ -94,7 +77,7 @@ describe("/api/projects", () => {
   describe("POST /api/projects", () => {
     it("should create a new project successfully", async () => {
       // Mock authenticated user
-      (requireOrgAuth as jest.Mock).mockResolvedValue(mockUser);
+      mockRequireOrgAuth.mockResolvedValue(mockUser);
 
       // Mock Firestore operations
       const mockDocRef = {
@@ -104,17 +87,56 @@ describe("/api/projects", () => {
         }),
       };
 
-      const mockCollection = {
-        add: jest.fn().mockResolvedValue(mockDocRef),
-        doc: jest.fn(),
+      // Ensure the in-memory firestore is clean and then attach a projects collection under the expected path
+      (global as any).resetMockFirestore();
+
+      // Create a deterministic doc id that the route will receive from add()
+      const createdId = "new-project-id";
+      const orgPath = `organizations/${mockUser.orgId}/projects`;
+      const docKey = `${orgPath}/${createdId}`;
+
+      // Put the saved project snapshot into the in-memory DB so snap.data() returns expected data
+      (global as any).mockFirestore._data[docKey] = { ...mockProject };
+
+      // Override collection(...).doc(orgId).collection('projects').add to return a docRef with id and get()
+      const origCollection = (global as any).mockFirestore.collection.bind((global as any).mockFirestore);
+      (global as any).mockFirestore.collection = (path: string) => {
+        const col = origCollection(path);
+        // When asking for the org path, return an object whose doc(id).collection returns the projects collection
+        if (path === `organizations`) {
+          return {
+            doc: (id: string) => {
+              return {
+                collection: (sub: string) => {
+                  if (sub === "projects") {
+                    return {
+                      add: async (data: any) => {
+                        // write data to in-memory db at createdId
+                        const id = createdId;
+                        const key = `${orgPath}/${id}`;
+                        (global as any).mockFirestore._data[key] = data;
+                        return { id, get: async () => ({ exists: true, data: () => (global as any).mockFirestore._data[key] }) };
+                      },
+                      where: col.where,
+                      orderBy: col.orderBy,
+                      get: col.get,
+                    };
+                  }
+                  return origCollection(`${path}/${id}/${sub}`);
+                },
+              };
+            },
+            where: col.where,
+            add: col.add,
+          };
+        }
+        return col;
       };
 
-      (initializeAdmin as jest.Mock).mockReturnValue({
-        firestore: {
-          collection: jest.fn(() => ({
-            doc: jest.fn(() => mockCollection),
-          })),
-        },
+      // Ensure initializeAdmin returns the global mockFirestore
+      mockInitializeAdmin.mockReturnValue({
+        firestore: (global as any).mockFirestore,
+        admin: {} as any,
       });
 
       const requestBody = {
@@ -132,18 +154,23 @@ describe("/api/projects", () => {
         headers: { "Content-Type": "application/json" },
       });
 
+      // Ensure the global fetch stub (from jest.setup) is intact and reset DB state
+      (global as any).resetMockFirestore();
+      // initializeAdmin will return global.mockFirestore as configured earlier
+      mockInitializeAdmin.mockReturnValue({ firestore: (global as any).mockFirestore, admin: {} as any });
+
       const response = await POST(request);
       const result = await response.json();
 
-      expect(requireOrgAuth).toHaveBeenCalledWith(request);
-      expect(initializeAdmin).toHaveBeenCalled();
-      expect(writeAuditLog).toHaveBeenCalled();
+      expect(mockRequireOrgAuth).toHaveBeenCalledWith(request);
+      expect(mockInitializeAdmin).toHaveBeenCalled();
+      expect(mockWriteAuditLog).toHaveBeenCalled();
       expect(response.status).toBe(200);
-      expect(result.data.id).toBe("new-project-id");
+      expect(result.id).toBe("new-project-id");
     });
 
     it("should handle authentication errors", async () => {
-      (requireOrgAuth as jest.Mock).mockRejectedValue(new Error("Unauthorized"));
+      mockRequireOrgAuth.mockRejectedValue(new Error("Unauthorized"));
 
       const request = new Request("http://localhost:3000/api/projects", {
         method: "POST",
@@ -157,7 +184,7 @@ describe("/api/projects", () => {
     });
 
     it("should validate required fields", async () => {
-      (requireOrgAuth as jest.Mock).mockResolvedValue(mockUser);
+      mockRequireOrgAuth.mockResolvedValue(mockUser);
 
       const request = new Request("http://localhost:3000/api/projects", {
         method: "POST",
@@ -173,38 +200,66 @@ describe("/api/projects", () => {
 
   describe("GET /api/projects", () => {
     it("should list projects successfully", async () => {
-      (requireOrgAuth as jest.Mock).mockResolvedValue(mockUser);
+      mockRequireOrgAuth.mockResolvedValue(mockUser);
 
-      // Mock Firestore query results
+      // Pre-populate the in-memory firestore
+      (global as any).resetMockFirestore();
+      
+      const project1Data = { 
+        name: "Project 1",
+        deleted: false,
+        createdAt: new Date("2024-01-01")
+      };
+      const project2Data = { 
+        name: "Project 2",
+        deleted: false,
+        createdAt: new Date("2024-01-02")
+      };
+      
+      // Store at the subcollection path
+      const key1 = `organizations/${mockUser.orgId}/projects/project1`;
+      const key2 = `organizations/${mockUser.orgId}/projects/project2`;
+      
+      (global as any).mockFirestore._data[key1] = project1Data;
+      (global as any).mockFirestore._data[key2] = project2Data;
+
+      // Mock the firestore to return a properly structured collection
       const mockQuerySnapshot = {
-        forEach: jest.fn((callback) => {
-          callback({
-            id: "project1",
-            data: () => ({ ...mockProject, id: "project1" }),
-          });
-          callback({
-            id: "project2",
-            data: () => ({ ...mockProject, id: "project2" }),
-          });
+        forEach: jest.fn((callback: (doc: any) => void) => {
+          callback({ id: "project2", data: () => project2Data });
+          callback({ id: "project1", data: () => project1Data });
         }),
+        empty: false,
+        size: 2,
       };
 
       const mockQuery = {
         where: jest.fn().mockReturnThis(),
         orderBy: jest.fn().mockReturnThis(),
         get: jest.fn().mockResolvedValue(mockQuerySnapshot),
+      };
+
+      const mockSubcollection = {
+        where: jest.fn(() => mockQuery),
+        orderBy: jest.fn().mockReturnThis(),
+        get: jest.fn(),
+      };
+
+      const mockDoc = {
+        collection: jest.fn(() => mockSubcollection),
       };
 
       const mockCollection = {
-        where: jest.fn(() => mockQuery),
+        doc: jest.fn(() => mockDoc),
       };
 
-      (initializeAdmin as jest.Mock).mockReturnValue({
-        firestore: {
-          collection: jest.fn(() => ({
-            doc: jest.fn(() => mockCollection),
-          })),
-        },
+      const mockFirestore = {
+        collection: jest.fn(() => mockCollection),
+      } as any;
+
+      mockInitializeAdmin.mockReturnValue({
+        firestore: mockFirestore,
+        admin: {} as any,
       });
 
       const request = new Request("http://localhost:3000/api/projects");
@@ -212,31 +267,24 @@ describe("/api/projects", () => {
       const response = await GET(request);
       const result = await response.json();
 
-      expect(requireOrgAuth).toHaveBeenCalledWith(request);
+      expect(mockRequireOrgAuth).toHaveBeenCalledWith(request);
       expect(response.status).toBe(200);
-      expect(result.data.projects).toHaveLength(2);
-      expect(result.data.projects[0].id).toBe("project1");
+      expect(result.projects).toHaveLength(2);
+      // Projects should be ordered by createdAt desc, so project2 comes first
+      expect(result.projects[0].id).toBe("project2");
+      expect(result.projects[1].id).toBe("project1");
     });
 
     it("should handle empty project list", async () => {
-      (requireOrgAuth as jest.Mock).mockResolvedValue(mockUser);
+      mockRequireOrgAuth.mockResolvedValue(mockUser);
 
-      const mockQuerySnapshot = {
-        forEach: jest.fn(), // Empty, no callback calls
-      };
+      // Reset firestore to empty state
+      (global as any).resetMockFirestore();
 
-      const mockQuery = {
-        where: jest.fn().mockReturnThis(),
-        orderBy: jest.fn().mockReturnThis(),
-        get: jest.fn().mockResolvedValue(mockQuerySnapshot),
-      };
-
-      (initializeAdmin as jest.Mock).mockReturnValue({
-        firestore: {
-          collection: jest.fn(() => ({
-            where: jest.fn(() => mockQuery),
-          })),
-        },
+      // Ensure initializeAdmin returns the global mockFirestore
+      mockInitializeAdmin.mockReturnValue({
+        firestore: (global as any).mockFirestore,
+        admin: {} as any,
       });
 
       const request = new Request("http://localhost:3000/api/projects");
@@ -245,22 +293,30 @@ describe("/api/projects", () => {
       const result = await response.json();
 
       expect(response.status).toBe(200);
-      expect(result.data.projects).toHaveLength(0);
+      expect(result.projects).toHaveLength(0);
     });
 
     it("should handle Firestore errors", async () => {
-      (requireOrgAuth as jest.Mock).mockResolvedValue(mockUser);
+      mockRequireOrgAuth.mockResolvedValue(mockUser);
 
-      (initializeAdmin as jest.Mock).mockReturnValue({
-        firestore: {
-          collection: jest.fn(() => ({
-            where: jest.fn(() => ({
-              orderBy: jest.fn(() => ({
-                get: jest.fn().mockRejectedValue(new Error("Firestore error")),
+      // Create a mock firestore that throws an error on query
+      const mockFirestoreWithError = {
+        collection: jest.fn(() => ({
+          doc: jest.fn(() => ({
+            collection: jest.fn(() => ({
+              where: jest.fn(() => ({
+                orderBy: jest.fn(() => ({
+                  get: jest.fn().mockRejectedValue(new Error("Firestore error")),
+                })),
               })),
             })),
           })),
-        },
+        })),
+      } as any;
+
+      mockInitializeAdmin.mockReturnValue({
+        firestore: mockFirestoreWithError,
+        admin: {} as any,
       });
 
       const request = new Request("http://localhost:3000/api/projects");

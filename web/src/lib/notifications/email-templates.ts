@@ -5,7 +5,7 @@
  * Supports both HTML and plain text versions
  */
 
-import { EmailType } from "./sendgrid-client";
+import { EmailType } from "./resend-client";
 
 export interface EmailTemplate {
   subject: string;
@@ -24,6 +24,8 @@ export function getEmailTemplate(type: EmailType, data: Record<string, any>): Em
       return getInvitationEmail(data as any);
     case EmailType.TRA_CREATED:
       return getTraCreatedEmail(data as any);
+    case EmailType.TRA_APPROVAL_REQUEST:
+      return getTraApprovalRequestEmail(data as any);
     case EmailType.TRA_APPROVED:
       return getTraApprovedEmail(data as any);
     case EmailType.TRA_REJECTED:
@@ -34,6 +36,8 @@ export function getEmailTemplate(type: EmailType, data: Record<string, any>): Em
       return getLmraCompletedEmail(data as any);
     case EmailType.PASSWORD_RESET:
       return getPasswordResetEmail(data as any);
+    case EmailType.COMPETENCY_EXPIRY_WARNING:
+      return getCompetencyExpiryWarningEmail(data as any);
     case EmailType.SUBSCRIPTION_CREATED:
       return getSubscriptionCreatedEmail(data as any);
     case EmailType.SUBSCRIPTION_CANCELLED:
@@ -178,6 +182,56 @@ Titel: ${data.traTitle}
 Project: ${data.projectName}
 
 Bekijk TRA: ${data.traLink}
+
+Met vriendelijke groet,
+Het SafeWork Pro Team
+    `,
+  };
+}
+
+/**
+ * TRA approval request (to approver)
+ */
+function getTraApprovalRequestEmail(data: {
+  traTitle: string;
+  creatorName: string;
+  projectName: string;
+  approvalLink: string;
+  dueDate?: string;
+}): EmailTemplate {
+  return {
+    subject: `Goedkeuring Vereist: ${data.traTitle}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #f97316;">Goedkeuring Vereist</h1>
+        <p><strong>${data.creatorName}</strong> heeft een TRA ingediend die jouw goedkeuring vereist:</p>
+        <p><strong>Titel:</strong> ${data.traTitle}</p>
+        <p><strong>Project:</strong> ${data.projectName}</p>
+        ${data.dueDate ? `<p><strong>Deadline:</strong> ${data.dueDate}</p>` : ''}
+        <p style="background-color: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b;">
+          <strong>Actie vereist:</strong> Beoordeel deze TRA en neem een beslissing.
+        </p>
+        <p>
+          <a href="${data.approvalLink}"
+             style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            Bekijk en Beoordeel TRA
+          </a>
+        </p>
+        <p>Met vriendelijke groet,<br>Het SafeWork Pro Team</p>
+      </div>
+    `,
+    text: `
+Goedkeuring Vereist
+
+${data.creatorName} heeft een TRA ingediend die jouw goedkeuring vereist:
+
+Titel: ${data.traTitle}
+Project: ${data.projectName}
+${data.dueDate ? `Deadline: ${data.dueDate}` : ''}
+
+ACTIE VEREIST: Beoordeel deze TRA en neem een beslissing.
+
+Bekijk en beoordeel TRA: ${data.approvalLink}
 
 Met vriendelijke groet,
 Het SafeWork Pro Team
@@ -391,6 +445,62 @@ Reset je wachtwoord: ${data.resetLink}
 Deze link is 1 uur geldig.
 
 Als je geen wachtwoord reset hebt aangevraagd, kun je deze email negeren.
+
+Met vriendelijke groet,
+Het SafeWork Pro Team
+    `,
+  };
+}
+
+/**
+ * Competency expiry warning
+ */
+function getCompetencyExpiryWarningEmail(data: {
+  userName: string;
+  competencyName: string;
+  expiryDate: string;
+  daysUntilExpiry: number;
+  renewalLink?: string;
+}): EmailTemplate {
+  const isUrgent = data.daysUntilExpiry <= 7;
+  return {
+    subject: `${isUrgent ? '⚠️ URGENT: ' : ''}Competentie Verloopt Binnenkort - ${data.competencyName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; ${isUrgent ? 'border: 2px solid #ef4444;' : ''}">
+        ${isUrgent ? '<div style="background-color: #ef4444; color: white; padding: 15px;"><h2 style="margin: 0;">⚠️ URGENTE WAARSCHUWING</h2></div>' : ''}
+        <div style="padding: 20px;">
+          <h1 style="color: ${isUrgent ? '#ef4444' : '#f59e0b'};">Competentie Verloopt Binnenkort</h1>
+          <p>Hallo ${data.userName},</p>
+          <p>Je competentie <strong>${data.competencyName}</strong> verloopt over <strong>${data.daysUntilExpiry} dagen</strong>.</p>
+          <p><strong>Vervaldatum:</strong> ${data.expiryDate}</p>
+          <p style="background-color: ${isUrgent ? '#fee2e2' : '#fef3c7'}; padding: 15px; border-left: 4px solid ${isUrgent ? '#ef4444' : '#f59e0b'};">
+            <strong>Actie vereist:</strong> Vernieuw je competentie vóór de vervaldatum om te blijven werken aan projecten die deze competentie vereisen.
+          </p>
+          ${data.renewalLink ? `
+          <p>
+            <a href="${data.renewalLink}"
+               style="background-color: ${isUrgent ? '#ef4444' : '#f97316'}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Vernieuw Competentie
+            </a>
+          </p>
+          ` : ''}
+          <p>Neem contact op met je supervisor of HR-afdeling voor meer informatie over het vernieuwingsproces.</p>
+          <p>Met vriendelijke groet,<br>Het SafeWork Pro Team</p>
+        </div>
+      </div>
+    `,
+    text: `
+${isUrgent ? '⚠️ URGENTE WAARSCHUWING\n\n' : ''}Competentie Verloopt Binnenkort
+
+Hallo ${data.userName},
+
+Je competentie ${data.competencyName} verloopt over ${data.daysUntilExpiry} dagen.
+
+Vervaldatum: ${data.expiryDate}
+
+ACTIE VEREIST: Vernieuw je competentie vóór de vervaldatum om te blijven werken aan projecten die deze competentie vereisen.
+
+${data.renewalLink ? `Vernieuw competentie: ${data.renewalLink}\n\n` : ''}Neem contact op met je supervisor of HR-afdeling voor meer informatie over het vernieuwingsproces.
 
 Met vriendelijke groet,
 Het SafeWork Pro Team

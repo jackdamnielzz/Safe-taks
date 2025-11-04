@@ -36,12 +36,28 @@ const customJestConfig = {
     "^~/(.*)$": "<rootDir>/$1",
     // Handle static assets
     "^.+\\.(jpg|jpeg|png|gif|webp|avif|svg)$": "<rootDir>/__mocks__/fileMock.js",
+    // Map firebase client imports to our test mocks
+    "^firebase/firestore$": "<rootDir>/src/__mocks__/firebase-firestore.ts",
+    "^@firebase/firestore$": "<rootDir>/src/__mocks__/firebase-firestore.ts",
+    "^firebase/auth$": "<rootDir>/src/__mocks__/firebase-auth.ts",
+    "^@firebase/auth$": "<rootDir>/src/__mocks__/firebase-auth.ts",
+    "^firebase/analytics$": "<rootDir>/src/__mocks__/firebase-analytics.ts",
+    "^@firebase/analytics$": "<rootDir>/src/__mocks__/firebase-analytics.ts",
+    "^firebase/app$": "<rootDir>/src/__mocks__/firebase-app.ts",
+    // Mock next-intl to avoid ESM parsing issues in tests
+    "^next-intl$": "<rootDir>/__mocks__/next-intl.js"
   },
 
   // Transform configuration
   transform: {
     "^.+\\.(js|jsx|ts|tsx)$": ["babel-jest", { presets: ["next/babel"] }],
   },
+
+  // Ensure certain modern ESM node_modules are transformed by Babel (allowlist).
+  // Packages that export ESM (export ...) can cause Jest to fail unless transformed.
+  transformIgnorePatterns: [
+    "/node_modules/(?!(@?next-intl|jose|jwks-rsa|firebase-admin|next-.*|@?sentry|@?auth0)/)"
+  ],
 
   // Test match patterns
   testMatch: [

@@ -307,22 +307,28 @@ class LocationService {
     let code: LocationErrorCode;
     let message: string;
 
-    switch (error.code) {
-      case error.PERMISSION_DENIED:
+    // Handle both standard GeolocationPositionError and custom errors
+    const errorCode = error.code || error.name || 'UNKNOWN_ERROR';
+    
+    switch (errorCode) {
+      case 'PERMISSION_DENIED':
+      case 1: // Standard error code for permission denied
         code = "PERMISSION_DENIED";
         message = "User denied the request for Geolocation.";
         break;
-      case error.POSITION_UNAVAILABLE:
+      case 'POSITION_UNAVAILABLE':
+      case 2: // Standard error code for position unavailable
         code = "POSITION_UNAVAILABLE";
         message = "Location information is unavailable.";
         break;
-      case error.TIMEOUT:
+      case 'TIMEOUT':
+      case 3: // Standard error code for timeout
         code = "TIMEOUT";
         message = "The request to get user location timed out.";
         break;
       default:
         code = "UNKNOWN_ERROR";
-        message = "An unknown error occurred.";
+        message = `An unknown error occurred: ${error.message || error.toString()}`;
         break;
     }
 
@@ -330,7 +336,7 @@ class LocationService {
       code,
       message,
       timestamp: new Date(),
-      context: error.message,
+      context: error.message || error.toString(),
     };
   }
 
@@ -376,6 +382,11 @@ class LocationService {
   }
 
   private cacheLocation(location: LocationVerification): void {
+    // Check if location already exists in cache (deduplication)
+    if (this.cache.has(location.id)) {
+      return; // Skip if already cached
+    }
+
     // Check cache size limit
     if (this.cache.size >= this.settings.offline.maxCacheEntries) {
       // Remove oldest entry

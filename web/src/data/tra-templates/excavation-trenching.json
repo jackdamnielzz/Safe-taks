@@ -1,0 +1,230 @@
+{
+  "id": "template-excavation-trenching",
+  "name": "Graafwerk en Sleuven (Grondwerk)",
+  "description": "VCA-compliant template voor graafwerk en sleuvenwerk met aandacht voor grondverzakking, ondergrondse leidingen en grondstabiliteit",
+  "industry": "construction",
+  "category": "excavation",
+  "vcaCompliant": true,
+  "vcaVersion": "VCA 2017 v5.1",
+  "validityPeriod": 12,
+  "createdBy": "system",
+  "version": 1,
+  "steps": [
+    {
+      "order": 1,
+      "title": "Voorbereiding en Locatie Inspectie",
+      "description": "Inspecteer werkplek en controleer op ondergrondse leidingen (KLIC-melding)",
+      "duration": 30,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    },
+    {
+      "order": 2,
+      "title": "Grondstabiliteit Beoordeling",
+      "description": "Bepaal grondtype en stabiliteit, bepaal noodzaak voor afschoeiing of steunwanden",
+      "duration": 20,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    },
+    {
+      "order": 3,
+      "title": "Afschoeiing en Steunwanden Installatie",
+      "description": "Installeer noodzakelijke afschoeiing of steunwanden volgens berekeningen",
+      "duration": 120,
+      "requiredPersonnel": 3,
+      "location": "Werkplek"
+    },
+    {
+      "order": 4,
+      "title": "Veiligheidscheck en Personeelsbriefing",
+      "description": "Controleer alle veiligheidsmaatregelen en brief team in",
+      "duration": 15,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    },
+    {
+      "order": 5,
+      "title": "Graafwerk Uitvoeren",
+      "description": "Voer graafwerk uit met continue monitoring van grondstabiliteit",
+      "duration": 240,
+      "requiredPersonnel": 3,
+      "location": "Werkplek"
+    },
+    {
+      "order": 6,
+      "title": "Inspectie en Controle",
+      "description": "Inspecteer sleuven op stabiliteit en ondergrondse leidingen",
+      "duration": 20,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    },
+    {
+      "order": 7,
+      "title": "Opruimen en Afbouw",
+      "description": "Ruim werkplek op en zorg voor veilige afbouw",
+      "duration": 30,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    }
+  ],
+  "hazards": [
+    {
+      "id": "hazard-ground-collapse",
+      "name": "Grondverzakking",
+      "category": "mechanical",
+      "description": "Risico op grondverzakking of instorting van sleuven met ernstig letsel of dood tot gevolg",
+      "typicalEffect": 100,
+      "typicalExposure": 6,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Grondstabiliteit beoordeling door deskundige",
+          "type": "administrative",
+          "responsible": "Geotechnicus",
+          "verificationMethod": "Rapport grondstabiliteit"
+        },
+        {
+          "description": "Installatie van afschoeiing of steunwanden",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Maximale sleufdiepte zonder afschoeiing: 1.25 meter",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Werkplan"
+        },
+        {
+          "description": "Regelmatige inspectie van sleuven",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Inspectie rapport"
+        }
+      ]
+    },
+    {
+      "id": "hazard-underground-utilities",
+      "name": "Beschadiging ondergrondse leidingen",
+      "category": "mechanical",
+      "description": "Risico op beschadiging van gas-, water-, elektriciteits- of telecommunicatieleidingen",
+      "typicalEffect": 40,
+      "typicalExposure": 3,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "KLIC-melding voor locatie ondergrondse leidingen",
+          "type": "administrative",
+          "responsible": "Opdrachtgever",
+          "verificationMethod": "KLIC-rapport"
+        },
+        {
+          "description": "Handmatig graven in zone van ondergrondse leidingen",
+          "type": "administrative",
+          "responsible": "Werknemer",
+          "verificationMethod": "Werkplan"
+        },
+        {
+          "description": "Markering van ondergrondse leidingen",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        }
+      ]
+    },
+    {
+      "id": "hazard-falling-objects",
+      "name": "Vallende voorwerpen",
+      "category": "mechanical",
+      "description": "Risico op letsel door vallende materialen of gereedschappen in sleuf",
+      "typicalEffect": 15,
+      "typicalExposure": 3,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Afzetting van werkgebied",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Dragen van veiligheidshelm",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        },
+        {
+          "description": "Gebruik van gereedschapsgordel",
+          "type": "administrative",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        }
+      ]
+    },
+    {
+      "id": "hazard-water-accumulation",
+      "name": "Waterophoping",
+      "category": "environmental",
+      "description": "Risico op verdrinking of elektrocutie door waterophoping in sleuven",
+      "typicalEffect": 40,
+      "typicalExposure": 2,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Drainage systeem installatie",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Regelmatige inspectie op waterophoping",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Inspectie rapport"
+        },
+        {
+          "description": "Pompen van water uit sleuven",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Werklog"
+        }
+      ]
+    },
+    {
+      "id": "hazard-vehicle-collision",
+      "name": "Aanrijding door voertuigen",
+      "category": "mechanical",
+      "description": "Risico op aanrijding door graafmachines of andere voertuigen",
+      "typicalEffect": 40,
+      "typicalExposure": 3,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Afzetting van werkgebied met waarschuwingsborden",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Verkeersregelaars bij noodzaak",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Aanwezigheid verkeersregeling"
+        },
+        {
+          "description": "Dragen van zichtbare veiligheidsvest",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        }
+      ]
+    }
+  ],
+  "requiredCompetencies": [
+    "VCA Basis Veiligheid",
+    "Graafwerk Training",
+    "Grondstabiliteit Kennis",
+    "Eerste Hulp"
+  ],
+  "notes": "Deze template is van toepassing op graafwerk en sleuvenwerk. KLIC-melding is verplicht. Grondstabiliteit beoordeling door deskundige is vereist. Raadpleeg NEN 3650 voor technische eisen."
+}

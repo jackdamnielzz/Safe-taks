@@ -10,7 +10,7 @@ export const ProjectLocationSchema = z.object({
       longitude: z.number().min(-180).max(180),
     })
     .optional(),
-});
+}).strict(); // Use strict validation to reject unknown fields
 
 export const ProjectCreateSchema = z.object({
   name: z.string().min(3, "Project name must be at least 3 characters"),

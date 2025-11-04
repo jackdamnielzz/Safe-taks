@@ -1,19 +1,20 @@
-"use client";
+'use client';
 
 import React from "react";
 import { Control, UseFormSetValue } from "react-hook-form";
+import HazardSelector, { HazardItem } from '@/components/hazards/HazardSelector';
 
 /**
- * Simple step component to edit basic task steps for TRA wizard.
- * Keeps implementation minimal and testable.
+ * Step component to edit basic task steps for TRA wizard.
+ * - Supports description + duration
+ * - Adds HazardSelector per step to attach hazards to each task step
  *
  * Props:
  * - control: react-hook-form control (passed from parent)
  * - setValue: react-hook-form setValue to update taskSteps
  * - currentSteps: current taskSteps array
  *
- * This component intentionally keeps structure simple (title + duration)
- * — full hazard editing UI can be implemented later.
+ * Note: this keeps behaviour simple and updates the parent form via setValue.
  */
 
 export function TraStepBasic({
@@ -25,37 +26,59 @@ export function TraStepBasic({
   setValue: UseFormSetValue<any>;
   currentSteps?: any[];
 }) {
+  const steps = currentSteps || [];
+
+  const updateStepAt = (idx: number, patch: Partial<any>) => {
+    const updated = [...steps];
+    updated[idx] = { ...(updated[idx] || {}), ...patch };
+    setValue("taskSteps", updated, { shouldDirty: true });
+  };
+
   return (
-    <div>
-      <h3 className="font-medium mb-2">Task steps</h3>
+    <div className="space-y-4">
+      <h3 className="font-medium mb-2">Taakstappen</h3>
       <p className="text-sm text-slate-600 mb-3">
-        Add simple task steps. You can expand each step later with hazards and controls.
+        Voeg taakstappen toe. Per stap kunt u gevaren koppelen en duur instellen.
       </p>
 
       <div className="space-y-3">
-        {(currentSteps || []).map((s, idx) => (
-          <div key={idx} className="p-3 border rounded">
-            <label className="block text-sm font-medium">Step {idx + 1} description</label>
-            <input
-              className="w-full border rounded px-3 py-2 mt-1"
-              defaultValue={s.description || ""}
-              onBlur={(e) => {
-                const updated = [...(currentSteps || [])];
-                updated[idx] = { ...(updated[idx] || {}), description: e.target.value };
-                setValue("taskSteps", updated, { shouldDirty: true });
-              }}
-            />
-            <label className="block text-sm font-medium mt-2">Duration (minutes)</label>
-            <input
-              className="w-full border rounded px-3 py-2 mt-1"
-              defaultValue={s.duration ?? ""}
-              onBlur={(e) => {
-                const val = Number(e.target.value) || 0;
-                const updated = [...(currentSteps || [])];
-                updated[idx] = { ...(updated[idx] || {}), duration: val };
-                setValue("taskSteps", updated, { shouldDirty: true });
-              }}
-            />
+        {steps.map((s, idx) => (
+          <div key={idx} className="p-3 border rounded space-y-3">
+            <div>
+              <label className="block text-sm font-medium">Stap {idx + 1} omschrijving</label>
+              <input
+                className="w-full border rounded px-3 py-2 mt-1"
+                defaultValue={s.description || ""}
+                onBlur={(e) => updateStepAt(idx, { description: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Duur (minuten)</label>
+              <input
+                className="w-full border rounded px-3 py-2 mt-1"
+                defaultValue={s.duration ?? ""}
+                onBlur={(e) => {
+                  const val = Number(e.target.value) || 0;
+                  updateStepAt(idx, { duration: val });
+                }}
+                type="number"
+                min={0}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Gevaren (koppel gevaren aan deze stap)</label>
+              <HazardSelector
+                value={(s.hazards || []) as HazardItem[]}
+                onChange={(selected) => {
+                  // store selected hazards on the step
+                  updateStepAt(idx, { hazards: selected });
+                }}
+                allowCustom={true}
+                maxSelectable={10}
+              />
+            </div>
           </div>
         ))}
 
@@ -63,24 +86,24 @@ export function TraStepBasic({
           <button
             type="button"
             onClick={() => {
-              const updated = [...(currentSteps || []), { description: "", duration: 0 }];
+              const updated = [...steps, { description: "", duration: 0, hazards: [] }];
               setValue("taskSteps", updated, { shouldDirty: true });
             }}
             className="px-3 py-2 rounded bg-slate-100 hover:bg-slate-200"
           >
-            Add step
+            Voeg stap toe
           </button>
 
           <button
             type="button"
             onClick={() => {
-              if (!(currentSteps || []).length) return;
-              const updated = (currentSteps || []).slice(0, -1);
+              if (!steps.length) return;
+              const updated = steps.slice(0, -1);
               setValue("taskSteps", updated, { shouldDirty: true });
             }}
             className="px-3 py-2 rounded bg-red-50 text-red-700 hover:bg-red-100"
           >
-            Remove last
+            Verwijder laatste
           </button>
         </div>
       </div>

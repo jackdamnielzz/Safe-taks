@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { useTranslations } from "next-intl";
 import debounce from "lodash/debounce";
 import { useRouter } from "next/navigation";
 import { FormField } from "../ui/FormField";
@@ -25,6 +26,7 @@ type WizardForm = Partial<CreateTRARequest>;
 const STEPS = ["Basic", "Steps", "Team", "Review"] as const;
 
 export default function TraWizard({ initialData }: { initialData?: WizardForm }) {
+  const t = useTranslations();
   const router = useRouter();
   const { control, handleSubmit, watch, setValue, getValues } = useForm<WizardForm>({
     defaultValues: initialData || { title: "", description: "", taskSteps: [] },
@@ -110,7 +112,7 @@ export default function TraWizard({ initialData }: { initialData?: WizardForm })
     >
       <div className="mb-4">
         <h2 id="tra-wizard-title" className="text-xl font-semibold">
-          Create TRA — Step {stepIndex + 1} of {STEPS.length}
+          {t("wizard.createTitle", { step: stepIndex + 1, total: STEPS.length })}
         </h2>
         <div className="mt-2 h-2 bg-slate-100 rounded">
           <div
@@ -127,7 +129,7 @@ export default function TraWizard({ initialData }: { initialData?: WizardForm })
             name="title"
             control={control}
             render={({ field }) => (
-              <FormField label="Title" htmlFor="tra-title" required>
+              <FormField label={t("wizard.titleLabel")} htmlFor="tra-title" required>
                 <input
                   id="tra-title"
                   {...field}
@@ -144,7 +146,7 @@ export default function TraWizard({ initialData }: { initialData?: WizardForm })
             name="description"
             control={control}
             render={({ field }) => (
-              <FormField label="Description" htmlFor="tra-description">
+              <FormField label={t("wizard.descriptionLabel")} htmlFor="tra-description">
                 <textarea
                   id="tra-description"
                   {...field}
@@ -256,7 +258,7 @@ export default function TraWizard({ initialData }: { initialData?: WizardForm })
             disabled={stepIndex === 0}
             className="px-3 py-2 rounded bg-slate-100 hover:bg-slate-200 disabled:opacity-50"
           >
-            Back
+            {t("wizard.back")}
           </button>
 
           {stepIndex < STEPS.length - 1 ? (
@@ -265,21 +267,21 @@ export default function TraWizard({ initialData }: { initialData?: WizardForm })
               onClick={next}
               className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
             >
-              Next
+              {t("wizard.next")}
             </button>
           ) : (
-            <Button type="submit">Create TRA</Button>
+            <Button type="submit">{t("wizard.createButton")}</Button>
           )}
         </div>
 
         <div className="flex items-center gap-3 text-sm text-slate-600">
           {saveStatus === "saving" && (
             <span className="flex items-center gap-2">
-              <LoadingSpinner /> Saving...
+              <LoadingSpinner /> {t("wizard.saving")}
             </span>
           )}
-          {saveStatus === "saved" && <span aria-live="polite">Saved</span>}
-          {saveStatus === "failed" && <span className="text-red-600">Save failed</span>}
+          {saveStatus === "saved" && <span aria-live="polite">{t("wizard.saved")}</span>}
+          {saveStatus === "failed" && <span className="text-red-600">{t("wizard.saveFailed")}</span>}
         </div>
       </div>
     </form>

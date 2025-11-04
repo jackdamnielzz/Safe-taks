@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 
 /**
  * FieldWorkerOfflineIndicator - Enhanced offline status for field workers
@@ -21,6 +22,7 @@ export function FieldWorkerOfflineIndicator({
   onForceSync,
   className = "",
 }: OfflineIndicatorProps) {
+  const t = useTranslations();
   const formatLastSync = (date?: Date) => {
     if (!date) return "Nooit";
 
@@ -76,8 +78,8 @@ export function FieldWorkerOfflineIndicator({
         <button
           onClick={onForceSync}
           className="force-sync-btn"
-          aria-label="Force Sync"
-          title="Force Sync"
+          aria-label={t("offline.forceSync")}
+          title={t("offline.forceSync")}
         >
           🔄
         </button>
@@ -132,6 +134,7 @@ export function OfflineModeBanner({
   onDismiss,
   className = "",
 }: OfflineModeBannerProps) {
+  const t = useTranslations();
   if (!isVisible) return null;
 
   return (
@@ -148,7 +151,7 @@ export function OfflineModeBanner({
           <button
             onClick={onDismiss}
             className="banner-dismiss"
-            aria-label="Dismiss Offline Banner"
+            aria-label={t("offline.dismissOfflineBanner")}
           >
             ✕
           </button>
