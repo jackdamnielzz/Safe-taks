@@ -35,7 +35,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 import { trackDashboardViewed } from "@/lib/analytics/analytics-service";
 
 export default function ExecutiveDashboardPage() {
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth();
   const router = useRouter();
   const [dashboard, setDashboard] = useState<KPIDashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +46,7 @@ export default function ExecutiveDashboardPage() {
   // Check if user can view dashboard
   const canViewDashboard = userProfile?.role === "admin" || userProfile?.role === "safety_manager";
 
-  // Real-time LMRA updates
+  // Real-time LMRA updates - hooks must be called unconditionally
   const {
     sessions: recentLMRAs,
     isLoading: lmraLoading,
@@ -60,7 +60,7 @@ export default function ExecutiveDashboardPage() {
   const lmraStats = useLMRAStatsRealtime(userProfile?.organizationId || "");
 
   useEffect(() => {
-    if (!canViewDashboard) return;
+    if (!canViewDashboard || authLoading) return;
 
     // Track dashboard view
     trackDashboardViewed({ dashboardType: "executive" });
@@ -78,7 +78,38 @@ export default function ExecutiveDashboardPage() {
 
       return () => clearInterval(interval);
     }
-  }, [period, canViewDashboard, autoRefresh]);
+  }, [period, canViewDashboard, autoRefresh, authLoading]);
+
+  // If user is not logged in on a protected route, redirect to login
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/auth/login?redirect=/dashboard");
+    }
+  }, [authLoading, user, router]);
+
+  // Show loading while auth is initializing
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Laden...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // While redirecting unauthenticated users, show a short loading state
+  if (!user) {
+    return (
+      <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <LoadingSpinner size="lg" />
+          <p className="mt-4 text-gray-600">Doorverwijzen...</p>
+        </div>
+      </div>
+    );
+  }
 
   const loadDashboard = async () => {
     if (!userProfile?.organizationId) return;
@@ -655,9 +686,15 @@ export default function ExecutiveDashboardPage() {
                       </div>
 
                       <div className="text-xs text-gray-600 space-y-1">
-                        <div>📍 Nauwkeurigheid: {session.location.accuracy.toFixed(1)}m</div>
-                        <div>👷 Team: {session.teamMembers.length} leden</div>
-                        {session.photos.length > 0 && <div>📷 Foto's: {session.photos.length}</div>}
+                        {session.location && typeof session.location.accuracy === "number" && (
+                          <div>📍 Nauwkeurigheid: {session.location.accuracy.toFixed(1)}m</div>
+                        )}
+                        {Array.isArray(session.teamMembers) && (
+                          <div>👷 Team: {session.teamMembers.length} leden</div>
+                        )}
+                        {Array.isArray(session.photos) && session.photos.length > 0 && (
+                          <div>📷 Foto's: {session.photos.length}</div>
+                        )}
                         <div>
                           🕐{" "}
                           {(session.startedAt instanceof Date

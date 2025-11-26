@@ -7,6 +7,7 @@
  */
 
 import { Timestamp } from "firebase/firestore";
+import type { Material } from "./tra";
 
 // ============================================================================
 // CORE ENUMS AND TYPES
@@ -115,6 +116,13 @@ export interface LMRAStep5_EquipmentVerification {
   equipmentList: EquipmentCheck[];
   allEquipmentAvailable?: boolean;
   notes?: string;
+  
+  /**
+   * Reference to TRA materials - displayed as reminder during equipment check
+   * This helps field workers verify they have materials needed for the task
+   * @since Phase 1.3 (TRA Context Fields)
+   */
+  referencedTraMaterials?: Material[];
 }
 
 /**
@@ -313,8 +321,11 @@ export function getLMRARiskColor(level: LMRARiskLevel): string {
   return map[level];
 }
 
-export function computeOverallLMRARiskScore(hazardAssessment?: LMRAStep6_HazardAssessment): LMRARiskScore {
-  if (!hazardAssessment || !hazardAssessment.hazards || hazardAssessment.hazards.length === 0) return 0;
+export function computeOverallLMRARiskScore(
+  hazardAssessment?: LMRAStep6_HazardAssessment
+): LMRARiskScore {
+  if (!hazardAssessment || !hazardAssessment.hazards || hazardAssessment.hazards.length === 0)
+    return 0;
   return Math.max(...hazardAssessment.hazards.map((h) => h.riskScore || 0));
 }
 
@@ -359,7 +370,7 @@ export function canAdvanceFromStep(lmra: LMRA, step: LMRAStepNumber): boolean {
 /**
  * LMRASession - Extended LMRA with session-specific data
  * Used for tracking active LMRA executions in the field
- * 
+ *
  * IMPORTANT: This interface includes derived/computed properties for backward compatibility
  * with legacy code. These properties are computed from step data and should be considered
  * deprecated for new code. Use step payloads directly instead.
@@ -377,27 +388,27 @@ export interface LMRASession extends LMRA {
     platform?: string;
     isOnline?: boolean;
   };
-  
+
   // ============================================================================
   // DERIVED PROPERTIES (for backward compatibility with legacy code)
   // These are computed from step data and should be considered deprecated
   // ============================================================================
-  
+
   /**
    * @deprecated Use createdBy instead
    */
   performedBy?: string;
-  
+
   /**
    * @deprecated Use createdByName instead
    */
   performedByName?: string;
-  
+
   /**
    * @deprecated Compute from step7.decision
    */
   overallAssessment?: "safe_to_proceed" | "proceed_with_caution" | "stop_work";
-  
+
   /**
    * @deprecated Use step2.latitude and step2.longitude
    */
@@ -409,62 +420,62 @@ export interface LMRASession extends LMRA {
     accuracy?: number;
     locationName?: string;
   };
-  
+
   /**
    * @deprecated Use step4.teamMembers
    */
   teamMembers?: TeamMemberCompetency[];
-  
+
   /**
    * @deprecated Use step3 (WeatherConditions)
    */
   weatherConditions?: WeatherConditions;
-  
+
   /**
    * @deprecated Photos should be stored separately with lmraId reference
    */
   photos?: LMRAPhoto[];
-  
+
   /**
    * @deprecated Use step7 data
    */
   stopWorkTriggeredBy?: string;
-  
+
   /**
    * @deprecated Use step7.reason
    */
   stopWorkReason?: string;
-  
+
   /**
    * @deprecated Use step8 signatures
    */
   stopWorkAcknowledgedBy?: string;
-  
+
   /**
    * @deprecated Use notes field or step-specific notes
    */
   comments?: string;
-  
+
   /**
    * @deprecated Environmental checks should be part of step6 hazards
    */
   environmentalChecks?: EnvironmentalCheck[];
-  
+
   /**
    * @deprecated Personnel checks should be part of step4 team competencies
    */
   personnelChecks?: PersonnelCheck[];
-  
+
   /**
    * @deprecated Equipment checks are in step5
    */
   equipmentChecks?: EquipmentCheck[];
-  
+
   /**
    * @deprecated Sync status for offline support
    */
   syncStatus?: SyncStatus;
-  
+
   /**
    * @deprecated Sync error message
    */
@@ -595,7 +606,13 @@ export interface LMRASummary {
 /**
  * SyncStatus - Offline sync status
  */
-export type SyncStatus = "pending" | "pending_sync" | "syncing" | "synced" | "sync_failed" | "error";
+export type SyncStatus =
+  | "pending"
+  | "pending_sync"
+  | "syncing"
+  | "synced"
+  | "sync_failed"
+  | "error";
 
 // ============================================================================
 // STOP-WORK AUTHORITY TYPES
@@ -610,28 +627,28 @@ export interface StopWorkAlert {
   organizationId: string;
   projectId?: string;
   traId?: string;
-  
+
   // Who triggered
   triggeredBy: string;
   triggeredByName: string;
   triggeredAt: Timestamp | Date;
-  
+
   // Why
   reason: string;
-  severity: 'moderate' | 'high' | 'critical';
-  category: 'weather' | 'equipment' | 'personnel' | 'hazard' | 'other';
-  
+  severity: "moderate" | "high" | "critical";
+  category: "weather" | "equipment" | "personnel" | "hazard" | "other";
+
   // Evidence
   description: string;
   photoIds: string[];
-  
+
   // Location
   location?: {
     latitude: number;
     longitude: number;
     locationName?: string;
   };
-  
+
   // Signature
   signature: {
     signerId: string;
@@ -639,20 +656,20 @@ export interface StopWorkAlert {
     signatureData: string;
     signedAt: Timestamp | Date;
   };
-  
+
   // Status
-  status: 'active' | 'acknowledged' | 'resolved';
+  status: "active" | "acknowledged" | "resolved";
   acknowledgedBy?: string;
   acknowledgedAt?: Timestamp | Date;
   resolvedBy?: string;
   resolvedAt?: Timestamp | Date;
   resolutionNotes?: string;
-  
+
   // Notifications
   notifiedUsers: string[];
   notificationsSent: boolean;
   notificationError?: string;
-  
+
   // Sync
   syncStatus?: SyncStatus;
   createdAt: Timestamp | Date;
@@ -667,12 +684,12 @@ export interface CreateStopWorkRequest {
   triggeredBy: string;
   triggeredByName: string;
   reason: string;
-  severity: 'moderate' | 'high' | 'critical';
-  category: 'weather' | 'equipment' | 'personnel' | 'hazard' | 'other';
+  severity: "moderate" | "high" | "critical";
+  category: "weather" | "equipment" | "personnel" | "hazard" | "other";
   description: string;
   photoIds?: string[];
-  location?: { 
-    latitude: number; 
+  location?: {
+    latitude: number;
     longitude: number;
     locationName?: string;
   };
@@ -689,13 +706,13 @@ export interface CreateStopWorkRequest {
 export interface StopWorkSummary {
   id: string;
   lmraId: string;
-  severity: 'moderate' | 'high' | 'critical';
-  category: 'weather' | 'equipment' | 'personnel' | 'hazard' | 'other';
+  severity: "moderate" | "high" | "critical";
+  category: "weather" | "equipment" | "personnel" | "hazard" | "other";
   reason: string;
   triggeredBy: string;
   triggeredByName: string;
   triggeredAt: Timestamp | Date;
-  status: 'active' | 'acknowledged' | 'resolved';
+  status: "active" | "acknowledged" | "resolved";
   location?: string;
 }
 
@@ -719,17 +736,16 @@ export interface ListLMRAResponse {
  */
 export function calculateDuration(lmra: LMRASession): number {
   if (!lmra.startedAt) return 0;
-  
-  const start = lmra.startedAt instanceof Date 
-    ? lmra.startedAt.getTime() 
-    : lmra.startedAt.toMillis();
-  
-  const end = lmra.completedAt 
-    ? (lmra.completedAt instanceof Date 
-        ? lmra.completedAt.getTime() 
-        : lmra.completedAt.toMillis())
+
+  const start =
+    lmra.startedAt instanceof Date ? lmra.startedAt.getTime() : lmra.startedAt.toMillis();
+
+  const end = lmra.completedAt
+    ? lmra.completedAt instanceof Date
+      ? lmra.completedAt.getTime()
+      : lmra.completedAt.toMillis()
     : Date.now();
-  
+
   return Math.floor((end - start) / 1000);
 }
 
@@ -746,7 +762,7 @@ export function canCompleteLMRA(lmra: LMRA): boolean {
   if (!lmra.step6?.hazards || lmra.step6.hazards.length === 0) return false;
   if (!lmra.step7?.decision || lmra.step7.decision === "pending") return false;
   if (!lmra.step8?.signatures || lmra.step8.signatures.length === 0) return false;
-  
+
   // If decision is "no_go", LMRA is complete but work cannot proceed
   // Still return true as the LMRA itself is complete
   return true;

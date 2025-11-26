@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { LMRAStep3_WeatherConditions, LMRA } from "@/lib/types/lmra";
 import { getWeatherService } from "@/lib/weatherService";
 import { Timestamp } from "firebase/firestore";
@@ -19,6 +20,7 @@ type Props = {
  * - Graceful degradation if API fails
  */
 export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
+  const t = useTranslations("safety.lmra.steps.step3");
   const current = lmra?.step3;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
     // Auto-fetch weather if we have coordinates and no weather data yet
     const lat = (lmra?.step2 as any)?.latitude;
     const lon = (lmra?.step2 as any)?.longitude;
-    
+
     if (lat && lon && !current?.temperatureC) {
       fetchWeather();
     }
@@ -55,9 +57,9 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
     // Determine coords to use (from LMRA.step2 if present)
     const lat = (lmra?.step2 as any)?.latitude;
     const lon = (lmra?.step2 as any)?.longitude;
-    
+
     if (!lat || !lon) {
-      setError("Geen coördinaten beschikbaar — voer eerst locatie verificatie uit (Stap 2).");
+      setError(t("noCoordinates"));
       return;
     }
 
@@ -69,25 +71,34 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
       // Determine work type from TRA if available
       const traType = (lmra?.step1 as any)?.traType;
       let workType: "general" | "height" | "electrical" | "confined_space" | "hot_work" = "general";
-      
+
       if (traType?.includes("hoogte") || traType?.includes("height")) {
         workType = "height";
       } else if (traType?.includes("elektr") || traType?.includes("electric")) {
         workType = "electrical";
       } else if (traType?.includes("beperkte ruimte") || traType?.includes("confined")) {
         workType = "confined_space";
-      } else if (traType?.includes("heet werk") || traType?.includes("hot work") || traType?.includes("las")) {
+      } else if (
+        traType?.includes("heet werk") ||
+        traType?.includes("hot work") ||
+        traType?.includes("las")
+      ) {
         workType = "hot_work";
       }
 
       // Check safety with enhanced rules
-      const { safe, warnings, blocking, blockingReasons: reasons } = weatherService.isSafeForWork(weather, undefined, workType);
-      
+      const {
+        safe,
+        warnings,
+        blocking,
+        blockingReasons: reasons,
+      } = weatherService.isSafeForWork(weather, undefined, workType);
+
       if (blocking) {
         setIsBlocking(true);
         setBlockingReasons(reasons);
       }
-      
+
       if (!safe && warnings.length > 0) {
         setSafetyWarnings(warnings);
       }
@@ -111,21 +122,21 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
     } catch (err: any) {
       console.error("Weather fetch error:", err);
       const errorMessage = err?.message || "Kon weergegevens niet ophalen";
-      
+
       // Provide helpful error messages
       if (errorMessage.includes("API key not configured")) {
-        setError("OpenWeather API key niet geconfigureerd. Neem contact op met de beheerder.");
+        setError(t("apiKeyNotConfigured"));
       } else if (errorMessage.includes("401")) {
-        setError("OpenWeather API key ongeldig. Neem contact op met de beheerder.");
+        setError(t("apiKeyInvalid"));
       } else if (errorMessage.includes("429")) {
-        setError("Te veel API verzoeken. Probeer het later opnieuw of voer handmatig in.");
+        setError(t("tooManyRequests"));
       } else {
-        setError(`${errorMessage}. Probeer het opnieuw of voer handmatig in.`);
+        setError(`${errorMessage}. ${t("fetchErrorSuffix")}`);
       }
     } finally {
       setLoading(false);
     }
-  }, [lmra?.step2, onChange]);
+  }, [lmra?.step2, lmra?.step1, onChange, t]);
 
   const handleManualChange = useCallback(
     (changes: Partial<LMRAStep3_WeatherConditions>) => {
@@ -146,7 +157,7 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
   // Format observation timestamp
   const formatTimestamp = (timestamp: any): string => {
     if (!timestamp) return "—";
-    
+
     try {
       let date: Date;
       if (timestamp instanceof Timestamp) {
@@ -158,7 +169,7 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
       } else {
         return "—";
       }
-      
+
       return date.toLocaleString("nl-NL", {
         day: "2-digit",
         month: "2-digit",
@@ -181,32 +192,26 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted">
-        Haal huidige weersomstandigheden op voor de locatie of voer handmatig in indien nodig.
-      </p>
+      <p className="text-sm text-muted">{t("description")}</p>
 
       {/* Action Buttons */}
       <div className="flex gap-2 flex-wrap">
-        <button 
-          onClick={fetchWeather} 
-          className="btn btn-secondary" 
-          disabled={loading}
-        >
-          {loading ? "Ophalen…" : "Haal weergegevens op"}
+        <button onClick={fetchWeather} className="btn btn-secondary" disabled={loading}>
+          {loading ? t("fetchingButton") : t("fetchButton")}
         </button>
 
         <button
           onClick={toggleManualOverride}
           className={`btn ${payload?.manualOverride ? "btn-primary" : "btn-outline"}`}
         >
-          {payload?.manualOverride ? "Handmatige override aan" : "Handmatige override uit"}
+          {payload?.manualOverride ? t("manualOverrideOn") : t("manualOverrideOff")}
         </button>
       </div>
 
       {/* Error Message */}
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
-          <strong>Fout:</strong> {error}
+          <strong>{t("errorPrefix")}</strong> {error}
         </div>
       )}
 
@@ -216,17 +221,16 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
           <div className="flex items-start gap-3">
             <span className="text-2xl">🛑</span>
             <div className="flex-1">
-              <div className="font-bold text-red-900 mb-2 text-lg">
-                GEVAAR: Werk moet worden stopgezet
-              </div>
+              <div className="font-bold text-red-900 mb-2 text-lg">{t("blocking.title")}</div>
               <ul className="text-sm text-red-800 space-y-2">
                 {blockingReasons.map((reason, idx) => (
-                  <li key={idx} className="font-semibold">• {reason}</li>
+                  <li key={idx} className="font-semibold">
+                    • {reason}
+                  </li>
                 ))}
               </ul>
               <div className="mt-3 p-2 bg-red-100 rounded text-xs text-red-900">
-                <strong>Actie vereist:</strong> Deze LMRA kan niet worden voortgezet onder deze weersomstandigheden.
-                Wacht tot de omstandigheden verbeteren of stel het werk uit.
+                <strong>{t("blocking.actionRequired")}</strong> {t("blocking.actionText")}
               </div>
             </div>
           </div>
@@ -239,17 +243,13 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
           <div className="flex items-start gap-2">
             <span className="text-xl">⚠️</span>
             <div className="flex-1">
-              <div className="font-semibold text-yellow-900 mb-1">
-                WAARSCHUWING: Onveilige werkomstandigheden
-              </div>
+              <div className="font-semibold text-yellow-900 mb-1">{t("warning.title")}</div>
               <ul className="text-sm text-yellow-800 space-y-1">
                 {safetyWarnings.map((warning, idx) => (
                   <li key={idx}>• {warning}</li>
                 ))}
               </ul>
-              <div className="mt-2 text-xs text-yellow-800">
-                Extra voorzichtigheid en veiligheidsmaatregelen zijn vereist.
-              </div>
+              <div className="mt-2 text-xs text-yellow-800">{t("warning.extraCaution")}</div>
             </div>
           </div>
         </div>
@@ -258,40 +258,43 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
       {/* Weather Data Display */}
       {payload?.provider && (
         <div className="text-xs text-muted">
-          Bron: {payload.provider} | Waarneming: {formatTimestamp(payload.observationTimestamp)}
+          {t("source")} {payload.provider} | {t("observation")}{" "}
+          {formatTimestamp(payload.observationTimestamp)}
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-3">
         <div className="p-3 border rounded">
-          <div className="text-xs text-muted mb-1">Temperatuur</div>
+          <div className="text-xs text-muted mb-1">{t("fields.temperature")}</div>
           {payload?.manualOverride ? (
             <input
               type="number"
               step="0.1"
               value={payload?.temperatureC ?? ""}
-              onChange={(e) => handleManualChange({ temperatureC: parseFloat(e.target.value) || 0 })}
+              onChange={(e) =>
+                handleManualChange({ temperatureC: parseFloat(e.target.value) || 0 })
+              }
               className="input w-full text-sm"
-              placeholder="°C"
+              placeholder={t("fields.temperaturePlaceholder")}
             />
           ) : (
             <div className="text-lg font-semibold">
-              {payload?.temperatureC !== undefined && payload?.temperatureC !== null 
-                ? `${payload.temperatureC.toFixed(1)}°C` 
+              {payload?.temperatureC !== undefined && payload?.temperatureC !== null
+                ? `${payload.temperatureC.toFixed(1)}°C`
                 : "—"}
             </div>
           )}
         </div>
 
         <div className="p-3 border rounded">
-          <div className="text-xs text-muted mb-1">Luchtvochtigheid</div>
+          <div className="text-xs text-muted mb-1">{t("fields.humidity")}</div>
           {payload?.manualOverride ? (
             <input
               type="number"
               value={payload?.humidityPct ?? ""}
               onChange={(e) => handleManualChange({ humidityPct: parseInt(e.target.value) || 0 })}
               className="input w-full text-sm"
-              placeholder="%"
+              placeholder={t("fields.humidityPlaceholder")}
             />
           ) : (
             <div className="text-lg font-semibold">
@@ -301,7 +304,7 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
         </div>
 
         <div className="p-3 border rounded">
-          <div className="text-xs text-muted mb-1">Wind</div>
+          <div className="text-xs text-muted mb-1">{t("fields.wind")}</div>
           {payload?.manualOverride ? (
             <input
               type="number"
@@ -309,25 +312,25 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
               value={payload?.windSpeedMs ?? ""}
               onChange={(e) => handleManualChange({ windSpeedMs: parseFloat(e.target.value) || 0 })}
               className="input w-full text-sm"
-              placeholder="m/s"
+              placeholder={t("fields.windPlaceholder")}
             />
           ) : (
-            <div className="text-lg font-semibold">
-              {formatWindSpeed(payload?.windSpeedMs)}
-            </div>
+            <div className="text-lg font-semibold">{formatWindSpeed(payload?.windSpeedMs)}</div>
           )}
         </div>
 
         <div className="p-3 border rounded">
-          <div className="text-xs text-muted mb-1">Neerslag</div>
+          <div className="text-xs text-muted mb-1">{t("fields.precipitation")}</div>
           {payload?.manualOverride ? (
             <input
               type="number"
               step="0.1"
               value={payload?.precipitationMm ?? ""}
-              onChange={(e) => handleManualChange({ precipitationMm: parseFloat(e.target.value) || 0 })}
+              onChange={(e) =>
+                handleManualChange({ precipitationMm: parseFloat(e.target.value) || 0 })
+              }
               className="input w-full text-sm"
-              placeholder="mm"
+              placeholder={t("fields.precipitationPlaceholder")}
             />
           ) : (
             <div className="text-lg font-semibold">
@@ -340,25 +343,25 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
       {/* Weather Description and Notes */}
       <div className="space-y-2">
         <label className="block">
-          <div className="text-xs text-muted mb-1">Weer beschrijving</div>
+          <div className="text-xs text-muted mb-1">{t("fields.weatherDescription")}</div>
           <input
             type="text"
             value={payload?.weatherDescription ?? ""}
             onChange={(e) => handleManualChange({ weatherDescription: e.target.value })}
-            placeholder="Bijv. Zwaar bewolkt, sneeuw, harde wind"
+            placeholder={t("fields.weatherDescriptionPlaceholder")}
             className="input w-full"
             disabled={!payload?.manualOverride && !!payload?.weatherDescription}
           />
         </label>
 
         <label className="block">
-          <div className="text-xs text-muted mb-1">Aantekeningen (handmatig)</div>
+          <div className="text-xs text-muted mb-1">{t("fields.manualNotes")}</div>
           <textarea
             value={payload?.manualNotes ?? ""}
             onChange={(e) => handleManualChange({ manualNotes: e.target.value })}
             className="textarea w-full"
             rows={3}
-            placeholder="Extra opmerkingen over de weersomstandigheden..."
+            placeholder={t("fields.manualNotesPlaceholder")}
           />
         </label>
       </div>
@@ -366,25 +369,25 @@ export default function Step3_WeatherConditions({ lmra, onChange }: Props) {
       {/* Severity Indicator */}
       {payload?.severity && (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted">Ernst niveau:</span>
+          <span className="text-muted">{t("severity.label")}</span>
           <span
             className={`px-2 py-1 rounded text-xs font-semibold ${
               payload.severity === "clear"
                 ? "bg-green-100 text-green-800"
                 : payload.severity === "moderate"
-                ? "bg-yellow-100 text-yellow-800"
-                : payload.severity === "severe"
-                ? "bg-orange-100 text-orange-800"
-                : "bg-red-100 text-red-800"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : payload.severity === "severe"
+                    ? "bg-orange-100 text-orange-800"
+                    : "bg-red-100 text-red-800"
             }`}
           >
             {payload.severity === "clear"
-              ? "Helder"
+              ? t("severity.clear")
               : payload.severity === "moderate"
-              ? "Matig"
-              : payload.severity === "severe"
-              ? "Ernstig"
-              : "Extreem"}
+                ? t("severity.moderate")
+                : payload.severity === "severe"
+                  ? t("severity.severe")
+                  : t("severity.extreme")}
           </span>
         </div>
       )}

@@ -45,7 +45,7 @@ const customJestConfig = {
     "^@firebase/analytics$": "<rootDir>/src/__mocks__/firebase-analytics.ts",
     "^firebase/app$": "<rootDir>/src/__mocks__/firebase-app.ts",
     // Mock next-intl to avoid ESM parsing issues in tests
-    "^next-intl$": "<rootDir>/__mocks__/next-intl.js"
+    "^next-intl$": "<rootDir>/__mocks__/next-intl.js",
   },
 
   // Transform configuration
@@ -56,7 +56,7 @@ const customJestConfig = {
   // Ensure certain modern ESM node_modules are transformed by Babel (allowlist).
   // Packages that export ESM (export ...) can cause Jest to fail unless transformed.
   transformIgnorePatterns: [
-    "/node_modules/(?!(@?next-intl|jose|jwks-rsa|firebase-admin|next-.*|@?sentry|@?auth0)/)"
+    "/node_modules/(?!(@?next-intl|jose|jwks-rsa|firebase-admin|next-.*|@?sentry|@?auth0)/)",
   ],
 
   // Test match patterns

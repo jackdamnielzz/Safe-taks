@@ -1,9 +1,9 @@
 /**
  * Photo Upload Service
- * 
+ *
  * Handles photo compression and upload to Firebase Storage.
  * Integrates with photoStorage for offline support and sync management.
- * 
+ *
  * Features:
  * - Image compression using browser-image-compression
  * - Upload to Firebase Storage with progress tracking
@@ -13,12 +13,12 @@
  * - Offline queue management
  */
 
-import imageCompression from 'browser-image-compression';
-import { ref, uploadBytesResumable, getDownloadURL, UploadTask } from 'firebase/storage';
-import { doc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { storage, db } from './firebase';
-import { photoStorage, StoredPhoto } from './photoStorage';
-import type { LMRAPhoto, LMRAStepNumber } from './types/lmra';
+import imageCompression from "browser-image-compression";
+import { ref, uploadBytesResumable, getDownloadURL, UploadTask } from "firebase/storage";
+import { doc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { storage, db } from "./firebase";
+import { photoStorage, StoredPhoto } from "./photoStorage";
+import type { LMRAPhoto, LMRAStepNumber } from "./types/lmra";
 
 export interface CompressionOptions {
   maxSizeMB: number;
@@ -33,7 +33,7 @@ export interface UploadProgress {
   progress: number;
   bytesTransferred: number;
   totalBytes: number;
-  state: 'running' | 'paused' | 'success' | 'error';
+  state: "running" | "paused" | "success" | "error";
   error?: string;
 }
 
@@ -54,7 +54,7 @@ const DEFAULT_COMPRESSION_OPTIONS: CompressionOptions = {
   maxSizeMB: 2, // Target 2MB max
   maxWidthOrHeight: 2048, // Max dimension
   useWebWorker: true,
-  fileType: 'image/jpeg',
+  fileType: "image/jpeg",
   initialQuality: 0.8,
 };
 
@@ -62,7 +62,7 @@ const THUMBNAIL_OPTIONS: CompressionOptions = {
   maxSizeMB: 0.1, // 100KB max for thumbnails
   maxWidthOrHeight: 400,
   useWebWorker: true,
-  fileType: 'image/jpeg',
+  fileType: "image/jpeg",
   initialQuality: 0.7,
 };
 
@@ -92,24 +92,26 @@ export class PhotoUploadService {
     options: Partial<CompressionOptions> = {}
   ): Promise<{ compressed: Blob; originalSize: number; compressedSize: number }> {
     const compressionOptions = { ...DEFAULT_COMPRESSION_OPTIONS, ...options };
-    
+
     try {
-      const file = new File([blob], 'photo.jpg', { type: blob.type });
+      const file = new File([blob], "photo.jpg", { type: blob.type });
       const originalSize = file.size;
-      
+
       const compressed = await imageCompression(file, compressionOptions);
       const compressedSize = compressed.size;
-      
-      console.log(`Compressed image: ${originalSize} -> ${compressedSize} bytes (${((1 - compressedSize / originalSize) * 100).toFixed(1)}% reduction)`);
-      
+
+      console.log(
+        `Compressed image: ${originalSize} -> ${compressedSize} bytes (${((1 - compressedSize / originalSize) * 100).toFixed(1)}% reduction)`
+      );
+
       return {
         compressed,
         originalSize,
         compressedSize,
       };
     } catch (error) {
-      console.error('Image compression failed:', error);
-      throw new Error('Failed to compress image');
+      console.error("Image compression failed:", error);
+      throw new Error("Failed to compress image");
     }
   }
 
@@ -118,12 +120,12 @@ export class PhotoUploadService {
    */
   async generateThumbnail(blob: Blob): Promise<Blob> {
     try {
-      const file = new File([blob], 'thumbnail.jpg', { type: blob.type });
+      const file = new File([blob], "thumbnail.jpg", { type: blob.type });
       const thumbnail = await imageCompression(file, THUMBNAIL_OPTIONS);
       return thumbnail;
     } catch (error) {
-      console.error('Thumbnail generation failed:', error);
-      throw new Error('Failed to generate thumbnail');
+      console.error("Thumbnail generation failed:", error);
+      throw new Error("Failed to generate thumbnail");
     }
   }
 
@@ -138,11 +140,11 @@ export class PhotoUploadService {
 
     try {
       // Update status to syncing
-      await photoStorage.updateSyncStatus(id, 'syncing', undefined, 0);
+      await photoStorage.updateSyncStatus(id, "syncing", undefined, 0);
 
       // Compress image
       const { compressed, originalSize, compressedSize } = await this.compressImage(blob);
-      
+
       // Generate thumbnail
       const thumbnail = await this.generateThumbnail(compressed);
 
@@ -150,7 +152,7 @@ export class PhotoUploadService {
       const mainPath = `lmras/${lmraId}/photos/${id}.jpg`;
       const mainRef = ref(storage, mainPath);
       const mainUploadTask = uploadBytesResumable(mainRef, compressed, {
-        contentType: 'image/jpeg',
+        contentType: "image/jpeg",
         customMetadata: {
           lmraId,
           photoId: id,
@@ -165,13 +167,13 @@ export class PhotoUploadService {
       // Monitor upload progress
       const mainUrl = await new Promise<string>((resolve, reject) => {
         mainUploadTask.on(
-          'state_changed',
+          "state_changed",
           (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            
+
             // Update local storage
-            photoStorage.updateSyncStatus(id, 'syncing', undefined, progress).catch(console.error);
-            
+            photoStorage.updateSyncStatus(id, "syncing", undefined, progress).catch(console.error);
+
             // Notify callback
             if (onProgress) {
               onProgress({
@@ -179,12 +181,12 @@ export class PhotoUploadService {
                 progress,
                 bytesTransferred: snapshot.bytesTransferred,
                 totalBytes: snapshot.totalBytes,
-                state: snapshot.state as 'running' | 'paused',
+                state: snapshot.state as "running" | "paused",
               });
             }
           },
           (error) => {
-            console.error('Upload error:', error);
+            console.error("Upload error:", error);
             reject(error);
           },
           async () => {
@@ -198,7 +200,7 @@ export class PhotoUploadService {
       const thumbnailPath = `lmras/${lmraId}/photos/thumbnails/${id}_thumb.jpg`;
       const thumbnailRef = ref(storage, thumbnailPath);
       await uploadBytesResumable(thumbnailRef, thumbnail, {
-        contentType: 'image/jpeg',
+        contentType: "image/jpeg",
       });
       const thumbnailUrl = await getDownloadURL(thumbnailRef);
 
@@ -220,10 +222,10 @@ export class PhotoUploadService {
           latitude: metadata.latitude,
           longitude: metadata.longitude,
         },
-        syncStatus: 'synced',
+        syncStatus: "synced",
       };
 
-      await setDoc(doc(db, 'lmraPhotos', id), {
+      await setDoc(doc(db, "lmraPhotos", id), {
         ...photoDoc,
         uploadedAt: serverTimestamp(),
       });
@@ -241,7 +243,7 @@ export class PhotoUploadService {
           progress: 100,
           bytesTransferred: compressedSize,
           totalBytes: compressedSize,
-          state: 'success',
+          state: "success",
         });
       }
 
@@ -259,8 +261,8 @@ export class PhotoUploadService {
       };
     } catch (error) {
       // Update status to failed
-      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
-      await photoStorage.updateSyncStatus(id, 'sync_failed', errorMessage, 0);
+      const errorMessage = error instanceof Error ? error.message : "Upload failed";
+      await photoStorage.updateSyncStatus(id, "sync_failed", errorMessage, 0);
 
       // Remove from active uploads
       this.activeUploads.delete(id);
@@ -272,7 +274,7 @@ export class PhotoUploadService {
           progress: 0,
           bytesTransferred: 0,
           totalBytes: 0,
-          state: 'error',
+          state: "error",
           error: errorMessage,
         });
       }
@@ -290,14 +292,14 @@ export class PhotoUploadService {
     onProgress?: (progress: UploadProgress) => void
   ): Promise<UploadResult> {
     let lastError: Error | null = null;
-    
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         return await this.uploadPhoto(storedPhoto, onProgress);
       } catch (error) {
-        lastError = error instanceof Error ? error : new Error('Upload failed');
+        lastError = error instanceof Error ? error : new Error("Upload failed");
         console.error(`Upload attempt ${attempt} failed:`, lastError);
-        
+
         if (attempt < maxRetries) {
           // Exponential backoff: 2^attempt seconds
           const delay = Math.pow(2, attempt) * 1000;
@@ -306,8 +308,8 @@ export class PhotoUploadService {
         }
       }
     }
-    
-    throw lastError || new Error('Upload failed after retries');
+
+    throw lastError || new Error("Upload failed after retries");
   }
 
   /**
@@ -316,9 +318,9 @@ export class PhotoUploadService {
   async queueUpload(photoId: string): Promise<void> {
     if (!this.uploadQueue.includes(photoId)) {
       this.uploadQueue.push(photoId);
-      await photoStorage.updateSyncStatus(photoId, 'pending_sync');
+      await photoStorage.updateSyncStatus(photoId, "pending_sync");
     }
-    
+
     // Start processing queue if not already running
     if (!this.isProcessingQueue) {
       this.processQueue();
@@ -391,7 +393,7 @@ export class PhotoUploadService {
     if (uploadTask) {
       uploadTask.cancel();
       this.activeUploads.delete(photoId);
-      await photoStorage.updateSyncStatus(photoId, 'pending', 'Upload cancelled', 0);
+      await photoStorage.updateSyncStatus(photoId, "pending", "Upload cancelled", 0);
     }
   }
 

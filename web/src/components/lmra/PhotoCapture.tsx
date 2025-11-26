@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
 /**
  * PhotoCapture Component
- * 
+ *
  * Provides camera access and photo capture functionality for LMRA documentation.
  * Features:
  * - Live camera preview
@@ -14,12 +14,12 @@
  * - Error handling
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Camera, X, RotateCw, Upload, Check, AlertCircle, Image as ImageIcon } from 'lucide-react';
-import { cameraService, CapturedPhoto } from '@/lib/cameraService';
-import { photoStorage, StoredPhoto } from '@/lib/photoStorage';
-import { photoUpload, UploadProgress } from '@/lib/photoUpload';
-import type { LMRAStepNumber } from '@/lib/types/lmra';
+import React, { useState, useRef, useEffect } from "react";
+import { Camera, X, RotateCw, Upload, Check, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { cameraService, CapturedPhoto } from "@/lib/cameraService";
+import { photoStorage, StoredPhoto } from "@/lib/photoStorage";
+import { photoUpload, UploadProgress } from "@/lib/photoUpload";
+import type { LMRAStepNumber } from "@/lib/types/lmra";
 
 interface PhotoCaptureProps {
   lmraId: string;
@@ -32,7 +32,15 @@ interface PhotoCaptureProps {
   currentPhotoCount?: number;
 }
 
-type CaptureState = 'idle' | 'requesting' | 'previewing' | 'captured' | 'compressing' | 'uploading' | 'success' | 'error';
+type CaptureState =
+  | "idle"
+  | "requesting"
+  | "previewing"
+  | "captured"
+  | "compressing"
+  | "uploading"
+  | "success"
+  | "error";
 
 export default function PhotoCapture({
   lmraId,
@@ -44,13 +52,13 @@ export default function PhotoCapture({
   maxPhotos = 10,
   currentPhotoCount = 0,
 }: PhotoCaptureProps) {
-  const [state, setState] = useState<CaptureState>('idle');
+  const [state, setState] = useState<CaptureState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [capturedPhoto, setCapturedPhoto] = useState<CapturedPhoto | null>(null);
-  const [caption, setCaption] = useState('');
+  const [caption, setCaption] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
-  
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("environment");
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -62,18 +70,18 @@ export default function PhotoCapture({
   const startCamera = async () => {
     if (!videoRef.current) return;
 
-    setState('requesting');
+    setState("requesting");
     setError(null);
 
     try {
       const stream = await cameraService.requestPermission({ facingMode });
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
-      setState('previewing');
+      setState("previewing");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to access camera';
+      const errorMessage = err instanceof Error ? err.message : "Failed to access camera";
       setError(errorMessage);
-      setState('error');
+      setState("error");
     }
   };
 
@@ -93,26 +101,26 @@ export default function PhotoCapture({
     try {
       const photo = await cameraService.capturePhoto(videoRef.current);
       setCapturedPhoto(photo);
-      setState('captured');
+      setState("captured");
       stopCamera();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to capture photo';
+      const errorMessage = err instanceof Error ? err.message : "Failed to capture photo";
       setError(errorMessage);
-      setState('error');
+      setState("error");
     }
   };
 
   // Switch between front and rear camera
   const switchCamera = async () => {
     stopCamera();
-    setFacingMode(facingMode === 'user' ? 'environment' : 'user');
+    setFacingMode(facingMode === "user" ? "environment" : "user");
     await startCamera();
   };
 
   // Retake photo
   const retakePhoto = () => {
     setCapturedPhoto(null);
-    setCaption('');
+    setCaption("");
     startCamera();
   };
 
@@ -121,17 +129,17 @@ export default function PhotoCapture({
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setState('requesting');
+    setState("requesting");
     setError(null);
 
     try {
       const photo = await cameraService.captureFromFile(file);
       setCapturedPhoto(photo);
-      setState('captured');
+      setState("captured");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load image';
+      const errorMessage = err instanceof Error ? err.message : "Failed to load image";
       setError(errorMessage);
-      setState('error');
+      setState("error");
     }
   };
 
@@ -139,7 +147,7 @@ export default function PhotoCapture({
   const confirmPhoto = async () => {
     if (!capturedPhoto) return;
 
-    setState('compressing');
+    setState("compressing");
     setError(null);
 
     try {
@@ -177,25 +185,25 @@ export default function PhotoCapture({
           latitude,
           longitude,
         },
-        syncStatus: 'pending',
+        syncStatus: "pending",
       };
 
       // Save to IndexedDB
       await photoStorage.savePhoto(storedPhoto);
 
       // Start upload
-      setState('uploading');
+      setState("uploading");
       await photoUpload.uploadPhotoWithRetry(storedPhoto, 3, (progress: UploadProgress) => {
         setUploadProgress(progress.progress);
-        
-        if (progress.state === 'error') {
-          setError(progress.error || 'Upload failed');
-          setState('error');
+
+        if (progress.state === "error") {
+          setError(progress.error || "Upload failed");
+          setState("error");
         }
       });
 
-      setState('success');
-      
+      setState("success");
+
       // Notify parent
       if (onPhotoAdded) {
         onPhotoAdded(photoId);
@@ -208,9 +216,9 @@ export default function PhotoCapture({
         }
       }, 1500);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to save photo';
+      const errorMessage = err instanceof Error ? err.message : "Failed to save photo";
       setError(errorMessage);
-      setState('error');
+      setState("error");
     }
   };
 
@@ -230,7 +238,7 @@ export default function PhotoCapture({
       <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/80 to-transparent p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-white text-lg font-semibold">
-            {state === 'captured' ? 'Review Photo' : 'Take Photo'}
+            {state === "captured" ? "Review Photo" : "Take Photo"}
           </h2>
           <button
             onClick={onClose}
@@ -245,48 +253,44 @@ export default function PhotoCapture({
       {/* Main Content */}
       <div className="h-full flex flex-col items-center justify-center">
         {/* Camera Preview or Captured Photo */}
-        {state === 'previewing' && (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-          />
+        {state === "previewing" && (
+          <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
         )}
 
-        {(state === 'captured' || state === 'compressing' || state === 'uploading' || state === 'success') && capturedPhoto && (
-          <div className="w-full h-full flex flex-col">
-            <img
-              src={capturedPhoto.dataUrl}
-              alt="Captured"
-              className="flex-1 w-full object-contain bg-black"
-            />
-            
-            {/* Caption Input */}
-            {state === 'captured' && (
-              <div className="p-4 bg-black/80">
-                <input
-                  type="text"
-                  value={caption}
-                  onChange={(e) => setCaption(e.target.value)}
-                  placeholder="Add a caption (optional)"
-                  className="w-full px-4 py-2 bg-white/10 text-white placeholder-gray-400 rounded-lg border border-white/20 focus:outline-none focus:border-white/40"
-                  maxLength={200}
-                />
-              </div>
-            )}
-          </div>
-        )}
+        {(state === "captured" ||
+          state === "compressing" ||
+          state === "uploading" ||
+          state === "success") &&
+          capturedPhoto && (
+            <div className="w-full h-full flex flex-col">
+              <img
+                src={capturedPhoto.dataUrl}
+                alt="Captured"
+                className="flex-1 w-full object-contain bg-black"
+              />
+
+              {/* Caption Input */}
+              {state === "captured" && (
+                <div className="p-4 bg-black/80">
+                  <input
+                    type="text"
+                    value={caption}
+                    onChange={(e) => setCaption(e.target.value)}
+                    placeholder="Add a caption (optional)"
+                    className="w-full px-4 py-2 bg-white/10 text-white placeholder-gray-400 rounded-lg border border-white/20 focus:outline-none focus:border-white/40"
+                    maxLength={200}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
         {/* Idle State */}
-        {state === 'idle' && (
+        {state === "idle" && (
           <div className="text-center p-8">
             <Camera className="w-16 h-16 text-white mx-auto mb-4" />
             <p className="text-white text-lg mb-6">
-              {isMaxPhotosReached
-                ? `Maximum ${maxPhotos} photos reached`
-                : 'Ready to take a photo'}
+              {isMaxPhotosReached ? `Maximum ${maxPhotos} photos reached` : "Ready to take a photo"}
             </p>
             {!isMaxPhotosReached && (
               <>
@@ -312,7 +316,7 @@ export default function PhotoCapture({
         )}
 
         {/* Requesting State */}
-        {state === 'requesting' && (
+        {state === "requesting" && (
           <div className="text-center p-8">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mx-auto mb-4" />
             <p className="text-white text-lg">Requesting camera access...</p>
@@ -320,7 +324,7 @@ export default function PhotoCapture({
         )}
 
         {/* Compressing State */}
-        {state === 'compressing' && (
+        {state === "compressing" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/80">
             <div className="text-center">
               <div className="animate-spin rounded-full h-16 w-16 border-4 border-white border-t-transparent mx-auto mb-4" />
@@ -330,7 +334,7 @@ export default function PhotoCapture({
         )}
 
         {/* Uploading State */}
-        {state === 'uploading' && (
+        {state === "uploading" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/80">
             <div className="text-center w-64">
               <Upload className="w-16 h-16 text-white mx-auto mb-4" />
@@ -347,7 +351,7 @@ export default function PhotoCapture({
         )}
 
         {/* Success State */}
-        {state === 'success' && (
+        {state === "success" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/80">
             <div className="text-center">
               <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -359,7 +363,7 @@ export default function PhotoCapture({
         )}
 
         {/* Error State */}
-        {state === 'error' && error && (
+        {state === "error" && error && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/80">
             <div className="text-center p-8 max-w-md">
               <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
@@ -368,7 +372,7 @@ export default function PhotoCapture({
               <button
                 onClick={() => {
                   setError(null);
-                  setState('idle');
+                  setState("idle");
                 }}
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
@@ -380,7 +384,7 @@ export default function PhotoCapture({
       </div>
 
       {/* Bottom Controls */}
-      {state === 'previewing' && (
+      {state === "previewing" && (
         <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-6">
           <div className="flex items-center justify-center gap-8">
             {/* Switch Camera */}
@@ -405,7 +409,7 @@ export default function PhotoCapture({
         </div>
       )}
 
-      {state === 'captured' && (
+      {state === "captured" && (
         <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-6">
           <div className="flex items-center justify-center gap-4">
             <button

@@ -6,7 +6,7 @@
  * - Or central collection: /approvals/{approvalId} with ref to traId
  */
 
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+export type ApprovalStatus = "pending" | "approved" | "rejected" | "cancelled";
 
 export interface ApprovalStep {
   step: number; // 1-based step index
@@ -55,7 +55,7 @@ export interface CreateApprovalPayload {
 export interface ApprovalAction {
   approvalId: string;
   step: number;
-  action: 'approve' | 'reject' | 'request_changes';
+  action: "approve" | "reject" | "request_changes";
   by: string; // userId
   comments?: string;
   timestamp: number;

@@ -9,5 +9,37 @@
       "createdAt": "2025-10-31T00:00:00.000Z"
     }
   },
-  "stopWorkAlerts": {}
+  "stopWorkAlerts": {},
+  "projects": {
+    "project-1": {
+      "name": "Bouwproject Amsterdam",
+      "slug": "bouwproject-amsterdam",
+      "description": "Nieuwbouw kantoorpand in Amsterdam Noord",
+      "location": "Amsterdam Noord",
+      "createdBy": "dev-user",
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "updatedAt": "2025-01-01T00:00:00.000Z",
+      "deleted": false
+    },
+    "project-2": {
+      "name": "Renovatie Rotterdam",
+      "slug": "renovatie-rotterdam",
+      "description": "Renovatie van historisch pand in Rotterdam centrum",
+      "location": "Rotterdam Centrum",
+      "createdBy": "dev-user",
+      "createdAt": "2025-01-15T00:00:00.000Z",
+      "updatedAt": "2025-01-15T00:00:00.000Z",
+      "deleted": false
+    },
+    "project-3": {
+      "name": "Infrastructuur Utrecht",
+      "slug": "infrastructuur-utrecht",
+      "description": "Wegwerkzaamheden A12 Utrecht",
+      "location": "Utrecht",
+      "createdBy": "dev-user",
+      "createdAt": "2025-02-01T00:00:00.000Z",
+      "updatedAt": "2025-02-01T00:00:00.000Z",
+      "deleted": false
+    }
+  }
 }

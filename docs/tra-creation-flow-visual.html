@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRA Creation Flow - Simpel Uitgelegd</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* HOW TO READ */
+        .how-to-read {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 3px solid #667eea;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .how-to-read h2 {
+            color: #667eea;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instruction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .instruction-item {
+            background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .instruction-number {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+        }
+
+        .instruction-text {
+            color: #333;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        /* MAIN FLOW */
+        .main-flow {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .flow-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        /* FLOW CONTAINER */
+        .flow-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            position: relative;
+        }
+
+        .flow-step {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+            position: relative;
+            padding: 20px 0;
+            border-left: 4px solid #e0e7f1;
+            padding-left: 30px;
+            margin-left: 30px;
+        }
+
+        .flow-step:last-child {
+            border-left: none;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: 700;
+            flex-shrink: 0;
+            position: relative;
+            left: -55px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .step-description {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .step-detail {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+            font-size: 0.9em;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        .step-detail strong {
+            color: #333;
+        }
+
+        /* PHASE SEPARATOR */
+        .phase-separator {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 700;
+            text-align: center;
+            margin: 30px 0 20px 0;
+            font-size: 1.05em;
+        }
+
+        /* BOTTOM EXPLANATION */
+        .explanation {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            padding: 30px;
+            border-radius: 12px;
+            border: 3px solid #10b981;
+            margin-top: 30px;
+        }
+
+        .explanation h2 {
+            color: #10b981;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .explanation-text {
+            color: #333;
+            line-height: 1.8;
+            font-size: 0.95em;
+        }
+
+        .explanation-text strong {
+            color: #10b981;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .flow-step {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .instruction-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .emoji-large {
+            font-size: 1.3em;
+        }
+
+        .check {
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        .arrow-down {
+            text-align: center;
+            font-size: 1.5em;
+            color: #cbd5e0;
+            margin: -10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🚀 Hoe Werkt het TRA Proces?</h1>
+            <p>Een stap-voor-stap uitleg voor iedereen</p>
+        </div>
+
+        <!-- HOW TO READ THIS -->
+        <div class="how-to-read">
+            <h2>📖 Hoe Lees Je Dit Diagram?</h2>
+            <div class="instruction-grid">
+                <div class="instruction-item">
+                    <div class="instruction-number">1</div>
+                    <div class="instruction-text">Lees van boven naar beneden</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-number">2</div>
+                    <div class="instruction-text">Volg de nummers: 1, 2, 3, 4...</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-number">3</div>
+                    <div class="instruction-text">Elk stap doet iets anders</div>
+                </div>
+                <div class="instruction-item">
+                    <div class="instruction-number">4</div>
+                    <div class="instruction-text">Lees de gekleurde boxes met uitleg</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN FLOW -->
+        <div class="main-flow">
+            <div class="flow-title">📋 Het Proces Stap voor Stap</div>
+
+            <div class="flow-container">
+                <!-- STAP 1 -->
+                <div class="flow-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">👤 Jij Opent de Website</div>
+                        <div class="step-description">
+                            Je gaat naar de website en klikt op "Nieuw TRA aanmaken"
+                        </div>
+                        <div class="step-detail">
+                            <strong>Wat gebeurt?</strong> De website laadt en toont je een formulier
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- STAP 2 -->
+                <div class="flow-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">✏️ Stap 1: Basis Informatie</div>
+                        <div class="step-description">
+                            Je vult in: wat is de taak, wat gaat je analyseren, wat is de titel?
+                        </div>
+                        <div class="step-detail">
+                            <strong>Je moet invullen:</strong> Titel van je analyse, beschrijving, welk project hoort dit bij
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- STAP 3 -->
+                <div class="flow-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">⚠️ Stap 2: Welke Gevaren?</div>
+                        <div class="step-description">
+                            Je beschrijft alle mogelijke gevaren voor deze taak
+                        </div>
+                        <div class="step-detail">
+                            <strong>Bijvoorbeeld:</strong> Elektrocutie risico, val risico, brand risico, enzovoort
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- STAP 4 -->
+                <div class="flow-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <div class="step-title">👥 Stap 3: Wie Doet Dit?</div>
+                        <div class="step-description">
+                            Je selecteert welke teamleden betrokken zijn bij deze taak
+                        </div>
+                        <div class="step-detail">
+                            <strong>Minstens:</strong> 1 teamlid moet geselecteerd worden
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- STAP 5 -->
+                <div class="flow-step">
+                    <div class="step-number">5</div>
+                    <div class="step-content">
+                        <div class="step-title">🔍 Stap 4: Controle</div>
+                        <div class="step-description">
+                            De website laat alles nog een keer zien, je controleert of alles goed is
+                        </div>
+                        <div class="step-detail">
+                            <strong>Hier kan je:</strong> Nog iets aanpassen, of doorgaan naar stap 6
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- PHASE SEPARATOR -->
+                <div class="phase-separator">
+                    ✋ TOT HIER GEBEURT ALLES OP JE COMPUTER ✋
+                </div>
+
+                <!-- STAP 6 -->
+                <div class="flow-step">
+                    <div class="step-number">6</div>
+                    <div class="step-content">
+                        <div class="step-title">📤 Je Verzendt Alles</div>
+                        <div class="step-description">
+                            Je klikt op "Opslaan" en alles gaat naar de server
+                        </div>
+                        <div class="step-detail">
+                            <strong>Achter de schermen:</strong> Alles wat je hebt ingevuld wordt naar de server verzonden
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- PHASE SEPARATOR -->
+                <div class="phase-separator">
+                    🖥️ VANAF NU WERKT DE SERVER HET AF 🖥️
+                </div>
+
+                <!-- STAP 7 -->
+                <div class="flow-step">
+                    <div class="step-number">7</div>
+                    <div class="step-content">
+                        <div class="step-title">🔐 Server Checkt: Ben Jij Ingelogd?</div>
+                        <div class="step-description">
+                            De server controleert of je echt bent wie je zegt dat je bent
+                        </div>
+                        <div class="step-detail">
+                            <strong>Wat gebeurt?</strong> De server kijkt naar je inloggegevens
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- STAP 8 -->
+                <div class="flow-step">
+                    <div class="step-number">8</div>
+                    <div class="step-content">
+                        <div class="step-title">✅ Server Checkt: Is Het Goed Ingevuld?</div>
+                        <div class="step-description">
+                            De server controleert of alles wat je hebt ingevuld logisch is
+                        </div>
+                        <div class="step-detail">
+                            <strong>Bijvoorbeeld:</strong> Is er een titel? Hoort het project echt bij jouw bedrijf?
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- STAP 9 -->
+                <div class="flow-step">
+                    <div class="step-number">9</div>
+                    <div class="step-content">
+                        <div class="step-title">💳 Server Checkt: Mag Dit Nog?</div>
+                        <div class="step-description">
+                            De server controleert of je bedrijf nog meer TRA's mag aanmaken
+                        </div>
+                        <div class="step-detail">
+                            <strong>Bijvoorbeeld:</strong> Sommige abonnementen hebben limieten: je mag maar 5 analyses per maand maken
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- STAP 10 -->
+                <div class="flow-step">
+                    <div class="step-number">10</div>
+                    <div class="step-content">
+                        <div class="step-title">💾 Server Slaat Het Op</div>
+                        <div class="step-description">
+                            Als alles goed is, slaat de server alles op in de database
+                        </div>
+                        <div class="step-detail">
+                            <strong>Wat wordt opgeslagen?</strong> Je titel, beschrijving, alle gevaren, teamleden, alles
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- STAP 11 -->
+                <div class="flow-step">
+                    <div class="step-number">11</div>
+                    <div class="step-content">
+                        <div class="step-title">📥 Server Geeft Bericht Terug</div>
+                        <div class="step-description">
+                            De server zegt: "Prima! Je analyse is opgeslagen!"
+                        </div>
+                        <div class="step-detail">
+                            <strong>Je computer ontvangt:</strong> Een berichtje dat alles gelukt is
+                        </div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">↓</div>
+
+                <!-- PHASE SEPARATOR -->
+                <div class="phase-separator">
+                    🖥️ TERUG NAAR JE COMPUTER 🖥️
+                </div>
+
+                <!-- STAP 12 -->
+                <div class="flow-step">
+                    <div class="step-number">12</div>
+                    <div class="step-content">
+                        <div class="step-title">🎉 Website Brengt Je Naar Je Analyse</div>
+                        <div class="step-description">
+                            De website laadt automatisch de pagina van je nieuwe analyse
+                        </div>
+                        <div class="step-detail">
+                            <strong style="color: #10b981;">✓ KLAAR! Je TRA is aangemaakt!</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXPLANATION -->
+        <div class="explanation">
+            <h2>💡 Samengevat</h2>
+            <div class="explanation-text">
+                <p style="margin-bottom: 15px;">
+                    <strong>Stap 1-5:</strong> Jij vult op je computer een formulier in met 4 schermen. Jij bepaalt wat je analyseert.
+                </p>
+                <p style="margin-bottom: 15px;">
+                    <strong>Stap 6:</strong> Je drukt op "Opslaan" en alles gaat naar de server.
+                </p>
+                <p style="margin-bottom: 15px;">
+                    <strong>Stap 7-10:</strong> De server controleert of alles goed is, en slaat het op in de database.
+                </p>
+                <p>
+                    <strong>Stap 11-12:</strong> De server zegt dat het gelukt is, en je website brengt je naar je nieuwe analyse. <span class="check">✓ Klaar!</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

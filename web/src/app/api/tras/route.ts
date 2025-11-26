@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { initializeAdmin, requireOrgAuth } from "@/lib/server-helpers";
 import { Errors } from "@/lib/api/errors";
+import { canCreateTRA } from "@/lib/payments/feature-gates";
 
 /**
  * TRA API route
@@ -112,15 +113,6 @@ export async function GET(request: Request) {
       }
     }
 
-    // For development/demo, return empty results immediately without Firestore
-    if (process.env.NODE_ENV === "development") {
-      return NextResponse.json({
-        items: [],
-        nextCursor: undefined,
-        hasMore: false,
-        totalCount: 0,
-      });
-    }
 
     // Limit - handle Firestore connection issues gracefully
     let snap;
@@ -205,7 +197,7 @@ export async function POST(request: Request) {
     if (body && body.action === "bulk" && Array.isArray(body.ids)) {
       const auth = await requireOrgAuth(request).catch(() => null);
       if (!auth) return Errors.unauthorized();
-      const { orgId, uid } = auth;
+      const { orgId } = auth;
 
       const ids: string[] = body.ids;
       const op = body.op || "archive";
@@ -234,10 +226,28 @@ export async function POST(request: Request) {
         return Errors.validation({ title: "Title is required" });
       }
 
-      // For development/demo, return mock success without Firestore
-      if (process.env.NODE_ENV === "development") {
-        const createdId = `tra_${Date.now()}`;
-        return NextResponse.json({ id: createdId, status: "created" }, { status: 201 });
+
+      const { firestore } = initializeAdmin();
+
+      // Load organization snapshot to evaluate subscription + TRA limits
+      const orgRef = firestore.collection("organizations").doc(orgId);
+      const orgSnap = await orgRef.get();
+
+      if (!orgSnap.exists) {
+        return NextResponse.json({ error: "Organization not found" }, { status: 404 });
+      }
+
+      const org = orgSnap.data() as any;
+
+      // Enforce subscription + TRA limits using canonical feature gate
+      if (!canCreateTRA(org)) {
+        return NextResponse.json(
+          {
+            error: "TRA limit reached or subscription inactive",
+            code: "TRA_LIMIT_EXCEEDED",
+          },
+          { status: 402 }
+        );
       }
 
       const now = new Date().toISOString();
@@ -252,9 +262,32 @@ export async function POST(request: Request) {
         version: 1,
       };
 
-      const { firestore } = initializeAdmin();
       const docRef = await firestore.collection(`organizations/${orgId}/tras`).add(tra);
-      return NextResponse.json({ id: docRef.id, status: "created" }, { status: 201 });
+
+      // Increment usage.traCount defensively if usage structure exists
+      try {
+        const usage = (org as any)?.usage || {};
+        const current =
+          typeof usage.traCount === "number" && Number.isFinite(usage.traCount)
+            ? usage.traCount
+            : 0;
+
+        await orgRef.update({
+          "usage.traCount": current + 1,
+          "usage.lastUpdated": new Date().toISOString(),
+        });
+      } catch (updateErr) {
+        // Do not fail TRA creation if usage update fails; log for observability.
+        console.error("Failed to update organization usage after TRA create:", updateErr);
+      }
+
+      return NextResponse.json(
+        {
+          id: docRef.id,
+          status: "created",
+        },
+        { status: 201 }
+      );
     }
 
     return NextResponse.json({ error: "Not found" }, { status: 404 });

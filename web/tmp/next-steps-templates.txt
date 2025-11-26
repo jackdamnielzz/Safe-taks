@@ -1,0 +1,39 @@
+Status & next steps — Template loading debug
+
+What I verified:
+- The API endpoint /api/templates returns the system templates (I tested with curl and received the JSON list).
+  - This confirms the data is present on the server side.
+
+What I need from you (quick verification in the browser):
+1. Start the dev server (if not already running):
+   cd web && npm run dev
+   Open the app (usually http://localhost:3000).
+
+2. Open the LMRA wizard -> Stap 1 (TRA selectie).
+
+3. Open Developer Tools -> Console and Network.
+
+4. Click the button "Sjablonen opnieuw laden" in Step 1.
+
+5. Copy the console output lines that start with:
+   - [Step1_TraSelection] fetch loadedTemplates count:
+   - [Step1_TraSelection] manual fetchTemplates count:
+   - Any errors mentioning /api/templates, CORS, or other network errors.
+
+6. If the Network tab shows the /api/templates request, copy the response or the HTTP status code.
+
+7. Paste the console output and/or network response here.
+
+If you prefer I can:
+- Force the client to always fetch /api/templates (I already switched Step1 to use fetch). If you want, I can also:
+  A) Add a small integration test or a temporary UI message that shows the number of loaded templates (visible in the page).
+  B) Move JSON templates to public/ and fetch them directly.
+  C) Anything else you prefer.
+
+Checklist (progress):
+- [x] Add improved TemplateSelector UI
+- [x] Add dynamic / fallback loading in TemplateSelector
+- [x] Add client-side Step1 dynamic loading + manual reload button
+- [x] Add API endpoint /api/templates
+- [ ] User verifies in browser (paste console/network output)
+- [ ] Confirm templates appear and selection works

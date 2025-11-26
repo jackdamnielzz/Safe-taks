@@ -1,3 +1,3 @@
-export { default as TemplateSelector } from './TemplateSelector';
-export { default as TemplatePreview } from './TemplatePreview';
-export { default as TemplateList } from './TemplateList';
+export { default as TemplateSelector } from "./TemplateSelector";
+export { default as TemplatePreview } from "./TemplatePreview";
+export { default as TemplateList } from "./TemplateList";

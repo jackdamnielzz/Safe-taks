@@ -1,15 +1,34 @@
 /**
  * Feature Gates Utility
  *
- * Provides React hooks and utilities for checking feature access
- * and enforcing tier-based limitations in the UI.
+ * Provides:
+ * - React hooks for client-side feature checks (via usage-tracker).
+ * - Pure helpers for subscription/limit checks that can be used in APIs and server components.
+ *
+ * This file is the central place for subscription-based entitlements.
  */
 
-"use client";
+/**
+ * NOTE:
+ * - This module exports both:
+ *   - pure server-safe helpers (canCreateProject / canCreateTRA / canAddUser / canExecuteLMRA)
+ *   - client-only React hooks/components for feature access
+ *
+ * To keep API routes/server components safe:
+ * - The pure helpers MUST remain simple sync functions with no React/Browser deps.
+ * - Client hooks MUST ONLY be used in Client Components.
+ *
+ * Implementation pattern:
+ * - We define pure helpers first (server-safe).
+ * - Then we define client hooks in a `"use client"` marked block that is exported
+ *   separately, so importing this module for the helpers remains valid on the server.
+ */
 
-import React, { useState, useEffect } from "react";
-import { getFirestore, doc, onSnapshot } from "firebase/firestore";
-import type { Organization, SubscriptionTier } from "../types/organization";
+import type {
+  Organization,
+  SubscriptionTier,
+  SubscriptionStatus,
+} from "../types/organization";
 import {
   isFeatureEnabled,
   getEnabledFeatures,
@@ -18,144 +37,30 @@ import {
 } from "./usage-tracker";
 
 /**
- * Hook to check if a feature is enabled for the current organization
+ * INTERNAL: Normalize subscription status to "active" flag.
+ * - trial + active => allowed (subject to limits)
+ * - past_due / canceled / paused => not active
  */
-export function useFeatureAccess(
-  organizationId: string | null,
-  feature: FeatureName
-): {
-  hasAccess: boolean;
-  tier: SubscriptionTier | null;
-  loading: boolean;
-} {
-  const [hasAccess, setHasAccess] = useState(false);
-  const [tier, setTier] = useState<SubscriptionTier | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      return;
-    }
-
-    const db = getFirestore();
-    const orgRef = doc(db, "organizations", organizationId);
-
-    const unsubscribe = onSnapshot(orgRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const org = snapshot.data() as Organization;
-        const currentTier = org.subscription.tier;
-        setTier(currentTier);
-        setHasAccess(isFeatureEnabled(currentTier, feature));
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [organizationId, feature]);
-
-  return { hasAccess, tier, loading };
+export function isSubscriptionActiveStatus(status: SubscriptionStatus): boolean {
+  return status === "trial" || status === "active";
 }
 
 /**
- * Hook to get all enabled features for the current organization
+ * NOTE:
+ * - Historical client hooks (useFeatureAccess, useEnabledFeatures, useSubscriptionTier, FeatureGate)
+ *   were previously defined in this module alongside the server-safe helpers.
+ * - That caused issues when this file was imported in server environments.
+ *
+ * For now, we keep ONLY the pure helpers here for stability.
+ * If you need client-side feature gate hooks/components:
+ * - Create a dedicated `"use client"` module (e.g. feature-gates.client.tsx)
+ *   that imports from this file's helpers.
  */
-export function useEnabledFeatures(organizationId: string | null): {
-  features: FeatureName[];
-  tier: SubscriptionTier | null;
-  loading: boolean;
-} {
-  const [features, setFeatures] = useState<FeatureName[]>([]);
-  const [tier, setTier] = useState<SubscriptionTier | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      return;
-    }
-
-    const db = getFirestore();
-    const orgRef = doc(db, "organizations", organizationId);
-
-    const unsubscribe = onSnapshot(orgRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const org = snapshot.data() as Organization;
-        const currentTier = org.subscription.tier;
-        setTier(currentTier);
-        setFeatures(getEnabledFeatures(currentTier));
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [organizationId]);
-
-  return { features, tier, loading };
-}
 
 /**
- * Hook to get subscription tier information
+ * Hook to get all enabled features for the current organization (client-side).
  */
-export function useSubscriptionTier(organizationId: string | null): {
-  tier: SubscriptionTier | null;
-  status: string | null;
-  loading: boolean;
-} {
-  const [tier, setTier] = useState<SubscriptionTier | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!organizationId) {
-      setLoading(false);
-      return;
-    }
-
-    const db = getFirestore();
-    const orgRef = doc(db, "organizations", organizationId);
-
-    const unsubscribe = onSnapshot(orgRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const org = snapshot.data() as Organization;
-        setTier(org.subscription.tier);
-        setStatus(org.subscription.status);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [organizationId]);
-
-  return { tier, status, loading };
-}
-
-/**
- * Component wrapper for feature-gated content
- */
-export function FeatureGate({
-  organizationId,
-  feature,
-  children,
-  fallback,
-}: {
-  organizationId: string | null;
-  feature: FeatureName;
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-}) {
-  const { hasAccess, loading } = useFeatureAccess(organizationId, feature);
-
-  if (loading) {
-    return null;
-  }
-
-  if (!hasAccess) {
-    return <>{fallback}</> || null;
-  }
-
-  return <>{children}</>;
-}
 
 /**
  * Get feature display name
@@ -216,4 +121,80 @@ export function isTierHigherThan(tier1: SubscriptionTier, tier2: SubscriptionTie
     enterprise: 3,
   };
   return hierarchy[tier1] > hierarchy[tier2];
+}
+
+/**
+ * SERVER/SHARED HELPERS
+ * These are pure and safe to use in API routes & server components.
+ */
+
+/**
+ * Check if organization can create a new project based on subscription + limits.
+ */
+export function canCreateProject(org: Organization): boolean {
+  const sub = org.subscription;
+  if (!sub || !isSubscriptionActiveStatus(sub.status)) return false;
+
+  const limits = org.limits;
+  if (!limits) return true; // fail-open if not configured yet
+
+  const current = org.usage?.projectCount ?? 0;
+  return current < (limits.maxProjects ?? Infinity);
+}
+
+/**
+ * Check if organization can create a new TRA based on subscription + limits.
+ */
+export function canCreateTRA(org: Organization): boolean {
+  const sub = org.subscription;
+  if (!sub || !isSubscriptionActiveStatus(sub.status)) return false;
+
+  const limits = org.limits;
+  if (!limits) return true;
+
+  const current = org.usage?.traCount ?? 0;
+  return current < (limits.maxTRAs ?? Infinity);
+}
+
+/**
+ * Check if organization can add a new user based on subscription + limits.
+ */
+export function canAddUser(org: Organization): boolean {
+  const sub = org.subscription;
+  if (!sub || !isSubscriptionActiveStatus(sub.status)) return false;
+
+  const limits = org.limits;
+  if (!limits) return true;
+
+  const current = org.usage?.userCount ?? 0;
+  return current < (limits.maxUsers ?? Infinity);
+}
+
+/**
+ * Check if organization can create a new LMRA session based on subscription + limits.
+ *
+ * NOTE:
+ * - We intentionally DO NOT depend on a dedicated maxLMRASessions field yet,
+ *   because OrganizationLimits/Usage do not expose it.
+ * - Instead we:
+ *   - Require an active/trial subscription.
+ *   - Optionally enforce against maxTRAs as a soft cap for LMRA sessions.
+ *   - Fail-open when limits are not configured, consistent with other helpers.
+ */
+export function canExecuteLMRA(org: Organization): boolean {
+  const sub = org.subscription;
+  if (!sub || !isSubscriptionActiveStatus(sub.status)) return false;
+
+  const limits = org.limits;
+  if (!limits) return true;
+
+  const traLimit = limits.maxTRAs ?? Infinity;
+  const currentTRAs = org.usage?.traCount ?? 0;
+
+  // If TRA usage is already at/exceeds maxTRAs, treat LMRA execution as disallowed
+  // to avoid unbounded usage on lower tiers.
+  if (currentTRAs >= traLimit) return false;
+
+  // Otherwise allow LMRA execution (no separate LMRA counter yet).
+  return true;
 }

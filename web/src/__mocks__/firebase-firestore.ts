@@ -37,7 +37,10 @@ function pathFromRef(ref: any) {
 }
 
 export function collection(db: any, path: string) {
-  return { _path: path, type: "collection" };
+  // Match Firestore shape used in app/tests:
+  // - identifiable by path
+  // - consumable by query/getDocs helpers
+  return { _path: path, path, type: "collection" };
 }
 
 // Minimal addDoc implementation used by tests that call addDoc(collection(db, 'col'), data)
@@ -56,25 +59,38 @@ export async function addDoc(collRef: any, data: DocData) {
 export function doc(parent: any, id?: string) {
   if (id === undefined) {
     const randomId = `doc-${Math.random().toString(36).slice(2, 9)}`;
-    return { _path: `${parent._path}/${randomId}`, id: randomId, path: `${parent._path}/${randomId}` };
+    return {
+      _path: `${parent._path}/${randomId}`,
+      id: randomId,
+      path: `${parent._path}/${randomId}`,
+    };
   }
   const p = parent && parent._path ? `${parent._path}/${id}` : id;
   return { _path: p, id, path: p };
 }
 
 export async function setDoc(docRef: any, data: DocData, options?: any) {
-  // Store data as-is. Ensure Timestamp instances are preserved.
-  store.set(pathFromRef(docRef), { ...data });
+  const key = pathFromRef(docRef);
+  const next = { ...data };
+  if (options && options.merge) {
+    const existing = store.get(key) || {};
+    store.set(key, { ...existing, ...next });
+  } else {
+    store.set(key, next);
+  }
   return Promise.resolve();
 }
 
 export async function getDoc(docRef: any) {
-  const data = store.get(pathFromRef(docRef));
+  const path = pathFromRef(docRef);
+  const data = store.get(path);
+  const exists = !!data;
+  const id = typeof docRef?.id === "string" ? docRef.id : path.split("/").pop() || "";
   return Promise.resolve({
-    exists: () => !!data,
+    exists: () => exists,
     data: () => data,
-    // to align with firebase behavior, also provide a .ref for convenience
-    ref: { _path: pathFromRef(docRef), path: pathFromRef(docRef) },
+    id,
+    ref: { _path: path, path, id },
   });
 }
 
@@ -146,6 +162,7 @@ function buildSnapshot(items: Array<{ id: string; data: any; ref: any }>) {
   return {
     docs,
     size: docs.length,
+    empty: docs.length === 0,
     forEach(cb: any) {
       for (const d of docs) cb(d);
     },
@@ -182,7 +199,9 @@ export function query(collectionRef: any, ...constraints: any[]) {
         // Handle 'in' operator where compare value is an array
         if (c.op === "in") {
           const arr = Array.isArray(c.value) ? c.value : [];
-          const normalized = arr.map((val: any) => (val && typeof val.toMillis === "function" ? val.toMillis() : val));
+          const normalized = arr.map((val: any) =>
+            val && typeof val.toMillis === "function" ? val.toMillis() : val
+          );
           return normalized.includes(left);
         }
 
@@ -219,7 +238,7 @@ export function query(collectionRef: any, ...constraints: any[]) {
         if (av === bv) return 0;
         if (av === undefined) return -1;
         if (bv === undefined) return 1;
-        return direction === "asc" ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
+        return direction === "asc" ? (av > bv ? 1 : -1) : av < bv ? 1 : -1;
       });
     }
     if (c.type === "limit") {
@@ -272,8 +291,13 @@ export function deleteDoc(ref: any) {
 }
 
 export function updateDoc(ref: any, data: any) {
-  const existing = store.get(pathFromRef(ref)) || {};
-  store.set(pathFromRef(ref), { ...existing, ...data });
+  const key = pathFromRef(ref);
+  const existing = store.get(key);
+  if (!existing) {
+    // Match Firestore behavior: throw if document does not exist
+    throw new Error("Document does not exist");
+  }
+  store.set(key, { ...existing, ...data });
   return Promise.resolve();
 }
 

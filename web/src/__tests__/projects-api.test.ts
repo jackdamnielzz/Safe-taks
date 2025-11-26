@@ -72,6 +72,10 @@ const mockUser = {
 describe("/api/projects", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Ensure deterministic Firestore state for each test case
+    if (typeof (global as any).resetMockFirestore === "function") {
+      (global as any).resetMockFirestore();
+    }
   });
 
   describe("POST /api/projects", () => {
@@ -79,63 +83,67 @@ describe("/api/projects", () => {
       // Mock authenticated user
       mockRequireOrgAuth.mockResolvedValue(mockUser);
 
-      // Mock Firestore operations
-      const mockDocRef = {
-        id: "new-project-id",
-        get: jest.fn().mockResolvedValue({
-          data: () => mockProject,
-        }),
+      // Minimal org document with usage + subscription fields used by feature-gates.canCreateProject
+      const orgData = {
+        name: "Test Org",
+        subscription: { tier: "professional", status: "active" },
+        usage: { projectCount: 0 },
       };
 
-      // Ensure the in-memory firestore is clean and then attach a projects collection under the expected path
-      (global as any).resetMockFirestore();
+      // Coherent Firestore stub that matches /api/projects route expectations
+      const addMock = jest.fn(async (data: any) => {
+        // Simulate created project doc
+        return {
+          id: "new-project-id",
+          get: async () => ({
+            exists: true,
+            data: () => data,
+          }),
+        };
+      });
 
-      // Create a deterministic doc id that the route will receive from add()
-      const createdId = "new-project-id";
-      const orgPath = `organizations/${mockUser.orgId}/projects`;
-      const docKey = `${orgPath}/${createdId}`;
+      const updateMock = jest.fn();
 
-      // Put the saved project snapshot into the in-memory DB so snap.data() returns expected data
-      (global as any).mockFirestore._data[docKey] = { ...mockProject };
+      const mockFirestore = {
+        collection: jest.fn((collectionPath: string) => {
+          if (collectionPath !== "organizations") {
+            throw new Error(`Unexpected collection path: ${collectionPath}`);
+          }
 
-      // Override collection(...).doc(orgId).collection('projects').add to return a docRef with id and get()
-      const origCollection = (global as any).mockFirestore.collection.bind((global as any).mockFirestore);
-      (global as any).mockFirestore.collection = (path: string) => {
-        const col = origCollection(path);
-        // When asking for the org path, return an object whose doc(id).collection returns the projects collection
-        if (path === `organizations`) {
           return {
-            doc: (id: string) => {
+            doc: (orgId: string) => {
+              if (orgId !== mockUser.orgId) {
+                throw new Error(`Unexpected orgId: ${orgId}`);
+              }
+
               return {
+                // Used by route to load org (limits + usage)
+                get: async () => ({
+                  exists: true,
+                  data: () => orgData,
+                }),
+
+                // Used by route to increment usage.* fields
+                update: updateMock,
+
+                // Used by route to create project sub-documents
                 collection: (sub: string) => {
-                  if (sub === "projects") {
-                    return {
-                      add: async (data: any) => {
-                        // write data to in-memory db at createdId
-                        const id = createdId;
-                        const key = `${orgPath}/${id}`;
-                        (global as any).mockFirestore._data[key] = data;
-                        return { id, get: async () => ({ exists: true, data: () => (global as any).mockFirestore._data[key] }) };
-                      },
-                      where: col.where,
-                      orderBy: col.orderBy,
-                      get: col.get,
-                    };
+                  if (sub !== "projects") {
+                    throw new Error(`Unexpected subcollection: ${sub}`);
                   }
-                  return origCollection(`${path}/${id}/${sub}`);
+                  return {
+                    add: addMock,
+                  };
                 },
               };
             },
-            where: col.where,
-            add: col.add,
           };
-        }
-        return col;
-      };
+        }),
+      } as any;
 
-      // Ensure initializeAdmin returns the global mockFirestore
+      // initializeAdmin returns our coherent Firestore mock
       mockInitializeAdmin.mockReturnValue({
-        firestore: (global as any).mockFirestore,
+        firestore: mockFirestore,
         admin: {} as any,
       });
 
@@ -154,19 +162,35 @@ describe("/api/projects", () => {
         headers: { "Content-Type": "application/json" },
       });
 
-      // Ensure the global fetch stub (from jest.setup) is intact and reset DB state
-      (global as any).resetMockFirestore();
-      // initializeAdmin will return global.mockFirestore as configured earlier
-      mockInitializeAdmin.mockReturnValue({ firestore: (global as any).mockFirestore, admin: {} as any });
-
       const response = await POST(request);
       const result = await response.json();
 
+      // Assertions: auth + admin init called
       expect(mockRequireOrgAuth).toHaveBeenCalledWith(request);
       expect(mockInitializeAdmin).toHaveBeenCalled();
-      expect(mockWriteAuditLog).toHaveBeenCalled();
+
+      // Assertions: project created via add()
+      expect(addMock).toHaveBeenCalledTimes(1);
+
+      // Assertions: usage update attempted (best-effort, non-fatal in route)
+      expect(updateMock).toHaveBeenCalledTimes(1);
+      // Route passes a partial update object; verify it includes the usage.projectCount key
+      const updateArg = updateMock.mock.calls[0][0] as Record<string, unknown>;
+      expect(Object.prototype.hasOwnProperty.call(updateArg, "usage.projectCount")).toBe(true);
+
+      // Assertions: audit log written
+      expect(mockWriteAuditLog).toHaveBeenCalledWith(
+        mockUser.orgId,
+        "new-project-id",
+        mockUser.uid,
+        "project.create",
+        expect.any(Object)
+      );
+
+      // Response shape
       expect(response.status).toBe(200);
       expect(result.id).toBe("new-project-id");
+      expect(result.name).toBe("New Project");
     });
 
     it("should handle authentication errors", async () => {
@@ -204,22 +228,22 @@ describe("/api/projects", () => {
 
       // Pre-populate the in-memory firestore
       (global as any).resetMockFirestore();
-      
-      const project1Data = { 
+
+      const project1Data = {
         name: "Project 1",
         deleted: false,
-        createdAt: new Date("2024-01-01")
+        createdAt: new Date("2024-01-01"),
       };
-      const project2Data = { 
+      const project2Data = {
         name: "Project 2",
         deleted: false,
-        createdAt: new Date("2024-01-02")
+        createdAt: new Date("2024-01-02"),
       };
-      
+
       // Store at the subcollection path
       const key1 = `organizations/${mockUser.orgId}/projects/project1`;
       const key2 = `organizations/${mockUser.orgId}/projects/project2`;
-      
+
       (global as any).mockFirestore._data[key1] = project1Data;
       (global as any).mockFirestore._data[key2] = project2Data;
 

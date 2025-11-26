@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useTranslations } from 'next-intl';
-import { TraTemplate, Hazard, calculateRiskScore } from '@/types/tra-template';
-import { Badge } from '@/components/ui/Badge';
-import { AlertTriangle, CheckCircle, Users, BookOpen, Shield } from 'lucide-react';
+import React from "react";
+import { useTranslations } from "next-intl";
+import { TraTemplate, Hazard, calculateRiskScore } from "@/types/tra-template";
+import { Badge } from "@/components/ui/Badge";
+import { AlertTriangle, CheckCircle, Users, BookOpen, Shield } from "lucide-react";
 
 interface TemplatePreviewProps {
   template: TraTemplate;
@@ -15,19 +15,19 @@ export default function TemplatePreview({ template, onUseTemplate }: TemplatePre
   const t = useTranslations();
 
   const getRiskColor = (score: number): string => {
-    if (score >= 400) return 'bg-red-100 text-red-800 border-red-300';
-    if (score >= 200) return 'bg-orange-100 text-orange-800 border-orange-300';
-    if (score >= 70) return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-    if (score >= 20) return 'bg-blue-100 text-blue-800 border-blue-300';
-    return 'bg-green-100 text-green-800 border-green-300';
+    if (score >= 400) return "bg-red-100 text-red-800 border-red-300";
+    if (score >= 200) return "bg-orange-100 text-orange-800 border-orange-300";
+    if (score >= 70) return "bg-yellow-100 text-yellow-800 border-yellow-300";
+    if (score >= 20) return "bg-blue-100 text-blue-800 border-blue-300";
+    return "bg-green-100 text-green-800 border-green-300";
   };
 
   const getRiskLabel = (score: number): string => {
-    if (score >= 400) return t('templates.preview.riskVeryHigh');
-    if (score >= 200) return t('templates.preview.riskHigh');
-    if (score >= 70) return t('templates.preview.riskSubstantial');
-    if (score >= 20) return t('templates.preview.riskPossible');
-    return 'templates.preview.riskLow';
+    if (score >= 400) return t("templates.preview.riskVeryHigh");
+    if (score >= 200) return t("templates.preview.riskHigh");
+    if (score >= 70) return t("templates.preview.riskSubstantial");
+    if (score >= 20) return t("templates.preview.riskPossible");
+    return "templates.preview.riskLow";
   };
 
   return (
@@ -52,13 +52,13 @@ export default function TemplatePreview({ template, onUseTemplate }: TemplatePre
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-gray-400" />
             <span className="text-sm text-gray-600">
-              {template.hazards.length} {t('templates.preview.hazards')}
+              {template.hazards.length} {t("templates.preview.hazards")}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5 text-gray-400" />
             <span className="text-sm text-gray-600">
-              {template.steps.length} {t('templates.preview.steps')}
+              {template.steps.length} {t("templates.preview.steps")}
             </span>
           </div>
         </div>
@@ -66,7 +66,7 @@ export default function TemplatePreview({ template, onUseTemplate }: TemplatePre
 
       <section>
         <h2 className="mb-4 text-xl font-semibold text-gray-900">
-          {t('templates.preview.taskSteps')}
+          {t("templates.preview.taskSteps")}
         </h2>
         <div className="space-y-3">
           {template.steps.map((step, index) => (
@@ -90,7 +90,7 @@ export default function TemplatePreview({ template, onUseTemplate }: TemplatePre
 
       <section>
         <h2 className="mb-4 text-xl font-semibold text-gray-900">
-          {t('templates.preview.hazards')}
+          {t("templates.preview.hazards")}
         </h2>
         <div className="space-y-3">
           {template.hazards.map((hazard, index) => (
@@ -102,7 +102,7 @@ export default function TemplatePreview({ template, onUseTemplate }: TemplatePre
       {template.requiredCompetencies && template.requiredCompetencies.length > 0 && (
         <section>
           <h2 className="mb-4 text-xl font-semibold text-gray-900">
-            {t('templates.preview.requiredCompetencies')}
+            {t("templates.preview.requiredCompetencies")}
           </h2>
           <div className="rounded-lg border border-gray-200 bg-white p-4">
             <div className="flex items-start gap-3">
@@ -125,7 +125,7 @@ export default function TemplatePreview({ template, onUseTemplate }: TemplatePre
       {template.notes && (
         <section>
           <h2 className="mb-4 text-xl font-semibold text-gray-900">
-            {t('templates.preview.notes')}
+            {t("templates.preview.notes")}
           </h2>
           <div className="rounded-lg border border-gray-200 bg-blue-50 p-4">
             <p className="text-sm text-gray-700">{template.notes}</p>
@@ -139,7 +139,7 @@ export default function TemplatePreview({ template, onUseTemplate }: TemplatePre
             onClick={onUseTemplate}
             className="w-full rounded-lg bg-blue-600 px-6 py-3 font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            {t('templates.preview.useTemplate')}
+            {t("templates.preview.useTemplate")}
           </button>
         </div>
       )}
@@ -160,20 +160,20 @@ function HazardCard({ hazard }: HazardCardProps) {
   );
 
   const getRiskColor = (score: number): string => {
-    if (score >= 400) return 'bg-red-100 text-red-800 border-red-300';
-    if (score >= 200) return 'bg-orange-100 text-orange-800 border-orange-300';
-    if (score >= 70) return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-    if (score >= 20) return 'bg-blue-100 text-blue-800 border-blue-300';
-    return 'bg-green-100 text-green-800 border-green-300';
+    if (score >= 400) return "bg-red-100 text-red-800 border-red-300";
+    if (score >= 200) return "bg-orange-100 text-orange-800 border-orange-300";
+    if (score >= 70) return "bg-yellow-100 text-yellow-800 border-yellow-300";
+    if (score >= 20) return "bg-blue-100 text-blue-800 border-blue-300";
+    return "bg-green-100 text-green-800 border-green-300";
   };
 
   const getRiskLabel = (level: string): string => {
     const labels: Record<string, string> = {
-      very_high: t('templates.preview.riskVeryHigh'),
-      high: t('templates.preview.riskHigh'),
-      substantial: t('templates.preview.riskSubstantial'),
-      possible: t('templates.preview.riskPossible'),
-      low: t('templates.preview.riskLow'),
+      very_high: t("templates.preview.riskVeryHigh"),
+      high: t("templates.preview.riskHigh"),
+      substantial: t("templates.preview.riskSubstantial"),
+      possible: t("templates.preview.riskPossible"),
+      low: t("templates.preview.riskLow"),
     };
     return labels[level] || level;
   };
@@ -195,15 +195,15 @@ function HazardCard({ hazard }: HazardCardProps) {
 
       <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <div className="rounded bg-gray-50 p-2">
-          <div className="font-semibold text-gray-700">{t('templates.preview.effect')}</div>
+          <div className="font-semibold text-gray-700">{t("templates.preview.effect")}</div>
           <div className="text-gray-600">{hazard.typicalEffect}</div>
         </div>
         <div className="rounded bg-gray-50 p-2">
-          <div className="font-semibold text-gray-700">{t('templates.preview.exposure')}</div>
+          <div className="font-semibold text-gray-700">{t("templates.preview.exposure")}</div>
           <div className="text-gray-600">{hazard.typicalExposure}</div>
         </div>
         <div className="rounded bg-gray-50 p-2">
-          <div className="font-semibold text-gray-700">{t('templates.preview.probability')}</div>
+          <div className="font-semibold text-gray-700">{t("templates.preview.probability")}</div>
           <div className="text-gray-600">{hazard.typicalProbability}</div>
         </div>
       </div>
@@ -212,7 +212,7 @@ function HazardCard({ hazard }: HazardCardProps) {
         <div className="mt-3 border-t border-gray-200 pt-3">
           <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-gray-700">
             <Shield className="h-4 w-4" />
-            {t('templates.preview.controlMeasures')}:
+            {t("templates.preview.controlMeasures")}:
           </div>
           <ul className="space-y-2">
             {hazard.controlMeasures.map((measure, index) => (

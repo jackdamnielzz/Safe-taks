@@ -7,20 +7,20 @@
 
 module.exports = {
   logEvent: (...args) => {
-    if (typeof global !== 'undefined' && typeof global.mockLogEvent === 'function') {
+    if (typeof global !== "undefined" && typeof global.mockLogEvent === "function") {
       return global.mockLogEvent(...args);
     }
     // noop fallback
     return undefined;
   },
   trackUserLogin: (payload) => {
-    if (typeof global !== 'undefined' && typeof global.mockLogEvent === 'function') {
-      return global.mockLogEvent({}, 'login', payload);
+    if (typeof global !== "undefined" && typeof global.mockLogEvent === "function") {
+      return global.mockLogEvent({}, "login", payload);
     }
   },
   trackUserRegistration: (payload) => {
-    if (typeof global !== 'undefined' && typeof global.mockLogEvent === 'function') {
-      return global.mockLogEvent({}, 'sign_up', payload);
+    if (typeof global !== "undefined" && typeof global.mockLogEvent === "function") {
+      return global.mockLogEvent({}, "sign_up", payload);
     }
   },
 };

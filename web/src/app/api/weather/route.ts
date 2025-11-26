@@ -29,10 +29,7 @@ export async function GET(request: NextRequest) {
 
     // Validate parameters
     if (!lat || !lon) {
-      return NextResponse.json(
-        { error: "Missing required parameters: lat, lon" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing required parameters: lat, lon" }, { status: 400 });
     }
 
     const latitude = parseFloat(lat);
@@ -46,16 +43,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-      return NextResponse.json(
-        { error: "Coordinates out of range" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Coordinates out of range" }, { status: 400 });
     }
 
     // Check cache
     const cacheKey = `${latitude.toFixed(2)}_${longitude.toFixed(2)}`;
     const cached = cache.get(cacheKey);
-    
+
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       return NextResponse.json({
         ...cached.data,
@@ -74,7 +68,8 @@ export async function GET(request: NextRequest) {
       observationTimestamp:
         weather.observationTimestamp instanceof Date
           ? weather.observationTimestamp.toISOString()
-          : (weather.observationTimestamp as any)?.toDate?.()?.toISOString() || new Date().toISOString(),
+          : (weather.observationTimestamp as any)?.toDate?.()?.toISOString() ||
+            new Date().toISOString(),
     };
 
     // Cache the result
@@ -85,8 +80,9 @@ export async function GET(request: NextRequest) {
 
     // Clean old cache entries (simple cleanup)
     if (cache.size > 100) {
-      const oldestKey = Array.from(cache.entries())
-        .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
+      const oldestKey = Array.from(cache.entries()).sort(
+        (a, b) => a[1].timestamp - b[1].timestamp
+      )[0][0];
       cache.delete(oldestKey);
     }
 
@@ -99,17 +95,11 @@ export async function GET(request: NextRequest) {
 
     // Handle specific error types
     if (error.message?.includes("API key not configured")) {
-      return NextResponse.json(
-        { error: "Weather service not configured" },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: "Weather service not configured" }, { status: 503 });
     }
 
     if (error.message?.includes("401")) {
-      return NextResponse.json(
-        { error: "Weather service authentication failed" },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: "Weather service authentication failed" }, { status: 503 });
     }
 
     if (error.message?.includes("429")) {
@@ -119,9 +109,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: "Failed to fetch weather data" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch weather data" }, { status: 500 });
   }
 }

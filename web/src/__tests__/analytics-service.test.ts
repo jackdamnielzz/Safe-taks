@@ -5,32 +5,14 @@
 
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
-// Mock window object for browser environment simulation - MUST be before any imports
-(global as any).window = {};
+// Use the global mocks from jest.setup.js
+// Access them via global object
+const mockAnalyticsInstance = (global as any).mockAnalyticsInstance;
+const mockLogEvent = (global as any).mockLogEvent;
+const mockSetUserId = (global as any).mockSetUserId;
+const mockSetUserProperties = (global as any).mockSetUserProperties;
 
-// Create a stable mock analytics instance that will be returned by getAnalytics
-const mockAnalyticsInstance = { app: {}, name: "mock-analytics" };
-
-// Create mock functions that will be imported by the analytics service
-const mockLogEvent = jest.fn();
-const mockSetUserId = jest.fn();
-const mockSetUserProperties = jest.fn();
-const mockGetAnalytics = jest.fn(() => mockAnalyticsInstance);
-
-// Mock Firebase Analytics - these mocks will be used by the analytics service
-jest.mock("firebase/analytics", () => ({
-  getAnalytics: mockGetAnalytics,
-  logEvent: mockLogEvent,
-  setUserId: mockSetUserId,
-  setUserProperties: mockSetUserProperties,
-}));
-
-// Mock Firebase App
-jest.mock("firebase/app", () => ({
-  getApp: jest.fn(() => ({ name: "mock-app" })),
-}));
-
-// Import after mocks are set up
+// Import after accessing global mocks
 import {
   setAnalyticsUserId,
   setAnalyticsUserProperties,
@@ -243,7 +225,9 @@ describe("Analytics Service", () => {
   describe("User Engagement Events", () => {
     it("should track user login", () => {
       trackUserLogin({ method: "email" });
-      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "login", { method: "email" });
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "login", {
+        method: "email",
+      });
     });
 
     it("should track user registration", () => {

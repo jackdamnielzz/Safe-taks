@@ -522,11 +522,19 @@ export function getPeriodDateRange(
       // Get start of week (Monday) in UTC - find Monday of current week
       const currentDay = startDate.getUTCDay();
       const daysSinceMonday = currentDay === 0 ? 6 : currentDay - 1; // Sunday = 0, so Monday is 1 day after Sunday
-      const mondayDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate() - daysSinceMonday));
-      
+      const mondayDate = new Date(
+        Date.UTC(
+          startDate.getUTCFullYear(),
+          startDate.getUTCMonth(),
+          startDate.getUTCDate() - daysSinceMonday
+        )
+      );
+
       // End of week (Sunday) in UTC
-      const sundayDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), mondayDate.getUTCDate() + 6));
-      
+      const sundayDate = new Date(
+        Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), mondayDate.getUTCDate() + 6)
+      );
+
       // Copy back to main variables
       startDate.setTime(mondayDate.getTime());
       endDate.setTime(sundayDate.getTime());
@@ -537,34 +545,32 @@ export function getPeriodDateRange(
       startDate.setUTCMonth(startDate.getUTCMonth());
       startDate.setUTCFullYear(startDate.getUTCFullYear());
       startDate.setUTCHours(0, 0, 0, 0);
-      
+
       // End of month (last day) in UTC
       const year = startDate.getUTCFullYear();
       const month = startDate.getUTCMonth();
       const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0));
       lastDayOfMonth.setUTCMilliseconds(-1); // Set to last day of current month
       endDate.setUTCHours(23, 59, 59, 999);
-      
+
       // Copy back to main variables
       startDate.setTime(startDate.getTime());
       endDate.setTime(lastDayOfMonth.getTime());
       break;
     case "quarter":
       const quarter = Math.floor(startDate.getUTCMonth() / 3);
-      startDate.setUTCDate(1);
-      startDate.setUTCMonth(quarter * 3);
+
+      // Start of quarter (UTC)
       startDate.setUTCFullYear(startDate.getUTCFullYear());
+      startDate.setUTCMonth(quarter * 3, 1);
       startDate.setUTCHours(0, 0, 0, 0);
-      
-      const endQuarter = new Date(startDate);
-      endQuarter.setUTCDate(1);
-      endQuarter.setUTCMonth(quarter * 3 + 3);
-      endQuarter.setUTCFullYear(startDate.getUTCFullYear());
-      endQuarter.setUTCMilliseconds(-1); // Last day of quarter
-      endQuarter.setUTCHours(23, 59, 59, 999);
-      
-      // Copy back to main variables
-      startDate.setTime(startDate.getTime());
+
+      // End of quarter (UTC) - last millisecond of the last day
+      const endQuarter = new Date(
+        Date.UTC(startDate.getUTCFullYear(), quarter * 3 + 3, 1, 0, 0, 0, 0)
+      );
+      endQuarter.setUTCMilliseconds(-1);
+
       endDate.setTime(endQuarter.getTime());
       break;
     case "year":
@@ -572,13 +578,13 @@ export function getPeriodDateRange(
       startDate.setUTCMonth(0);
       startDate.setUTCFullYear(startDate.getUTCFullYear());
       startDate.setUTCHours(0, 0, 0, 0);
-      
+
       const endYear = new Date(startDate);
       endYear.setUTCDate(31);
       endYear.setUTCMonth(11);
       endYear.setUTCFullYear(startDate.getUTCFullYear());
       endYear.setUTCHours(23, 59, 59, 999);
-      
+
       // Copy back to main variables
       startDate.setTime(startDate.getTime());
       endDate.setTime(endYear.getTime());

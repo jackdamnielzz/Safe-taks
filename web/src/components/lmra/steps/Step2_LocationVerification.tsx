@@ -1,172 +1,269 @@
-import React, { useCallback, useEffect, useState } from "react";
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
+import { MapPin, Navigation, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { LMRAStep2_LocationVerification, LMRA } from "@/lib/types/lmra";
-import PhotoGallery from "@/components/lmra/PhotoGallery";
-import PhotoCapture from "@/components/lmra/PhotoCapture";
 
 type Props = {
   lmra?: Partial<LMRA>;
   onChange: (stepPayload: Partial<LMRAStep2_LocationVerification>) => void;
-  userId?: string;
-  userName?: string;
 };
 
-export default function Step2_LocationVerification({ lmra, onChange, userId, userName }: Props) {
+export default function Step2_LocationVerification({ lmra, onChange }: Props) {
+  const t = useTranslations("safety.lmra.steps.step2");
   const current = lmra?.step2;
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showCamera, setShowCamera] = useState(false);
-  const [coords, setCoords] = useState<{
-    latitude?: number;
-    longitude?: number;
-    accuracy?: number;
-  }>({
-    latitude: current?.latitude,
-    longitude: current?.longitude,
-    accuracy: current?.accuracyMeters,
-  });
+  const [locationName, setLocationName] = useState(current?.locationName || "");
+  const [notes, setNotes] = useState(current?.gpsNotes || "");
 
-  // Try to get location on mount if not already present
+  // Auto-load location on mount if not already set
   useEffect(() => {
-    if (!coords.latitude || !coords.longitude) {
-      // Do not auto-request if user already has coordinates in LMRA
-      if ("geolocation" in navigator) {
-        setLoading(true);
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setCoords({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              accuracy: position.coords.accuracy,
-            });
-            setLoading(false);
-            setError(null);
-          },
-          (err) => {
-            setError(err.message || "Locatie niet beschikbaar");
-            setLoading(false);
-          },
-          { enableHighAccuracy: true, timeout: 10000 }
-        );
-      } else {
-        setError("Geolocatie niet ondersteund door deze browser");
-      }
+    if (!current?.latitude && !current?.longitude) {
+      handleGetLocation();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleVerify = useCallback(() => {
-    if (!coords.latitude || !coords.longitude) {
-      setError("Geen geldige GPS-coördinaten beschikbaar");
-      return;
-    }
-
-    const payload: Partial<LMRAStep2_LocationVerification> = {
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-      accuracyMeters: coords.accuracy,
-      deviceTimestamp: new Date(),
-      verifiedAt: new Date(),
-      // verifiedBy should be set by the caller (server) or higher-level component with user context
-    };
-
-    onChange(payload);
-  }, [coords, onChange]);
-
-  const handleRefresh = useCallback(() => {
-    if (!("geolocation" in navigator)) {
-      setError("Geolocatie niet ondersteund");
-      return;
-    }
-    setLoading(true);
+  const handleGetLocation = useCallback(async () => {
+    setIsLoading(true);
     setError(null);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setCoords({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-        });
-        setLoading(false);
-      },
-      (err) => {
-        setError(err.message || "Kon locatie niet vernieuwen");
-        setLoading(false);
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  }, []);
+
+    try {
+      // Use centralized location service to respect consent + caching contract (AGENTS.md rule)
+      const { getCurrentLocation } = await import("@/lib/locationService");
+      const result = await getCurrentLocation();
+
+      if (result.status !== "success" || !result.coords) {
+        // Map standardized error codes to localized messages
+        switch (result.errorCode) {
+          case "permission_denied":
+            setError(t("errors.permissionDenied"));
+            break;
+          case "position_unavailable":
+            setError(t("errors.positionUnavailable"));
+            break;
+          case "timeout":
+            setError(t("errors.timeout"));
+            break;
+          case "not_supported":
+            setError(t("errors.notSupported"));
+            break;
+          case "user_rejected":
+            setError(t("errors.permissionDenied"));
+            break;
+          default:
+            setError(t("errors.general"));
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      const { latitude, longitude, accuracy } = result.coords;
+
+      const payload: Partial<LMRAStep2_LocationVerification> = {
+        latitude,
+        longitude,
+        accuracyMeters: typeof accuracy === "number" ? accuracy : undefined,
+        deviceTimestamp: new Date(),
+        verifiedAt: new Date(),
+        locationName: locationName || undefined,
+        gpsNotes: notes || undefined,
+      };
+
+      onChange(payload);
+      setError(null);
+    } catch (err) {
+      console.error("Location service error:", err);
+      setError(t("errors.general"));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [locationName, notes, onChange]);
+
+  const handleLocationNameChange = (value: string) => {
+    setLocationName(value);
+    if (current?.latitude && current?.longitude) {
+      onChange({
+        ...current,
+        locationName: value || undefined,
+      });
+    }
+  };
+
+  const handleNotesChange = (value: string) => {
+    setNotes(value);
+    if (current?.latitude && current?.longitude) {
+      onChange({
+        ...current,
+        gpsNotes: value || undefined,
+      });
+    }
+  };
+
+  const hasLocation = current?.latitude && current?.longitude;
+  const accuracy = current?.accuracyMeters;
+  const isAccurate = accuracy ? accuracy < 50 : false;
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted">
-        Verifieer de GPS-locatie ter plaatse. Gebruik de knop om actuele coördinaten te lezen en bevestig met
-        "Verifieer".
-      </p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-3 border rounded">
-          <div className="text-xs text-muted">Latitude</div>
-          <div className="font-mono">{coords.latitude ?? "—"}</div>
-        </div>
-        <div className="p-3 border rounded">
-          <div className="text-xs text-muted">Longitude</div>
-          <div className="font-mono">{coords.longitude ?? "—"}</div>
-        </div>
-        <div className="p-3 border rounded">
-          <div className="text-xs text-muted">Nauwkeurigheid (m)</div>
-          <div className="font-mono">{coords.accuracy ?? "—"}</div>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("title")}</h3>
+        <p className="text-sm text-gray-600">{t("description")}</p>
       </div>
 
-      {error && <div className="text-sm text-red-600">{error}</div>}
-
-      <div className="flex gap-2">
-        <button
-          onClick={handleRefresh}
-          className="btn btn-secondary"
-          disabled={loading}
-          aria-label="Ververs locatie"
-        >
-          {loading ? "Lezen…" : "Ververs locatie"}
-        </button>
-
-        <button onClick={handleVerify} className="btn btn-primary" aria-label="Verifieer locatie">
-          Verifieer
-        </button>
-      </div>
-
-      <div className="text-sm text-gray-600">
-        {current?.locationName && <div>Geregistreerde locatie: {current.locationName}</div>}
-        {current?.gpsNotes && <div>Opmerking: {current.gpsNotes}</div>}
-      </div>
-
-      {/* Photo Documentation */}
-      {lmra?.id && userId && (
-        <div className="mt-6 pt-6 border-t">
-          <PhotoGallery
-            lmraId={lmra.id}
-            stepNumber={2}
-            onAddPhoto={() => setShowCamera(true)}
-            maxPhotos={5}
-          />
+      {/* Location Status */}
+      {hasLocation ? (
+        <div className="rounded-lg border-2 border-green-200 bg-green-50 p-4">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-medium text-green-900 mb-2">{t("locationVerified")}</h4>
+              <div className="space-y-1 text-sm text-green-800">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4" />
+                  <span>
+                    {current.latitude?.toFixed(6)}, {current.longitude?.toFixed(6)}
+                  </span>
+                </div>
+                {accuracy && (
+                  <div className="flex items-center gap-2">
+                    <Navigation className="h-4 w-4" />
+                    <span>
+                      {t("accuracy")}: ±{Math.round(accuracy)}m
+                      {isAccurate && (
+                        <span className="ml-2 text-xs font-medium text-green-700">
+                          ({t("excellent")})
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
+                {current.verifiedAt && (
+                  <div className="text-xs text-green-700">
+                    {t("verifiedAt")}:{" "}
+                    {current.verifiedAt instanceof Date
+                      ? current.verifiedAt.toLocaleString("nl-NL")
+                      : new Date(current.verifiedAt.toMillis()).toLocaleString("nl-NL")}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-6 w-6 text-gray-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-medium text-gray-900 mb-1">{t("locationNotVerified")}</h4>
+              <p className="text-sm text-gray-600">{t("clickToVerify")}</p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Photo Capture Modal */}
-      {showCamera && lmra?.id && userId && (
-        <PhotoCapture
-          lmraId={lmra.id}
-          stepNumber={2}
-          userId={userId}
-          userName={userName}
-          onPhotoAdded={() => {
-            // Photo added successfully, gallery will auto-refresh
-            setShowCamera(false);
-          }}
-          onClose={() => setShowCamera(false)}
-          maxPhotos={5}
+      {/* Error Message */}
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-medium text-red-900 mb-1">{t("errorTitle")}</h4>
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Get Location Button */}
+      <button
+        onClick={handleGetLocation}
+        disabled={isLoading}
+        className="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>{t("gettingLocation")}</span>
+          </>
+        ) : (
+          <>
+            <Navigation className="h-5 w-5" />
+            <span>{hasLocation ? t("reverifyButton") : t("verifyButton")}</span>
+          </>
+        )}
+      </button>
+
+      {/* Location Name Input */}
+      <div>
+        <label htmlFor="locationName" className="block text-sm font-medium text-gray-700 mb-2">
+          {t("locationName")}
+        </label>
+        <input
+          type="text"
+          id="locationName"
+          value={locationName}
+          onChange={(e) => handleLocationNameChange(e.target.value)}
+          placeholder={t("locationNamePlaceholder")}
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
         />
+        <p className="mt-1 text-xs text-gray-500">{t("locationNameHelp")}</p>
+      </div>
+
+      {/* Notes Input */}
+      <div>
+        <label htmlFor="gpsNotes" className="block text-sm font-medium text-gray-700 mb-2">
+          {t("notes")}
+        </label>
+        <textarea
+          id="gpsNotes"
+          value={notes}
+          onChange={(e) => handleNotesChange(e.target.value)}
+          rows={3}
+          placeholder={t("notesPlaceholder")}
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+        />
+      </div>
+
+      {/* Accuracy Warning */}
+      {hasLocation && accuracy && accuracy > 50 && (
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-medium text-yellow-900 mb-1">{t("lowAccuracyTitle")}</h4>
+              <p className="text-sm text-yellow-700">
+                {t("lowAccuracyMessage", { accuracy: Math.round(accuracy) })}
+              </p>
+            </div>
+          </div>
+        </div>
       )}
+
+      {/* Info Box */}
+      <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+        <h4 className="font-medium text-blue-900 mb-2 text-sm">{t("tipsTitle")}</h4>
+        <ul className="space-y-1 text-sm text-blue-800">
+          <li>• {t("tip1")}</li>
+          <li>• {t("tip2")}</li>
+          <li>• {t("tip3")}</li>
+          <li>• {t("tip4")}</li>
+        </ul>
+      </div>
     </div>
   );
+}
+
+function getGeolocationErrorMessage(code: number, t: any): string {
+  switch (code) {
+    case 1: // PERMISSION_DENIED
+      return t("errors.permissionDenied");
+    case 2: // POSITION_UNAVAILABLE
+      return t("errors.positionUnavailable");
+    case 3: // TIMEOUT
+      return t("errors.timeout");
+    default:
+      return t("errors.unknown");
+  }
 }

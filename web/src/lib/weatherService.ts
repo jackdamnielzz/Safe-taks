@@ -44,8 +44,13 @@ export class WeatherService {
   private language: string;
 
   constructor(config: WeatherServiceConfig = {}) {
-    // API key should come from environment variable
-    this.apiKey = config.apiKey || process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY || "";
+    // Prefer server-side API key. Fall back to NEXT_PUBLIC for local/dev if explicitly set.
+    // Using a server-only env var avoids leaking the key to the client.
+    this.apiKey =
+      config.apiKey ||
+      process.env.OPENWEATHER_API_KEY ||
+      process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY ||
+      "";
     this.units = config.units || "metric";
     this.language = config.language || "nl";
   }
@@ -64,14 +69,31 @@ export class WeatherService {
       const response = await fetch(url);
 
       if (!response.ok) {
-        throw new Error(`Weather API error: ${response.status} ${response.statusText}`);
+        // Preserve upstream status/message for tests and diagnostics
+        // Some test mocks don't implement response.text(), so guard against that.
+        let text = "";
+        try {
+          if (typeof (response as any).text === "function") {
+            text = await (response as any).text();
+          }
+        } catch (e) {
+          // ignore read errors from mock responses
+          text = "";
+        }
+        const statusText = response.statusText || "";
+        const message = `Weather API error: ${response.status} ${statusText}${text ? ` - ${text}` : ""}`;
+        throw new Error(message);
       }
 
       const data: OpenWeatherResponse = await response.json();
 
       return this.transformWeatherData(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching weather:", error);
+      // If the upstream error contains a descriptive message, rethrow it to keep tests deterministic
+      if (error?.message && error.message.startsWith("Weather API error")) {
+        throw error;
+      }
       throw new Error("Failed to fetch weather conditions");
     }
   }
@@ -121,7 +143,9 @@ export class WeatherService {
   /**
    * Calculate weather severity based on conditions
    */
-  private calculateSeverity(data: OpenWeatherResponse): "clear" | "moderate" | "severe" | "extreme" {
+  private calculateSeverity(
+    data: OpenWeatherResponse
+  ): "clear" | "moderate" | "severe" | "extreme" {
     const windSpeed = data.wind.speed;
     const temp = data.main.temp;
     const weatherMain = data.weather[0]?.main || "";
@@ -130,17 +154,17 @@ export class WeatherService {
     if (weatherMain === "Thunderstorm" || windSpeed > 20 || temp > 40 || temp < -15) {
       return "extreme";
     }
-    
+
     // Severe conditions
     if (weatherMain === "Snow" || windSpeed > 15 || temp > 35 || temp < -10) {
       return "severe";
     }
-    
+
     // Moderate conditions
     if (weatherMain === "Rain" || windSpeed > 10 || temp > 30 || temp < -5) {
       return "moderate";
     }
-    
+
     return "clear";
   }
 
@@ -179,12 +203,13 @@ export class WeatherService {
       hot_work: { maxWindSpeedMs: 15, noRain: true },
     };
 
-    const effectiveLimits = workType && workType !== "general"
-      ? { ...defaultLimits, ...workTypeLimits[workType] }
-      : defaultLimits;
+    const effectiveLimits =
+      workType && workType !== "general"
+        ? { ...defaultLimits, ...workTypeLimits[workType] }
+        : defaultLimits;
 
     // BLOCKING CONDITIONS (work must stop)
-    
+
     // 1. Extreme wind (>60 km/h / 16.7 m/s)
     if (weather.windSpeedMs && weather.windSpeedMs > 16.7) {
       const windKmh = Math.round(weather.windSpeedMs * 3.6);
@@ -192,8 +217,10 @@ export class WeatherService {
     }
 
     // 2. Thunderstorm
-    if (weather.weatherDescription?.toLowerCase().includes("onweer") ||
-        weather.weatherDescription?.toLowerCase().includes("thunder")) {
+    if (
+      weather.weatherDescription?.toLowerCase().includes("onweer") ||
+      weather.weatherDescription?.toLowerCase().includes("thunder")
+    ) {
       blockingReasons.push("Onweer gedetecteerd - alle buitenwerk moet worden stopgezet");
     }
 
@@ -218,7 +245,9 @@ export class WeatherService {
     if (weather.windSpeedMs && weather.windSpeedMs > effectiveLimits.maxWindSpeedMs) {
       const windKmh = Math.round(weather.windSpeedMs * 3.6);
       if (workType === "height") {
-        warnings.push(`Hoge wind voor werken op hoogte: ${windKmh} km/h (limiet: ${Math.round(effectiveLimits.maxWindSpeedMs * 3.6)} km/h)`);
+        warnings.push(
+          `Hoge wind voor werken op hoogte: ${windKmh} km/h (limiet: ${Math.round(effectiveLimits.maxWindSpeedMs * 3.6)} km/h)`
+        );
       } else {
         warnings.push(`Hoge windsnelheid: ${windKmh} km/h`);
       }
@@ -227,19 +256,27 @@ export class WeatherService {
     // Temperature warnings
     if (weather.temperatureC !== null && weather.temperatureC !== undefined) {
       if (weather.temperatureC > effectiveLimits.maxTemperature) {
-        warnings.push(`Hoge temperatuur: ${weather.temperatureC}°C - extra pauzes en hydratatie vereist`);
+        warnings.push(
+          `Hoge temperatuur: ${weather.temperatureC}°C - extra pauzes en hydratatie vereist`
+        );
       }
       if (weather.temperatureC < effectiveLimits.minTemperature) {
-        warnings.push(`Lage temperatuur: ${weather.temperatureC}°C - extra beschermende kleding vereist`);
+        warnings.push(
+          `Lage temperatuur: ${weather.temperatureC}°C - extra beschermende kleding vereist`
+        );
       }
     }
 
     // Rain warnings for electrical/hot work
-    if ((workType === "electrical" || workType === "hot_work") &&
-        (weather.weatherDescription?.toLowerCase().includes("regen") ||
-         weather.weatherDescription?.toLowerCase().includes("rain") ||
-         (weather.precipitationMm && weather.precipitationMm > 0))) {
-      warnings.push(`Regen gedetecteerd - ${workType === "electrical" ? "elektrisch werk" : "heet werk"} niet toegestaan`);
+    if (
+      (workType === "electrical" || workType === "hot_work") &&
+      (weather.weatherDescription?.toLowerCase().includes("regen") ||
+        weather.weatherDescription?.toLowerCase().includes("rain") ||
+        (weather.precipitationMm && weather.precipitationMm > 0))
+    ) {
+      warnings.push(
+        `Regen gedetecteerd - ${workType === "electrical" ? "elektrisch werk" : "heet werk"} niet toegestaan`
+      );
     }
 
     // Severe weather warning
@@ -249,7 +286,9 @@ export class WeatherService {
 
     // Moderate weather info
     if (weather.severity === "moderate" && warnings.length === 0) {
-      warnings.push(`Matige weersomstandigheden: ${weather.weatherDescription} - extra voorzichtigheid vereist`);
+      warnings.push(
+        `Matige weersomstandigheden: ${weather.weatherDescription} - extra voorzichtigheid vereist`
+      );
     }
 
     return {

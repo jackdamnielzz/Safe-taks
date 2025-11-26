@@ -584,10 +584,18 @@ export async function calculateComplianceRate(
           tra.validFrom instanceof Date ? tra.validFrom : (tra.validFrom as any).toDate();
         const validUntil =
           tra.validUntil instanceof Date ? tra.validUntil : (tra.validUntil as any).toDate();
-        
+
         // Calculate months more precisely using UTC dates
-        const validFromUTC = Date.UTC(validFrom.getFullYear(), validFrom.getMonth(), validFrom.getDate());
-        const validUntilUTC = Date.UTC(validUntil.getFullYear(), validUntil.getMonth(), validUntil.getDate());
+        const validFromUTC = Date.UTC(
+          validFrom.getFullYear(),
+          validFrom.getMonth(),
+          validFrom.getDate()
+        );
+        const validUntilUTC = Date.UTC(
+          validUntil.getFullYear(),
+          validUntil.getMonth(),
+          validUntil.getDate()
+        );
         const monthsDiff = (validUntilUTC - validFromUTC) / (1000 * 60 * 60 * 24 * 30);
 
         if (monthsDiff <= 12) {

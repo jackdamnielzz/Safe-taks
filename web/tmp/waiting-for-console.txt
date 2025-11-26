@@ -1,0 +1,14 @@
+Ik wacht op jouw browser-output om verder te gaan.
+
+Kort:
+1. Start dev-server: cd web && npm run dev
+2. Open LMRA-wizard → Stap 1 (TRA selectie)
+3. Open DevTools → Console en Network
+4. Klik "Sjablonen opnieuw laden"
+5. Plak hier de console-regels die beginnen met:
+   - [Step1_TraSelection] fetch loadedTemplates count:
+   - [Step1_TraSelection] manual fetchTemplates count:
+   - Of geef de tekst van "X sjablonen geladen" die op de pagina verschijnt
+   - Eventuele netwerkfouten voor /api/templates (status / response)
+
+Wanneer je dat plakt, ga ik direct verder met de laatste verificaties en zorg dat selectie werkt.

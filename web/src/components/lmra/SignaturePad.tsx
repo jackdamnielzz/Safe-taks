@@ -12,10 +12,10 @@ interface SignaturePadProps {
 
 /**
  * SignaturePad Component
- * 
+ *
  * Canvas-based signature capture with touch and mouse support
  * Exports signature as base64 PNG image
- * 
+ *
  * Features:
  * - Touch and mouse drawing support
  * - Clear/reset functionality
@@ -107,16 +107,14 @@ export default function SignaturePad({
               velocityFilterWeight={0.7}
               onBegin={handleBegin}
             />
-            
+
             {/* Signature line */}
             <div className="absolute bottom-4 left-8 right-8 border-b-2 border-gray-300 pointer-events-none" />
-            
+
             {/* Placeholder text */}
             {isEmpty && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <p className="text-gray-400 text-sm">
-                  Teken uw handtekening hier
-                </p>
+                <p className="text-gray-400 text-sm">Teken uw handtekening hier</p>
               </div>
             )}
           </div>
@@ -138,7 +136,7 @@ export default function SignaturePad({
           >
             Annuleren
           </button>
-          
+
           <button
             type="button"
             onClick={handleClear}
@@ -147,7 +145,7 @@ export default function SignaturePad({
           >
             Wissen
           </button>
-          
+
           <button
             type="button"
             onClick={handleSave}

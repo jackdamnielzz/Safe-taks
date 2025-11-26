@@ -126,9 +126,9 @@ describe("TRA Model - Validity Checks", () => {
       validUntil: new Date("2025-10-15T00:00:00Z"), // 13 days from now
     } as TRA;
 
-    expect(isTRAExpiringSoon(tra, 30)).toBe(true);
-    expect(isTRAExpiringSoon(tra, 14)).toBe(true);
-    expect(isTRAExpiringSoon(tra, 12)).toBe(false);
+    expect(isTRAExpiringSoon(tra, 30, now)).toBe(true);
+    expect(isTRAExpiringSoon(tra, 14, now)).toBe(true);
+    expect(isTRAExpiringSoon(tra, 12, now)).toBe(false);
   });
 
   test("isTRAExpiringSoon - returns false for already expired TRA", () => {
@@ -137,7 +137,7 @@ describe("TRA Model - Validity Checks", () => {
       validUntil: new Date("2025-09-01T00:00:00Z"),
     } as TRA;
 
-    expect(isTRAExpiringSoon(tra, 30)).toBe(false);
+    expect(isTRAExpiringSoon(tra, 30, now)).toBe(false);
   });
 });
 

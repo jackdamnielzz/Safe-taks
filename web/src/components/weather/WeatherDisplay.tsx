@@ -6,7 +6,16 @@
 
 import React from "react";
 import { WeatherConditions } from "@/lib/types/lmra";
-import { Cloud, CloudRain, CloudSnow, Sun, Wind, Droplets, Thermometer, AlertTriangle } from "lucide-react";
+import {
+  Cloud,
+  CloudRain,
+  CloudSnow,
+  Sun,
+  Wind,
+  Droplets,
+  Thermometer,
+  AlertTriangle,
+} from "lucide-react";
 import { Timestamp } from "firebase/firestore";
 
 interface WeatherDisplayProps {
@@ -81,7 +90,7 @@ function getSeverityLabel(severity: string): string {
  */
 function formatTimestamp(timestamp: any): string {
   if (!timestamp) return "—";
-  
+
   try {
     let date: Date;
     if (timestamp instanceof Timestamp) {
@@ -95,7 +104,7 @@ function formatTimestamp(timestamp: any): string {
     } else {
       return "—";
     }
-    
+
     return date.toLocaleString("nl-NL", {
       day: "2-digit",
       month: "2-digit",
@@ -112,11 +121,11 @@ function formatTimestamp(timestamp: any): string {
 /**
  * WeatherDisplay Component
  */
-export function WeatherDisplay({ 
-  weather, 
-  showWarnings = true, 
+export function WeatherDisplay({
+  weather,
+  showWarnings = true,
   compact = false,
-  className = "" 
+  className = "",
 }: WeatherDisplayProps) {
   const windKmh = weather.windSpeedMs ? Math.round(weather.windSpeedMs * 3.6) : null;
 
@@ -127,12 +136,16 @@ export function WeatherDisplay({
         <div className="flex-1">
           <div className="font-medium">{weather.weatherDescription || "Geen data"}</div>
           <div className="text-sm text-muted">
-            {weather.temperatureC !== undefined && weather.temperatureC !== null && `${weather.temperatureC.toFixed(1)}°C`}
+            {weather.temperatureC !== undefined &&
+              weather.temperatureC !== null &&
+              `${weather.temperatureC.toFixed(1)}°C`}
             {windKmh && ` • ${windKmh} km/h`}
           </div>
         </div>
         {weather.severity && (
-          <span className={`px-2 py-1 rounded text-xs font-semibold border ${getSeverityColor(weather.severity)}`}>
+          <span
+            className={`px-2 py-1 rounded text-xs font-semibold border ${getSeverityColor(weather.severity)}`}
+          >
             {getSeverityLabel(weather.severity)}
           </span>
         )}
@@ -146,7 +159,9 @@ export function WeatherDisplay({
       <div className="flex items-center gap-3">
         {getWeatherIcon(weather)}
         <div className="flex-1">
-          <div className="text-lg font-semibold">{weather.weatherDescription || "Geen weerdata"}</div>
+          <div className="text-lg font-semibold">
+            {weather.weatherDescription || "Geen weerdata"}
+          </div>
           {weather.provider && (
             <div className="text-xs text-muted">
               Bron: {weather.provider} • {formatTimestamp(weather.observationTimestamp)}
@@ -154,7 +169,9 @@ export function WeatherDisplay({
           )}
         </div>
         {weather.severity && (
-          <span className={`px-3 py-1 rounded text-sm font-semibold border ${getSeverityColor(weather.severity)}`}>
+          <span
+            className={`px-3 py-1 rounded text-sm font-semibold border ${getSeverityColor(weather.severity)}`}
+          >
             {getSeverityLabel(weather.severity)}
           </span>
         )}
@@ -192,13 +209,9 @@ export function WeatherDisplay({
             <Wind className="w-4 h-4 text-muted" />
             <div className="text-xs text-muted">Windsnelheid</div>
           </div>
-          <div className="text-xl font-semibold">
-            {windKmh !== null ? `${windKmh} km/h` : "—"}
-          </div>
+          <div className="text-xl font-semibold">{windKmh !== null ? `${windKmh} km/h` : "—"}</div>
           {weather.windSpeedMs !== undefined && weather.windSpeedMs !== null && (
-            <div className="text-xs text-muted mt-1">
-              {weather.windSpeedMs.toFixed(1)} m/s
-            </div>
+            <div className="text-xs text-muted mt-1">{weather.windSpeedMs.toFixed(1)} m/s</div>
           )}
         </div>
 
@@ -224,9 +237,12 @@ export function WeatherDisplay({
                 Waarschuwing: Onveilige weersomstandigheden
               </div>
               <div className="text-sm text-yellow-800">
-                {weather.severity === "moderate" && "Let op: Matige weersomstandigheden. Extra voorzichtigheid vereist."}
-                {weather.severity === "severe" && "Waarschuwing: Ernstige weersomstandigheden. Overweeg werk uit te stellen."}
-                {weather.severity === "extreme" && "GEVAAR: Extreme weersomstandigheden. Werk moet worden stopgezet."}
+                {weather.severity === "moderate" &&
+                  "Let op: Matige weersomstandigheden. Extra voorzichtigheid vereist."}
+                {weather.severity === "severe" &&
+                  "Waarschuwing: Ernstige weersomstandigheden. Overweeg werk uit te stellen."}
+                {weather.severity === "extreme" &&
+                  "GEVAAR: Extreme weersomstandigheden. Werk moet worden stopgezet."}
               </div>
             </div>
           </div>
@@ -249,12 +265,14 @@ export function WeatherDisplay({
  */
 export function WeatherBadge({ weather }: { weather: WeatherConditions }) {
   const windKmh = weather.windSpeedMs ? Math.round(weather.windSpeedMs * 3.6) : null;
-  
+
   return (
     <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-50 border rounded-full text-sm">
       {getWeatherIcon(weather)}
       <span className="font-medium">
-        {weather.temperatureC !== undefined && weather.temperatureC !== null && `${weather.temperatureC.toFixed(0)}°C`}
+        {weather.temperatureC !== undefined &&
+          weather.temperatureC !== null &&
+          `${weather.temperatureC.toFixed(0)}°C`}
       </span>
       {windKmh && (
         <>
@@ -263,7 +281,9 @@ export function WeatherBadge({ weather }: { weather: WeatherConditions }) {
         </>
       )}
       {weather.severity && weather.severity !== "clear" && (
-        <span className={`ml-1 px-2 py-0.5 rounded text-xs font-semibold ${getSeverityColor(weather.severity)}`}>
+        <span
+          className={`ml-1 px-2 py-0.5 rounded text-xs font-semibold ${getSeverityColor(weather.severity)}`}
+        >
           {getSeverityLabel(weather.severity)}
         </span>
       )}

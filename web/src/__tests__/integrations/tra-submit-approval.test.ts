@@ -34,11 +34,11 @@ describe("TRA submit with approval creation", () => {
 
     // Mock requireOrgAuth to return auth - use mockImplementation to override the global mock
     const { requireOrgAuth } = require("@/lib/server-helpers");
-    requireOrgAuth.mockImplementation(async () => ({ 
-      orgId, 
-      uid: userId, 
-      displayName: "Test User", 
-      email: "test@example.com" 
+    requireOrgAuth.mockImplementation(async () => ({
+      orgId,
+      uid: userId,
+      displayName: "Test User",
+      email: "test@example.com",
     }));
 
     // Create a fake request with body { comments, createApproval: true }
@@ -60,7 +60,10 @@ describe("TRA submit with approval creation", () => {
     expect(item.status).toBe("in_review");
 
     // Check approval document exists
-    const approvalsSnap = await db.collection(`organizations/${orgId}/approvals`).where("traId", "==", traId).get();
+    const approvalsSnap = await db
+      .collection(`organizations/${orgId}/approvals`)
+      .where("traId", "==", traId)
+      .get();
     expect(approvalsSnap.empty).toBe(false);
     const approvals = approvalsSnap.docs.map((d: any) => d.data());
     expect(approvals[0].status).toBe("pending");

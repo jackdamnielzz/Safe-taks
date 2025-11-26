@@ -26,33 +26,40 @@ export class VCAValidator {
   private readonly VCA_VERSION = "VCA 2017 v5.1";
   private readonly MIN_COMPLIANCE_SCORE = 85; // Minimum score for certification
 
+  // VCA 2017 v5.1 Category Weights
+  private readonly CATEGORY_WEIGHTS = {
+    riskAssessment: 0.25,    // 25%
+    controlMeasures: 0.30,   // 30%
+    competencies: 0.20,      // 20%
+    documentation: 0.15,     // 15%
+    approvals: 0.10,         // 10%
+  };
+
   /**
-   * Validate TRA against VCA requirements
+   * Validate TRA against VCA requirements using weighted scoring
    */
   validateTRA(tra: TRA): VCAComplianceResult {
     const issues: VCAIssue[] = [];
-    let score = 100;
 
-    // 1. Check basic information completeness
-    score -= this.checkBasicInformation(tra, issues);
+    // Calculate category scores (0-100 each)
+    const riskAssessmentScore = this.checkRiskAssessment(tra, issues);
+    const controlMeasuresScore = this.checkControlMeasures(tra, issues);
+    const competenciesScore = this.checkTeamCompetencies(tra, issues);
+    const documentationScore = this.checkDocumentation(tra, issues);
+    const approvalsScore = this.checkApprovalWorkflow(tra, issues);
 
-    // 2. Check risk assessment methodology
-    score -= this.checkRiskAssessment(tra, issues);
+    // Calculate weighted overall score
+    let score = Math.round(
+      riskAssessmentScore * this.CATEGORY_WEIGHTS.riskAssessment +
+      controlMeasuresScore * this.CATEGORY_WEIGHTS.controlMeasures +
+      competenciesScore * this.CATEGORY_WEIGHTS.competencies +
+      documentationScore * this.CATEGORY_WEIGHTS.documentation +
+      approvalsScore * this.CATEGORY_WEIGHTS.approvals
+    );
 
-    // 3. Check control measures
-    score -= this.checkControlMeasures(tra, issues);
-
-    // 4. Check team competencies
-    score -= this.checkTeamCompetencies(tra, issues);
-
-    // 5. Check approval workflow
-    score -= this.checkApprovalWorkflow(tra, issues);
-
-    // 6. Check validity period
-    score -= this.checkValidityPeriod(tra, issues);
-
-    // 7. Check documentation quality
-    score -= this.checkDocumentation(tra, issues);
+    // Add bonus points for context fields (Phase 1.3)
+    const contextBonus = this.calculateContextFieldsBonus(tra);
+    score = Math.min(100, score + contextBonus);
 
     // Generate recommendations
     const recommendations = this.generateRecommendations(issues);
@@ -137,64 +144,29 @@ export class VCAValidator {
   }
 
   /**
-   * Check basic information
-   */
-  private checkBasicInformation(tra: TRA, issues: VCAIssue[]): number {
-    let penalty = 0;
-
-    if (!tra.title || tra.title.length < 5) {
-      issues.push({
-        severity: "major",
-        category: "Basis Informatie",
-        description: "TRA titel is te kort of ontbreekt",
-        requirement: "Duidelijke, beschrijvende titel vereist (min. 5 tekens)",
-        suggestion: "Voeg een duidelijke titel toe die de werkzaamheden beschrijft",
-      });
-      penalty += 10;
-    }
-
-    if (!tra.description) {
-      issues.push({
-        severity: "minor",
-        category: "Basis Informatie",
-        description: "TRA beschrijving ontbreekt",
-        requirement: "Beschrijving aanbevolen voor context",
-        suggestion: "Voeg een beschrijving toe met details over de werkzaamheden",
-      });
-      penalty += 5;
-    }
-
-    if (!tra.projectId) {
-      issues.push({
-        severity: "critical",
-        category: "Basis Informatie",
-        description: "TRA is niet gekoppeld aan een project",
-        requirement: "Project koppeling verplicht",
-      });
-      penalty += 20;
-    }
-
-    return penalty;
-  }
-
-  /**
-   * Check risk assessment
+   * Check risk assessment (25% weight)
+   * Returns score 0-100
    */
   private checkRiskAssessment(tra: TRA, issues: VCAIssue[]): number {
-    let penalty = 0;
+    let score = 100;
 
-    if (tra.taskSteps.length === 0) {
+    const taskSteps = Array.isArray((tra as any).taskSteps) ? (tra as any).taskSteps : [];
+
+    if (taskSteps.length === 0) {
       issues.push({
         severity: "critical",
         category: "Risicoanalyse",
         description: "Geen taakstappen gedefinieerd",
         requirement: "Minimaal 1 taakstap vereist",
       });
-      return 30;
+      return 0; // Critical failure
     }
 
     // Check each task step has hazards
-    const stepsWithoutHazards = tra.taskSteps.filter((step) => step.hazards.length === 0);
+    const stepsWithoutHazards = taskSteps.filter((step: any) => {
+      const hazards = Array.isArray(step?.hazards) ? step.hazards : [];
+      return hazards.length === 0;
+    });
     if (stepsWithoutHazards.length > 0) {
       issues.push({
         severity: "critical",
@@ -203,61 +175,76 @@ export class VCAValidator {
         requirement: "Elke taakstap moet minimaal 1 gevaar hebben",
         suggestion: "Identificeer gevaren voor alle taakstappen",
       });
-      penalty += 15;
+      score -= 30;
     }
 
-    // Check high risks have adequate controls
-    tra.taskSteps.forEach((step) => {
-      step.hazards.forEach((hazard) => {
-        if (
-          (hazard.riskLevel === "high" || hazard.riskLevel === "very_high") &&
-          hazard.controlMeasures.length === 0
-        ) {
-          issues.push({
-            severity: "critical",
-            category: "Beheersmaatregelen",
-            description: `Hoog risico zonder beheersmaatregelen: ${hazard.description}`,
-            requirement: "Hoge risico's moeten beheersmaatregelen hebben",
-            suggestion: "Voeg beheersmaatregelen toe volgens de arbeidshygiënische strategie",
-          });
-          penalty += 10;
-        }
-      });
+    // Check risk levels assigned (20 points)
+    const hasRiskLevels = taskSteps.every((step: any) => {
+      const hazards = Array.isArray(step?.hazards) ? step.hazards : [];
+      return hazards.every((h: any) => h.riskLevel);
     });
+    if (!hasRiskLevels) {
+      issues.push({
+        severity: "major",
+        category: "Risicoanalyse",
+        description: "Niet alle gevaren hebben een risiconiveau",
+        requirement: "Alle gevaren moeten een risiconiveau hebben",
+        suggestion: "Voeg risiconiveaus toe aan alle gevaren",
+      });
+      score -= 20;
+    }
 
-    return Math.min(penalty, 30);
+    return Math.max(0, score);
   }
 
   /**
-   * Check control measures
+   * Check control measures (30% weight)
+   * Returns score 0-100
    */
   private checkControlMeasures(tra: TRA, issues: VCAIssue[]): number {
-    let penalty = 0;
+    let score = 100;
     let totalHazards = 0;
     let hazardsWithControls = 0;
 
-    tra.taskSteps.forEach((step) => {
-      step.hazards.forEach((hazard) => {
+    const taskSteps = Array.isArray((tra as any).taskSteps) ? (tra as any).taskSteps : [];
+
+    taskSteps.forEach((step: any) => {
+      const hazards = Array.isArray(step?.hazards) ? step.hazards : [];
+      hazards.forEach((hazard: any) => {
+        const controlMeasures = Array.isArray(hazard?.controlMeasures)
+          ? hazard.controlMeasures
+          : [];
+
         totalHazards++;
-        if (hazard.controlMeasures.length > 0) {
+        if (controlMeasures.length > 0) {
           hazardsWithControls++;
         }
 
         // Check hierarchy of controls
-        const hasElimination = hazard.controlMeasures.some((c) => c.type === "elimination");
-        const hasSubstitution = hazard.controlMeasures.some((c) => c.type === "substitution");
-        const onlyPPE = hazard.controlMeasures.every((c) => c.type === "ppe");
+        const hasElimination = controlMeasures.some(
+          (c: any) => c && c.type === "elimination"
+        );
+        const hasSubstitution = controlMeasures.some(
+          (c: any) => c && c.type === "substitution"
+        );
+        const onlyPPE =
+          controlMeasures.length > 0 &&
+          controlMeasures.every((c: any) => c && c.type === "ppe");
 
-        if (onlyPPE && hazard.riskLevel !== "trivial" && hazard.riskLevel !== "acceptable") {
+        if (
+          onlyPPE &&
+          hazard.riskLevel !== "trivial" &&
+          hazard.riskLevel !== "acceptable"
+        ) {
           issues.push({
             severity: "major",
             category: "Beheersmaatregelen",
-            description: `Alleen PBM voor ${hazard.riskLevel} risico: ${hazard.description}`,
+            description: `Alleen PBM voor ${hazard.riskLevel} risico: ${hazard.description || ""}`,
             requirement:
               "Volg arbeidshygiënische strategie (eliminatie > substitutie > technisch > organisatorisch > PBM)",
             suggestion: "Overweeg hogere beheersmaatregelen in de hiërarchie",
           });
-          penalty += 5;
+          score -= 5;
         }
       });
     });
@@ -271,60 +258,200 @@ export class VCAValidator {
         requirement: "Minimaal 80% dekking vereist",
         suggestion: "Voeg beheersmaatregelen toe voor alle geïdentificeerde gevaren",
       });
-      penalty += 15;
+      score -= 20;
     }
 
-    return Math.min(penalty, 25);
+    return Math.max(0, score);
   }
 
   /**
-   * Check team competencies
+   * Check team competencies (20% weight)
+   * Returns score 0-100
    */
   private checkTeamCompetencies(tra: TRA, issues: VCAIssue[]): number {
-    let penalty = 0;
+    let score = 100;
 
-    if (tra.teamMembers.length === 0) {
+    const teamMembers = Array.isArray((tra as any).teamMembers)
+      ? (tra as any).teamMembers
+      : [];
+
+    if (teamMembers.length === 0) {
       issues.push({
-        severity: "major",
-        category: "Team",
+        severity: "critical",
+        category: "Competenties",
         description: "Geen teamleden toegewezen",
         requirement: "Minimaal 1 teamlid vereist",
         suggestion: "Wijs teamleden toe aan deze TRA",
       });
-      penalty += 10;
+      score -= 40;
     }
 
-    if (!tra.requiredCompetencies || tra.requiredCompetencies.length === 0) {
+    const requiredCompetencies = Array.isArray((tra as any).requiredCompetencies)
+      ? (tra as any).requiredCompetencies
+      : [];
+
+    // Check for high-risk work
+    const taskSteps = Array.isArray((tra as any).taskSteps) ? (tra as any).taskSteps : [];
+    const hasHighRisk = taskSteps.some((step: any) => {
+      const hazards = Array.isArray(step?.hazards) ? step.hazards : [];
+      return hazards.some((h: any) => h.riskScore > 400);
+    });
+
+    // For high-risk work, missing competencies is more severe
+    if (requiredCompetencies.length === 0) {
+      const penalty = hasHighRisk ? 40 : 30; // Increased penalty for high-risk
+      issues.push({
+        severity: hasHighRisk ? "critical" : "major",
+        category: "Competenties",
+        description: "Geen vereiste competenties gedefinieerd",
+        requirement: "Competenties vereist voor VCA compliance",
+        suggestion: hasHighRisk
+          ? "Definieer vereiste certificaten en trainingen, inclusief VCA voor hoog-risico werk"
+          : "Definieer vereiste certificaten en trainingen",
+      });
+      score -= penalty;
+    } else if (hasHighRisk) {
+      // Check for VCA certification requirement for high-risk work
+      const hasVCA = requiredCompetencies.some((c: string) =>
+        c.toLowerCase().includes("vca")
+      );
+      if (!hasVCA) {
+        issues.push({
+          severity: "major",
+          category: "Competenties",
+          description: "VCA-certificering aanbevolen voor hoog-risico werkzaamheden",
+          requirement: "VCA-certificering voor hoog-risico werk",
+          suggestion: "Voeg VCA-certificering toe aan vereiste competenties",
+        });
+        score -= 15;
+      }
+    }
+
+    // Check team size for high-risk work or when personnel requirements are specified
+    if (teamMembers.length === 1 && hasHighRisk) {
       issues.push({
         severity: "minor",
         category: "Competenties",
-        description: "Geen vereiste competenties gedefinieerd",
-        requirement: "Competenties aanbevolen voor VCA compliance",
-        suggestion: "Definieer vereiste certificaten en trainingen",
+        description: "Minimaal 2 teamleden aanbevolen voor hoog-risico werk",
+        requirement: "Voldoende teamleden voor veilige uitvoering",
+        suggestion: "Wijs minimaal 2 teamleden toe voor hoog-risico werkzaamheden",
       });
-      penalty += 5;
+      score -= 10;
     }
 
-    return penalty;
+    // Check if team size meets task step requirements
+    const maxRequiredPersonnel = taskSteps.reduce((max: number, step: any) => {
+      return Math.max(max, step.requiredPersonnel || 0);
+    }, 0);
+
+    if (maxRequiredPersonnel > 0 && teamMembers.length < maxRequiredPersonnel) {
+      issues.push({
+        severity: "major",
+        category: "Competenties",
+        description: `Team te klein: ${teamMembers.length} teamleden, ${maxRequiredPersonnel} vereist`,
+        requirement: `Minimaal ${maxRequiredPersonnel} teamleden vereist`,
+        suggestion: `Wijs minimaal ${maxRequiredPersonnel} teamleden toe`,
+      });
+      score -= 15;
+    }
+
+    return Math.max(0, score);
   }
 
   /**
-   * Check approval workflow
+   * Check documentation (15% weight)
+   * Returns score 0-100
    */
-  private checkApprovalWorkflow(tra: TRA, issues: VCAIssue[]): number {
-    let penalty = 0;
+  private checkDocumentation(tra: TRA, issues: VCAIssue[]): number {
+    let score = 100;
 
-    if (tra.status === "draft") {
+    // Check title length (25 points)
+    if (!tra.title || tra.title.length < 10) {
+      issues.push({
+        severity: "major",
+        category: "Documentatie",
+        description: "TRA titel is te kort of ontbreekt",
+        requirement: "Duidelijke, beschrijvende titel vereist (min. 10 tekens)",
+        suggestion: "Voeg een duidelijke titel toe die de werkzaamheden beschrijft",
+      });
+      score -= 25;
+    }
+
+    // Check description length (25 points)
+    if (!tra.description || tra.description.length < 50) {
+      issues.push({
+        severity: "major",
+        category: "Documentatie",
+        description: "TRA beschrijving is te kort of ontbreekt",
+        requirement: "Beschrijving vereist (min. 50 tekens)",
+        suggestion: "Voeg een gedetailleerde beschrijving toe",
+      });
+      score -= 25;
+    }
+
+    // Check task steps documented (20 points)
+    const taskSteps = Array.isArray((tra as any).taskSteps) ? (tra as any).taskSteps : [];
+    if (taskSteps.length === 0) {
+      issues.push({
+        severity: "major",
+        category: "Documentatie",
+        description: "Geen taakstappen gedocumenteerd",
+        requirement: "Werkstappen moeten worden gedocumenteerd",
+        suggestion: "Voeg taakstappen toe aan de TRA",
+      });
+      score -= 20;
+    }
+
+    // Check task step descriptions (15 points)
+    const stepsWithoutDescriptions = taskSteps.filter(
+      (ts: any) => !ts.description || ts.description.length < 10
+    );
+    if (stepsWithoutDescriptions.length > 0) {
       issues.push({
         severity: "minor",
+        category: "Documentatie",
+        description: `${stepsWithoutDescriptions.length} taakstap(pen) zonder beschrijving`,
+        requirement: "Alle werkstappen moeten een duidelijke beschrijving hebben",
+        suggestion: "Voeg beschrijvingen toe aan alle taakstappen",
+      });
+      score -= 15;
+    }
+
+    // Check project linkage (15 points)
+    if (!tra.projectId) {
+      issues.push({
+        severity: "critical",
+        category: "Documentatie",
+        description: "TRA is niet gekoppeld aan een project",
+        requirement: "Project koppeling verplicht",
+        suggestion: "Koppel TRA aan een project",
+      });
+      score -= 15;
+    }
+
+    return Math.max(0, score);
+  }
+
+  /**
+   * Check approval workflow (10% weight)
+   * Returns score 0-100
+   */
+  private checkApprovalWorkflow(tra: TRA, issues: VCAIssue[]): number {
+    let score = 100;
+
+    // Check TRA status (50 points)
+    if (tra.status === "draft") {
+      issues.push({
+        severity: "major",
         category: "Goedkeuring",
         description: "TRA is nog in concept status",
         requirement: "TRA moet goedgekeurd zijn voor gebruik",
         suggestion: "Dien TRA in voor goedkeuring",
       });
-      penalty += 5;
+      score -= 50;
     }
 
+    // Check approval workflow exists (30 points)
     if (!tra.approvalWorkflow) {
       issues.push({
         severity: "major",
@@ -333,85 +460,94 @@ export class VCAValidator {
         requirement: "Goedkeuringsworkflow vereist voor VCA compliance",
         suggestion: "Configureer goedkeuringsworkflow met minimaal 1 goedkeurder",
       });
-      penalty += 10;
+      score -= 30;
+    } else {
+      // Check required approvers assigned (20 points)
+      const hasRequiredApprovers = tra.approvalWorkflow.steps?.some(
+        (step) => step.requiredRole === "safety_manager" || step.requiredRole === "supervisor"
+      );
+      if (!hasRequiredApprovers) {
+        issues.push({
+          severity: "minor",
+          category: "Goedkeuring",
+          description: "Geen vereiste goedkeurders toegewezen",
+          requirement: "Safety manager of supervisor goedkeuring vereist",
+          suggestion: "Voeg safety manager of supervisor toe aan goedkeuringsworkflow",
+        });
+        score -= 20;
+      }
     }
 
-    return penalty;
+    // Check validity period (bonus/penalty based on validity)
+    if (tra.validFrom && tra.validUntil) {
+      // Handle various date formats (Date, Firestore Timestamp, ISO string, number)
+      const toDate = (val: any): Date | null => {
+        if (!val) return null;
+        if (val instanceof Date) return val;
+        if (typeof val.toDate === 'function') return val.toDate();
+        if (typeof val === 'string') return new Date(val);
+        if (typeof val === 'number') return new Date(val);
+        return null;
+      };
+
+      const validFrom = toDate(tra.validFrom);
+      const validUntil = toDate(tra.validUntil);
+      
+      if (!validFrom || !validUntil) {
+        issues.push({
+          category: "Goedkeuring",
+          severity: "minor",
+          description: "TRA heeft ongeldige datum velden",
+          requirement: "Geldige datums vereist voor geldigheidsperiode controle",
+          suggestion: "Controleer de validFrom en validUntil datums",
+        });
+        return score; // Return current score, don't penalize further
+      }
+
+      const monthsDiff = (validUntil.getTime() - validFrom.getTime()) / (1000 * 60 * 60 * 24 * 30);
+
+      if (monthsDiff > 12) {
+        issues.push({
+          severity: "minor",
+          category: "Goedkeuring",
+          description: `Geldigheidsduur te lang (${monthsDiff.toFixed(1)} maanden)`,
+          requirement: "Maximaal 12 maanden geldigheid volgens VCA",
+          suggestion: "Verkort geldigheidsduur tot maximaal 12 maanden",
+        });
+        // Note: This is informational, doesn't affect approval score
+      }
+    }
+
+    return Math.max(0, score);
   }
 
   /**
-   * Check validity period
+   * Calculate bonus points for context fields documentation
+   * Phase 1.3: TRA Context Fields Integration
+   * @returns Bonus points (0-8)
    */
-  private checkValidityPeriod(tra: TRA, issues: VCAIssue[]): number {
-    let penalty = 0;
+  private calculateContextFieldsBonus(tra: TRA): number {
+    let bonus = 0;
+    const taskSteps = Array.isArray((tra as any).taskSteps) ? (tra as any).taskSteps : [];
 
-    if (!tra.validFrom || !tra.validUntil) {
-      issues.push({
-        severity: "major",
-        category: "Geldigheid",
-        description: "Geldigheidsduur niet ingesteld",
-        requirement: "Geldigheidsduur verplicht (max 12 maanden)",
-        suggestion: "Stel geldigheidsduur in (max 12 maanden volgens VCA)",
-      });
-      return 15;
+    // Check if tasks have workplace conditions documented (+5 points)
+    const tasksWithConditions = taskSteps.filter((step: any) =>
+      step.workplaceConditions && Object.keys(step.workplaceConditions).length > 0
+    );
+    if (tasksWithConditions.length > 0) {
+      bonus += 5; // Bonus voor gedocumenteerde werkomstandigheden
     }
 
-    const validFrom =
-      tra.validFrom instanceof Date ? tra.validFrom : (tra.validFrom as any).toDate();
-    const validUntil =
-      tra.validUntil instanceof Date ? tra.validUntil : (tra.validUntil as any).toDate();
-    const monthsDiff = (validUntil.getTime() - validFrom.getTime()) / (1000 * 60 * 60 * 24 * 30);
-
-    if (monthsDiff > 12) {
-      issues.push({
-        severity: "critical",
-        category: "Geldigheid",
-        description: `Geldigheidsduur te lang (${monthsDiff.toFixed(1)} maanden)`,
-        requirement: "Maximaal 12 maanden geldigheid volgens VCA",
-        suggestion: "Verkort geldigheidsduur tot maximaal 12 maanden",
-      });
-      penalty += 20;
+    // Check for materials with MSDS documentation (+3 points)
+    const tasksWithMsdsMaterials = taskSteps.filter((step: any) =>
+      step.materials && Array.isArray(step.materials) &&
+      step.materials.some((m: any) => m.msdsRequired === true)
+    );
+    if (tasksWithMsdsMaterials.length > 0) {
+      bonus += 3; // Bonus voor MSDS documentatie
     }
 
-    // Check if expired
-    const now = new Date();
-    if (validUntil < now) {
-      issues.push({
-        severity: "critical",
-        category: "Geldigheid",
-        description: "TRA is verlopen",
-        requirement: "TRA moet geldig zijn",
-        suggestion: "Vernieuw TRA of maak nieuwe versie",
-      });
-      penalty += 25;
-    }
-
-    return penalty;
-  }
-
-  /**
-   * Check documentation quality
-   */
-  private checkDocumentation(tra: TRA, issues: VCAIssue[]): number {
-    let penalty = 0;
-
-    // Check if hazards have descriptions
-    tra.taskSteps.forEach((step) => {
-      step.hazards.forEach((hazard) => {
-        if (!hazard.description || hazard.description.length < 10) {
-          issues.push({
-            severity: "minor",
-            category: "Documentatie",
-            description: "Gevaar heeft onvoldoende beschrijving",
-            requirement: "Duidelijke beschrijving vereist",
-            suggestion: "Voeg gedetailleerde beschrijving toe",
-          });
-          penalty += 2;
-        }
-      });
-    });
-
-    return Math.min(penalty, 10);
+    return bonus;
   }
 
   /**

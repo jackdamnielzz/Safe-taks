@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -22,6 +22,7 @@ interface ProjectsResponse {
  */
 export function ProjectsContent() {
   const router = useRouter();
+  const pathname = usePathname();
   const { t } = useTranslation();
 
   // State management
@@ -32,10 +33,25 @@ export function ProjectsContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showActiveOnly, setShowActiveOnly] = useState(true);
 
-  // Load projects on mount
+  // Load projects on mount and when pathname changes (navigation)
   useEffect(() => {
+    console.log("📋 ProjectsContent mounted or pathname changed:", pathname);
     loadProjects();
-  }, []);
+
+    // Also reload when user returns to the tab/page
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log("📋 Page visible again, reloading projects...");
+        loadProjects();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [pathname]); // Re-run when pathname changes
 
   // Filter projects when search or filter changes
   useEffect(() => {
@@ -230,16 +246,24 @@ export function ProjectsContent() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Projecten
-              <HelpTooltip content="Beheer uw projecten en teamleden voor georganiseerde TRA/LMRA workflows" />
+              {t("projects.list.title", { default: "Projecten" })}
+              <HelpTooltip
+                content={t("projects.list.help", {
+                  default: "Beheer uw projecten en teamleden voor georganiseerde TRA/LMRA workflows",
+                })}
+              />
             </h1>
             <p className="text-gray-600 mt-2">
-              {filteredProjects.length} van {projects.length} projecten
+              {t("projects.list.counter", {
+                default: `${filteredProjects.length} van ${projects.length} projecten`,
+                count: filteredProjects.length,
+                total: projects.length,
+              })}
             </p>
           </div>
           <Button onClick={handleCreateProject} className="gap-2">
             <Plus className="h-4 w-4" />
-            Nieuw Project
+            {t("projects.list.newProject", { default: "Nieuw project" })}
           </Button>
         </div>
       </div>

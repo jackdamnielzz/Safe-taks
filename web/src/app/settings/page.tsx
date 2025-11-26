@@ -306,9 +306,21 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-4 flex flex-wrap gap-3">
                   <Button variant="secondary" onClick={() => router.push("/admin/hub")}>
                     Beheer Organisatie →
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push("/projects")}
+                  >
+                    Projecten beheren
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push("/projects/create")}
+                  >
+                    Nieuw project aanmaken
                   </Button>
                 </div>
               </div>
@@ -426,11 +438,11 @@ export default function SettingsPage() {
                     />
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="font-medium text-gray-900">TRA Overdue</label>
-                      <p className="text-sm text-gray-600">Notificaties bij verlopen TRA's</p>
-                    </div>
+                 <div className="flex items-center justify-between">
+                   <div>
+                     <label className="font-medium text-gray-900">TRA Overdue</label>
+                     <p className="text-sm text-gray-600">Notificaties bij verlopen TRA's</p>
+                   </div>
                     <input
                       type="checkbox"
                       checked={notifications.traOverdue}

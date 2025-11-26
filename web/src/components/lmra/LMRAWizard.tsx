@@ -1,4 +1,6 @@
+"use client";
 import React, { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { LMRA, LMRAStepNumber, StopWorkAlert } from "@/lib/types/lmra";
 import { LoadingSpinner } from "../ui/LoadingSpinner";
 import Step1_TraSelection from "./steps/Step1_TraSelection";
@@ -39,15 +41,19 @@ type WizardState = {
 
 const TOTAL_STEPS = 8;
 
-export default function LMRAWizard({ 
-  initial, 
-  userId, 
-  userName 
-}: { 
-  initial?: Partial<LMRA>; 
-  userId?: string; 
-  userName?: string; 
+export default function LMRAWizard({
+  initial,
+  userId,
+  userName,
+}: {
+  initial?: Partial<LMRA>;
+  userId?: string;
+  userName?: string;
 }) {
+  const t = useTranslations("safety.lmra.wizard");
+  const tSteps = useTranslations("safety.lmra.steps");
+  const tCommon = useTranslations("common");
+
   const [state, setState] = useState<WizardState>({
     lmra: initial || {},
     currentStep: (initial?.currentStep as LMRAStepNumber) || 1,
@@ -90,7 +96,11 @@ export default function LMRAWizard({
             const res = await createLMRA(payload);
             // expect created object with id
             const newId = res?.id || res?.lmra?.id;
-            setState((s) => ({ ...s, lmra: { ...s.lmra, ...lmraPatch, id: newId }, saving: false }));
+            setState((s) => ({
+              ...s,
+              lmra: { ...s.lmra, ...lmraPatch, id: newId },
+              saving: false,
+            }));
           } else {
             await updateLMRA(lmraId, payload);
             setState((s) => ({ ...s, lmra: { ...s.lmra, ...lmraPatch }, saving: false }));
@@ -122,57 +132,63 @@ export default function LMRAWizard({
   // Per-step change handler used by step components
   const handleStepChange = useCallback(
     (stepNumber: LMRAStepNumber, payload: Partial<LMRA>) => {
-      // merge payload into state.lmra under stepX
       setState((s) => {
         const newLmra = { ...s.lmra };
-        // e.g. step2 => step2: { ...existing, ...payload }
         const stepKey = `step${stepNumber}` as keyof Partial<LMRA>;
-        // @ts-expect-error - dynamic step assignment
+        // @ts-expect-error dynamic step assignment
         newLmra[stepKey] = { ...(newLmra[stepKey] as object), ...payload };
+        // trigger autosave with merged snapshot
+        void autoSave({ ...newLmra });
         return { ...s, lmra: newLmra };
       });
-      // trigger autosave (non-blocking)
-      autoSave({ [`step${stepNumber}`]: payload } as Partial<LMRA>);
     },
     [autoSave]
   );
 
-  // Simple validation placeholder used before allowing next()
+
+  // Validation for current step, using strict per-step rules
   const validateCurrentStep = useCallback(async (): Promise<boolean> => {
-    // TODO: call per-step validation (imported from step component) if implemented
-    // For now perform minimal checks:
     const { currentStep, lmra } = state;
+
     switch (currentStep) {
       case 1:
         return !!lmra.step1?.traId;
       case 2:
         return !!lmra.step2?.latitude && !!lmra.step2?.longitude;
-      case 3: {
-        const step3 = lmra.step3 as any;
-        return !!step3 || !!step3?.manualOverride;
-      }
+      case 3:
+        return !!lmra.step3;
+      case 4:
+        return !!lmra.step4?.teamMembers && lmra.step4.teamMembers.length > 0;
+      case 5:
+        return !!lmra.step5?.equipmentList && lmra.step5.equipmentList.length > 0;
+      case 6:
+        return !!lmra.step6?.hazards && lmra.step6.hazards.length > 0;
+      case 7:
+        return !!lmra.step7?.decision && lmra.step7.decision !== "pending";
+      case 8:
+        return !!lmra.step8?.signatures && lmra.step8.signatures.length > 0;
       default:
-        return true;
+        return false;
     }
   }, [state]);
 
   const handleNextClicked = useCallback(async () => {
     const ok = await validateCurrentStep();
     if (!ok) {
-      setState((s) => ({ ...s, error: "Validatie mislukt voor deze stap" }));
+      setState((s) => ({ ...s, error: t("validationError") }));
       return;
     }
     setState((s) => ({ ...s, error: null }));
     next();
-  }, [next, validateCurrentStep]);
+  }, [next, validateCurrentStep, t]);
 
   // Handle stop-work alert creation
   const handleStopWorkCreated = useCallback((alert: StopWorkAlert) => {
     console.log("Stop-work alert created:", alert);
     // Show notification to user
-    setState((s) => ({ 
-      ...s, 
-      error: null 
+    setState((s) => ({
+      ...s,
+      error: null,
     }));
     // Optionally pause LMRA execution or show warning
     // The LMRA status will be updated to 'stop_work' by the API
@@ -194,7 +210,7 @@ export default function LMRAWizard({
       case 1:
         return (
           <div>
-            <h3>Stap 1 — TRA selectie</h3>
+            <h3>{tSteps("step1.title")}</h3>
             <Step1_TraSelection
               lmra={state.lmra}
               onChange={(stepPayload) => {
@@ -206,21 +222,19 @@ export default function LMRAWizard({
       case 2:
         return (
           <div>
-            <h3>Stap 2 — Locatie verificatie</h3>
+            <h3>{tSteps("step2.title")}</h3>
             <Step2_LocationVerification
               lmra={state.lmra}
               onChange={(stepPayload) => {
                 handleStepChange(2, { step2: stepPayload } as Partial<LMRA>);
               }}
-              userId={userId}
-              userName={userName}
             />
           </div>
         );
       case 3:
         return (
           <div>
-            <h3>Stap 3 — Weersomstandigheden</h3>
+            <h3>{tSteps("step3.title")}</h3>
             <Step3_WeatherConditions
               lmra={state.lmra}
               onChange={(stepPayload) => {
@@ -232,7 +246,7 @@ export default function LMRAWizard({
       case 4:
         return (
           <div>
-            <h3>Stap 4 — Team competenties</h3>
+            <h3>{tSteps("step4.title")}</h3>
             <Step4_TeamCompetencies
               lmra={state.lmra}
               onChange={(stepPayload) => {
@@ -244,49 +258,43 @@ export default function LMRAWizard({
       case 5:
         return (
           <div>
-            <h3>Stap 5 — Equipment verificatie</h3>
+            <h3>{tSteps("step5.title")}</h3>
             <Step5_EquipmentVerification
               lmra={state.lmra}
               onChange={(stepPayload) => {
                 handleStepChange(5, { step5: stepPayload } as Partial<LMRA>);
               }}
-              userId={userId}
-              userName={userName}
             />
           </div>
         );
       case 6:
         return (
           <div>
-            <h3>Stap 6 — Hazard assessment</h3>
+            <h3>{tSteps("step6.title")}</h3>
             <Step6_HazardAssessment
               lmra={state.lmra}
               onChange={(stepPayload) => {
                 handleStepChange(6, { step6: stepPayload } as Partial<LMRA>);
               }}
-              userId={userId}
-              userName={userName}
             />
           </div>
         );
       case 7:
         return (
           <div>
-            <h3>Stap 7 — Go / No-Go</h3>
+            <h3>{tSteps("step7.title")}</h3>
             <Step7_GoNoGo
               lmra={state.lmra}
               onChange={(stepPayload) => {
                 handleStepChange(7, { step7: stepPayload } as Partial<LMRA>);
               }}
-              userId={userId}
-              userName={userName}
             />
           </div>
         );
       case 8:
         return (
           <div>
-            <h3>Stap 8 — Handtekeningen</h3>
+            <h3>{tSteps("step8.title")}</h3>
             <Step8_Signatures
               lmra={state.lmra}
               onChange={(stepPayload) => {
@@ -296,7 +304,7 @@ export default function LMRAWizard({
           </div>
         );
       default:
-        return <div>Onbekende stap</div>;
+        return <div>{t("unknownStep")}</div>;
     }
   };
 
@@ -304,8 +312,10 @@ export default function LMRAWizard({
     <div className="lmra-wizard relative">
       <header className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-lg font-semibold">LMRA - Last Minute Risk Assessment</h2>
-          <div className="text-sm text-muted">Stap {state.currentStep} van {TOTAL_STEPS}</div>
+          <h2 className="text-lg font-semibold">{t("title")}</h2>
+          <div className="text-sm text-muted">
+            {t("stepOf", { current: state.currentStep, total: TOTAL_STEPS })}
+          </div>
         </div>
         <div className="flex items-center gap-4">
           {state.saving && <LoadingSpinner size="sm" />}
@@ -321,28 +331,33 @@ export default function LMRAWizard({
             onClick={previous}
             disabled={state.currentStep === 1}
             className="btn btn-secondary"
-            aria-label="Vorige stap"
+            aria-label={tCommon("buttons.previous")}
           >
-            Vorige
+            {tCommon("buttons.previous")}
           </button>
-          <button onClick={handleNextClicked} className="btn btn-primary" aria-label="Volgende stap">
-            Volgende
+          <button
+            onClick={handleNextClicked}
+            className="btn btn-primary"
+            aria-label={tCommon("buttons.next")}
+          >
+            {tCommon("buttons.next")}
           </button>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="text-sm text-muted">Progress: {Math.round((state.currentStep / TOTAL_STEPS) * 100)}%</div>
-          <div className="text-sm text-muted">Stap {state.currentStep}/{TOTAL_STEPS}</div>
+          <div className="text-sm text-muted">
+            {t("progressPercent", { percent: Math.round((state.currentStep / TOTAL_STEPS) * 100) })}
+          </div>
+          <div className="text-sm text-muted">
+            {t("stepOf", { current: state.currentStep, total: TOTAL_STEPS })}
+          </div>
         </div>
       </footer>
 
       {/* Emergency Stop-Work Button - Always visible during LMRA execution */}
       {state.lmra.id && (
         <div className="fixed bottom-4 right-4 z-50">
-          <StopWorkButton
-            lmraId={state.lmra.id as string}
-            onStopWork={handleStopWorkCreated}
-          />
+          <StopWorkButton lmraId={state.lmra.id as string} onStopWork={handleStopWorkCreated} />
         </div>
       )}
     </div>

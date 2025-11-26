@@ -73,7 +73,7 @@ describe("Authentication System", () => {
   beforeEach(async () => {
     // Reset auth mock state between tests
     __resetAuthMock();
-    
+
     // Sign out any existing user
     if (auth.currentUser) {
       await signOut(auth);
@@ -170,7 +170,7 @@ describe("Authentication System", () => {
           throw error;
         }
       }
-      
+
       // This would normally send an email, but in emulator it just succeeds
       await expect(sendPasswordResetEmail(auth, testEmail)).resolves.not.toThrow();
     });

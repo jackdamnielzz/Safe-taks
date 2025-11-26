@@ -32,6 +32,17 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Check if Firebase config is properly set (not placeholder values)
+const isFirebaseConfigValid = () => {
+  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+  return (
+    apiKey &&
+    apiKey !== "YOUR_DEV_API_KEY" &&
+    !apiKey.startsWith("YOUR_") &&
+    apiKey.length > 20
+  );
+};
+
 // Only initialize and export client SDKs when running in the browser.
 // This prevents Firebase client SDK from attempting to initialize during SSG/build on the server.
 const isBrowser = typeof window !== "undefined";

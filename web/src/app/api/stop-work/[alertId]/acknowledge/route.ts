@@ -18,7 +18,7 @@ export async function POST(request: Request, { params }: { params: { alertId: st
       .doc(orgId)
       .collection("stopWorkAlerts")
       .doc(alertId);
-    
+
     const alertSnap = await alertRef.get();
     if (!alertSnap.exists) {
       return NextResponse.json({ error: "Stop-work alert not found" }, { status: 404 });
@@ -27,7 +27,7 @@ export async function POST(request: Request, { params }: { params: { alertId: st
     const alertData = alertSnap.data();
 
     // Check if already acknowledged
-    if (alertData?.status === 'acknowledged' || alertData?.status === 'resolved') {
+    if (alertData?.status === "acknowledged" || alertData?.status === "resolved") {
       return NextResponse.json(
         { error: "Alert already acknowledged or resolved" },
         { status: 400 }
@@ -37,9 +37,9 @@ export async function POST(request: Request, { params }: { params: { alertId: st
     // Update alert
     const now = new Date();
     await alertRef.update({
-      status: 'acknowledged',
+      status: "acknowledged",
       acknowledgedBy: user.uid,
-      acknowledgedByName: 'Supervisor', // TODO: Get actual name from user profile
+      acknowledgedByName: "Supervisor", // TODO: Get actual name from user profile
       acknowledgedAt: now,
       updatedAt: now,
     });
@@ -56,10 +56,7 @@ export async function POST(request: Request, { params }: { params: { alertId: st
       },
     });
   } catch (error: any) {
-    console.error('Error acknowledging stop-work alert:', error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
-    );
+    console.error("Error acknowledging stop-work alert:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

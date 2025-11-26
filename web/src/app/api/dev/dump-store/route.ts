@@ -16,6 +16,9 @@ export async function GET() {
     // Return a shallow copy to avoid accidental mutation.
     return NextResponse.json({ store: inMemoryStore });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Failed to read in-memory store" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Failed to read in-memory store" },
+      { status: 500 }
+    );
   }
 }

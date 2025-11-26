@@ -298,9 +298,9 @@ export default function TraSearch() {
 
               <div>
                 {searchResults.results.length === 0 ? (
-                    <Card className="p-8 text-center">
-                      <p className="text-gray-500">{t("search.noResults")}</p>
-                    </Card>
+                  <Card className="p-8 text-center">
+                    <p className="text-gray-500">{t("search.noResults")}</p>
+                  </Card>
                 ) : (
                   searchResults.results.map((result) => (
                     <SearchResult key={result.id} result={result} />
@@ -308,19 +308,19 @@ export default function TraSearch() {
                 )}
               </div>
 
-                  {searchResults.hasMore && (
-                    <div className="mt-6 text-center">
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          // TODO: Implement pagination with cursor
-                          console.log("Load more results");
-                        }}
-                      >
-                        {t("search.loadMore")}
-                      </Button>
-                    </div>
-                  )}
+              {searchResults.hasMore && (
+                <div className="mt-6 text-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      // TODO: Implement pagination with cursor
+                      console.log("Load more results");
+                    }}
+                  >
+                    {t("search.loadMore")}
+                  </Button>
+                </div>
+              )}
             </>
           )}
 

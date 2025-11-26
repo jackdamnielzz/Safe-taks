@@ -957,6 +957,20 @@ body {
   transform: scale(0.95);
 }
 
+/* TRA Wizard - step-level error highlight */
+.tra-step-error-highlight {
+  animation: tra-step-error-pulse 0.6s ease-out;
+}
+
+@keyframes tra-step-error-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(220, 38, 38, 0);
+  }
+}
+
 /* Outdoor Visibility Enhancements */
 @media (max-width: 768px) {
   .field-worker-mode {

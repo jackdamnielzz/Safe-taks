@@ -1,0 +1,35 @@
+Stap-voor-stap verificatie (TRA sjablonen laden)
+
+1) Start dev-server (als nog niet gestart)
+   - Open terminal in project root en run:
+     cd web && npm run dev
+   - Wacht tot Next.js de site serveert (meestal http://localhost:3000)
+
+2) Open de LMRA-wizard in de browser
+   - Navigeer naar de pagina waar je STEP 1 — TRA selectie ziet
+
+3) Open Developer Tools (Console)
+   - Chrome/Edge: Ctrl+Shift+I of F12 -> Console tab
+   - Firefox: Ctrl+Shift+K
+
+4) Klik de knop "Sjablonen opnieuw laden"
+   - Let op console-berichten die beginnen met:
+     - [Step1_TraSelection] fetch loadedTemplates count:
+     - [Step1_TraSelection] manual fetchTemplates count:
+     - [TemplateSelector] fallback dynamic load failed:  (indien de fallback faalt)
+   - Kopieer alle relevante console-logs en plak ze in de chat (of maak een screenshot)
+
+5) Wat te controleren in de console-output
+   - Succes: log toont loadedTemplates count: 5 (of >0) en een array met template-objecten
+   - Fout: log toont een fetch/foutmelding (bijv. 404, 500, CORS, of import-fout)
+   - Indien success maar nog steeds geen UI: noteer eventuele CSS/JS fouten in console
+
+6) Als het niet werkt, geef deze informatie hier:
+   - De exacte console-logs na klikken op "Sjablonen opnieuw laden"
+   - De URL van de app (bv. http://localhost:3000)
+   - Eventuele foutmeldingen in de browser (network tab of console)
+
+Extra (optioneel)
+- Als je wil dat ik de client loader direct naar fetch('/api/templates') forceer in plaats van dynamic import fallback, zeg "ga door met optie A" — ik zal het implementeren zodat de UI altijd de API gebruikt.
+
+Bedoeld als korte debug helper; verwijder web/tmp/template-debug-instructions.txt als je klaar bent.

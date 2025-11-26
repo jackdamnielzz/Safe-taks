@@ -76,12 +76,30 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className = ""
   const t = useTranslations();
   const statusConfig = {
     active: { label: t("badge.active", { default: "Actief" }), variant: "success" as BadgeVariant },
-    pending: { label: t("badge.pending", { default: "In behandeling" }), variant: "warning" as BadgeVariant },
-    completed: { label: t("badge.completed", { default: "Voltooid" }), variant: "primary" as BadgeVariant },
-    suspended: { label: t("badge.suspended", { default: "Geschorst" }), variant: "error" as BadgeVariant },
-    archived: { label: t("badge.archived", { default: "Gearchiveerd" }), variant: "default" as BadgeVariant },
-    draft: { label: t("badge.draft", { default: "Concept" }), variant: "secondary" as BadgeVariant },
-    review: { label: t("badge.review", { default: "Ter beoordeling" }), variant: "info" as BadgeVariant },
+    pending: {
+      label: t("badge.pending", { default: "In behandeling" }),
+      variant: "warning" as BadgeVariant,
+    },
+    completed: {
+      label: t("badge.completed", { default: "Voltooid" }),
+      variant: "primary" as BadgeVariant,
+    },
+    suspended: {
+      label: t("badge.suspended", { default: "Geschorst" }),
+      variant: "error" as BadgeVariant,
+    },
+    archived: {
+      label: t("badge.archived", { default: "Gearchiveerd" }),
+      variant: "default" as BadgeVariant,
+    },
+    draft: {
+      label: t("badge.draft", { default: "Concept" }),
+      variant: "secondary" as BadgeVariant,
+    },
+    review: {
+      label: t("badge.review", { default: "Ter beoordeling" }),
+      variant: "info" as BadgeVariant,
+    },
   };
 
   const config = statusConfig[status];
@@ -102,10 +120,26 @@ interface RiskBadgeProps {
 export const RiskBadge: React.FC<RiskBadgeProps> = ({ level, score, className = "" }) => {
   const t = useTranslations();
   const riskConfig = {
-    low: { label: t("risk.low", { default: "Laag risico" }), variant: "success" as BadgeVariant, icon: "🟢" },
-    medium: { label: t("risk.medium", { default: "Medium risico" }), variant: "warning" as BadgeVariant, icon: "🟡" },
-    high: { label: t("risk.high", { default: "Hoog risico" }), variant: "error" as BadgeVariant, icon: "🔴" },
-    critical: { label: t("risk.critical", { default: "Kritiek risico" }), variant: "error" as BadgeVariant, icon: "🚨" },
+    low: {
+      label: t("risk.low", { default: "Laag risico" }),
+      variant: "success" as BadgeVariant,
+      icon: "🟢",
+    },
+    medium: {
+      label: t("risk.medium", { default: "Medium risico" }),
+      variant: "warning" as BadgeVariant,
+      icon: "🟡",
+    },
+    high: {
+      label: t("risk.high", { default: "Hoog risico" }),
+      variant: "error" as BadgeVariant,
+      icon: "🔴",
+    },
+    critical: {
+      label: t("risk.critical", { default: "Kritiek risico" }),
+      variant: "error" as BadgeVariant,
+      icon: "🚨",
+    },
   };
 
   const config = riskConfig[level];

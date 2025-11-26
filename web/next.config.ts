@@ -49,7 +49,15 @@ const nextConfig: NextConfig = withBundleAnalyzerConfig(
   withPWA(pwaConfig)({
     // Experimental optimizations
     experimental: {
-      optimizePackageImports: ["recharts", "react-icons", "@sentry/nextjs"],
+      optimizePackageImports: [
+        "recharts",
+        "lucide-react",
+        "@radix-ui/react-dialog",
+        "@radix-ui/react-popover",
+        "react-hook-form",
+      ],
+      // optimizeCss disabled - requires critters package
+      // optimizeCss: true,
     },
 
     // Webpack configuration for bundle optimization
@@ -63,12 +71,12 @@ const nextConfig: NextConfig = withBundleAnalyzerConfig(
             cacheGroups: {
               default: false,
               vendors: false,
-              // Vendor chunk for shared dependencies
-              vendor: {
-                name: "vendor",
-                chunks: "all",
-                test: /node_modules/,
-                priority: 20,
+              // Firebase in separate chunk
+              firebase: {
+                name: "firebase",
+                test: /[\\/]node_modules[\\/](firebase|@firebase)[\\/]/,
+                priority: 40,
+                reuseExistingChunk: true,
               },
               // Recharts in separate chunk (lazy loaded)
               recharts: {
@@ -83,6 +91,13 @@ const nextConfig: NextConfig = withBundleAnalyzerConfig(
                 test: /[\\/]node_modules[\\/](jspdf|xlsx)[\\/]/,
                 priority: 30,
                 reuseExistingChunk: true,
+              },
+              // Vendor chunk for shared dependencies
+              vendor: {
+                name: "vendor",
+                chunks: "all",
+                test: /node_modules/,
+                priority: 20,
               },
               // Common components
               common: {

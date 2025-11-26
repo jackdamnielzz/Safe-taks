@@ -16,14 +16,23 @@ import {
   sanitizeTemplateData,
 } from "@/lib/validators/template";
 import type { TRATemplate } from "@/lib/types/template";
+import { getTemplateById } from "@/lib/templates/load-templates";
 
 /**
  * GET /api/templates/[id]
- * Get template by ID
+ * Get template by ID - supports both system templates and custom Firestore templates
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
+    
+    // First, check if it's a system template (these don't require auth)
+    const systemTemplate = getTemplateById(id);
+    if (systemTemplate) {
+      return NextResponse.json({ template: systemTemplate });
+    }
+    
+    // If not a system template, check Firestore (requires auth)
     const user = await requireOrgAuth(request);
     const { firestore } = initializeAdmin();
 
@@ -48,7 +57,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return Errors.notFound("Template");
     }
 
-    return NextResponse.json(template);
+    return NextResponse.json({ template });
   } catch (error: any) {
     console.error("Error getting template:", error);
     if (error.message === "Unauthorized") {

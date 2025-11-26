@@ -3,31 +3,31 @@
  * Defines the structure for VCA-compliant TRA templates
  */
 
-export type IndustryType = 'construction' | 'industrial' | 'offshore';
-export type HazardCategory = 
-  | 'electrical' 
-  | 'mechanical' 
-  | 'chemical' 
-  | 'biological' 
-  | 'physical' 
-  | 'ergonomic' 
-  | 'psychosocial' 
-  | 'fire_explosion' 
-  | 'environmental'
-  | 'thermal'
-  | 'height'
-  | 'confined_space'
-  | 'hot_work'
-  | 'excavation';
+export type IndustryType = "construction" | "industrial" | "offshore";
+export type HazardCategory =
+  | "electrical"
+  | "mechanical"
+  | "chemical"
+  | "biological"
+  | "physical"
+  | "ergonomic"
+  | "psychosocial"
+  | "fire_explosion"
+  | "environmental"
+  | "thermal"
+  | "height"
+  | "confined_space"
+  | "hot_work"
+  | "excavation";
 
-export type ControlMeasureType = 
-  | 'elimination' 
-  | 'substitution' 
-  | 'engineering' 
-  | 'administrative' 
-  | 'ppe';
+export type ControlMeasureType =
+  | "elimination"
+  | "substitution"
+  | "engineering"
+  | "administrative"
+  | "ppe";
 
-export type CreatedByType = 'system' | 'organization';
+export type CreatedByType = "system" | "organization";
 
 /**
  * Task Step in a TRA
@@ -102,31 +102,38 @@ export interface RiskScore {
   level: RiskLevel;
 }
 
-export type RiskLevel = 'very_high' | 'high' | 'substantial' | 'possible' | 'low';
+export type RiskLevel = "very_high" | "high" | "substantial" | "possible" | "low";
 
 /**
  * Risk Level Classification
  * Based on Kinney & Wiruth score
  */
-export const RISK_LEVELS: Record<RiskLevel, { min: number; max: number; color: string; label: string }> = {
-  very_high: { min: 400, max: Infinity, color: '#dc2626', label: 'Zeer Hoog' },
-  high: { min: 200, max: 399, color: '#ea580c', label: 'Hoog' },
-  substantial: { min: 70, max: 199, color: '#eab308', label: 'Aanzienlijk' },
-  possible: { min: 20, max: 69, color: '#3b82f6', label: 'Mogelijk' },
-  low: { min: 0, max: 19, color: '#22c55e', label: 'Laag' },
+export const RISK_LEVELS: Record<
+  RiskLevel,
+  { min: number; max: number; color: string; label: string }
+> = {
+  very_high: { min: 400, max: Infinity, color: "#dc2626", label: "Zeer Hoog" },
+  high: { min: 200, max: 399, color: "#ea580c", label: "Hoog" },
+  substantial: { min: 70, max: 199, color: "#eab308", label: "Aanzienlijk" },
+  possible: { min: 20, max: 69, color: "#3b82f6", label: "Mogelijk" },
+  low: { min: 0, max: 19, color: "#22c55e", label: "Laag" },
 };
 
 /**
  * Calculate risk score using Kinney & Wiruth methodology
  */
-export function calculateRiskScore(effect: number, exposure: number, probability: number): RiskScore {
+export function calculateRiskScore(
+  effect: number,
+  exposure: number,
+  probability: number
+): RiskScore {
   const score = effect * exposure * probability;
-  let level: RiskLevel = 'low';
+  let level: RiskLevel = "low";
 
-  if (score >= 400) level = 'very_high';
-  else if (score >= 200) level = 'high';
-  else if (score >= 70) level = 'substantial';
-  else if (score >= 20) level = 'possible';
+  if (score >= 400) level = "very_high";
+  else if (score >= 200) level = "high";
+  else if (score >= 70) level = "substantial";
+  else if (score >= 20) level = "possible";
 
   return { effect, exposure, probability, score, level };
 }
@@ -143,28 +150,28 @@ export function getRiskLevelDetails(level: RiskLevel) {
  */
 export const KINNEY_WIRUTH_SCALES = {
   effect: {
-    1: 'Licht letsel, geen verzuim',
-    3: 'Licht letsel, eerste hulp nodig',
-    7: 'Ernstig letsel, verzuim',
-    15: 'Zeer ernstig letsel, blijvend letsel',
-    40: 'Dood of meerdere ernstige letsels',
-    100: 'Catastrofaal, meerdere doden',
+    1: "Licht letsel, geen verzuim",
+    3: "Licht letsel, eerste hulp nodig",
+    7: "Ernstig letsel, verzuim",
+    15: "Zeer ernstig letsel, blijvend letsel",
+    40: "Dood of meerdere ernstige letsels",
+    100: "Catastrofaal, meerdere doden",
   },
   exposure: {
-    0.5: 'Zelden (enkele keren per jaar)',
-    1: 'Af en toe (maandelijks)',
-    2: 'Soms (wekelijks)',
-    3: 'Regelmatig (dagelijks)',
-    6: 'Frequent (uurlijks)',
-    10: 'Continu',
+    0.5: "Zelden (enkele keren per jaar)",
+    1: "Af en toe (maandelijks)",
+    2: "Soms (wekelijks)",
+    3: "Regelmatig (dagelijks)",
+    6: "Frequent (uurlijks)",
+    10: "Continu",
   },
   probability: {
-    0.1: 'Praktisch onmogelijk',
-    0.2: 'Denkbaar maar onwaarschijnlijk',
-    0.5: 'Onwaarschijnlijk maar mogelijk',
-    1: 'Mogelijk (50/50)',
-    3: 'Vrij waarschijnlijk',
-    6: 'Waarschijnlijk',
-    10: 'Zeer waarschijnlijk/zeker',
+    0.1: "Praktisch onmogelijk",
+    0.2: "Denkbaar maar onwaarschijnlijk",
+    0.5: "Onwaarschijnlijk maar mogelijk",
+    1: "Mogelijk (50/50)",
+    3: "Vrij waarschijnlijk",
+    6: "Waarschijnlijk",
+    10: "Zeer waarschijnlijk/zeker",
   },
 };

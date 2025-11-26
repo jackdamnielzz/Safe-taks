@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { AuthProvider, ProtectedRoute, useAuth } from "../../components/AuthProvider";
 import {
   Card,
@@ -25,8 +26,19 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
-import TraWizard from "../../components/forms/TraWizard";
+import dynamic from "next/dynamic";
 import type { TRA } from "../../lib/types/tra";
+
+// Lazy load TraWizard component for better performance
+const TraWizard = dynamic(() => import("../../components/forms/TraWizard"), {
+  loading: () => (
+    <div className="flex items-center justify-center p-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <span className="ml-3 text-slate-600">TRA wizard laden...</span>
+    </div>
+  ),
+  ssr: false,
+});
 
 /**
  * Enhanced TRAs page with full functionality
@@ -37,13 +49,15 @@ import type { TRA } from "../../lib/types/tra";
  */
 
 interface TRAsResponse {
-  tras: TRA[];
-  totalCount: number;
+  tras?: TRA[];
+  items?: TRA[];
+  totalCount?: number;
 }
 
 function TRAsContent() {
   const { user, userProfile } = useAuth();
   const router = useRouter();
+  const t = useTranslations();
 
   // State management
   const [tras, setTras] = useState<TRA[]>([]);
@@ -52,7 +66,6 @@ function TRAsContent() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Load TRAs on mount
   useEffect(() => {
@@ -78,7 +91,8 @@ function TRAsContent() {
       }
 
       const data: TRAsResponse = await response.json();
-      setTras(data.tras);
+      const items = (data.tras ?? data.items) ?? [];
+      setTras(items as TRA[]);
     } catch (err) {
       console.error("Error loading TRAs:", err);
       setError(err instanceof Error ? err.message : "Failed to load TRAs");
@@ -167,16 +181,6 @@ function TRAsContent() {
     );
   };
 
-  /**
-   * Handle TRA creation modal close
-   */
-  const handleCloseCreateModal = () => {
-    setShowCreateModal(false);
-    // Refresh the list after a short delay to allow for server processing
-    setTimeout(() => {
-      loadTRAs();
-    }, 1000);
-  };
 
   if (loading) {
     return (
@@ -212,7 +216,10 @@ function TRAsContent() {
               {filteredTras.length} van {tras?.length || 0} TRA's
             </p>
           </div>
-          <Button onClick={() => setShowCreateModal(true)} className="flex flex-row items-center gap-2 px-5 py-2 text-sm font-medium">
+          <Button
+            onClick={() => router.push("/tras/create")}
+            className="flex flex-row items-center gap-2 px-5 py-2 text-sm font-medium"
+          >
             <Plus className="h-4 w-4" />
             Nieuwe TRA
           </Button>
@@ -321,15 +328,7 @@ function TRAsContent() {
         </div>
       )}
 
-      {/* Create TRA Modal */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={handleCloseCreateModal}
-        title="Nieuwe TRA Aanmaken"
-        size="lg"
-      >
-        <TraWizard />
-      </Modal>
+      {/* Create TRA Modal removed: creation happens on /tras/create */}
     </div>
   );
 }

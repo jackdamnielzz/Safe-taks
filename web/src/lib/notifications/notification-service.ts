@@ -1,12 +1,12 @@
 /**
  * Notification Service
- * 
+ *
  * High-level service for sending notifications across the application
  * Integrates with Resend email service
  */
 
-import { sendEmail, EmailType } from './resend-client';
-import { getEmailTemplate } from './email-templates';
+import { sendEmail, EmailType } from "./resend-client";
+import { getEmailTemplate } from "./email-templates";
 
 /**
  * Send welcome email to new user
@@ -22,8 +22,8 @@ export async function sendWelcomeEmail(
     html: template.html,
     text: template.text,
     tags: [
-      { name: 'type', value: 'welcome' },
-      { name: 'app', value: 'safework-pro' },
+      { name: "type", value: "welcome" },
+      { name: "app", value: "safework-pro" },
     ],
   });
 }
@@ -48,8 +48,8 @@ export async function sendTraApprovalRequest(
     html: template.html,
     text: template.text,
     tags: [
-      { name: 'type', value: 'tra_approval_request' },
-      { name: 'app', value: 'safework-pro' },
+      { name: "type", value: "tra_approval_request" },
+      { name: "app", value: "safework-pro" },
     ],
   });
 }
@@ -72,8 +72,8 @@ export async function sendTraApprovedNotification(
     html: template.html,
     text: template.text,
     tags: [
-      { name: 'type', value: 'tra_approved' },
-      { name: 'app', value: 'safework-pro' },
+      { name: "type", value: "tra_approved" },
+      { name: "app", value: "safework-pro" },
     ],
   });
 }
@@ -97,8 +97,8 @@ export async function sendTraRejectedNotification(
     html: template.html,
     text: template.text,
     tags: [
-      { name: 'type', value: 'tra_rejected' },
-      { name: 'app', value: 'safework-pro' },
+      { name: "type", value: "tra_rejected" },
+      { name: "app", value: "safework-pro" },
     ],
   });
 }
@@ -123,9 +123,9 @@ export async function sendLmraStopWorkAlert(
     html: template.html,
     text: template.text,
     tags: [
-      { name: 'type', value: 'lmra_stop_work' },
-      { name: 'priority', value: 'critical' },
-      { name: 'app', value: 'safework-pro' },
+      { name: "type", value: "lmra_stop_work" },
+      { name: "priority", value: "critical" },
+      { name: "app", value: "safework-pro" },
     ],
   });
 }
@@ -133,10 +133,7 @@ export async function sendLmraStopWorkAlert(
 /**
  * Send password reset email
  */
-export async function sendPasswordResetEmail(
-  to: string,
-  data: { resetLink: string }
-) {
+export async function sendPasswordResetEmail(to: string, data: { resetLink: string }) {
   const template = getEmailTemplate(EmailType.PASSWORD_RESET, data);
   return sendEmail({
     to,
@@ -144,8 +141,8 @@ export async function sendPasswordResetEmail(
     html: template.html,
     text: template.text,
     tags: [
-      { name: 'type', value: 'password_reset' },
-      { name: 'app', value: 'safework-pro' },
+      { name: "type", value: "password_reset" },
+      { name: "app", value: "safework-pro" },
     ],
   });
 }
@@ -170,9 +167,9 @@ export async function sendCompetencyExpiryWarning(
     html: template.html,
     text: template.text,
     tags: [
-      { name: 'type', value: 'competency_expiry' },
-      { name: 'priority', value: data.daysUntilExpiry <= 7 ? 'high' : 'normal' },
-      { name: 'app', value: 'safework-pro' },
+      { name: "type", value: "competency_expiry" },
+      { name: "priority", value: data.daysUntilExpiry <= 7 ? "high" : "normal" },
+      { name: "app", value: "safework-pro" },
     ],
   });
 }
@@ -195,8 +192,8 @@ export async function sendSubscriptionCreatedEmail(
     html: template.html,
     text: template.text,
     tags: [
-      { name: 'type', value: 'subscription_created' },
-      { name: 'app', value: 'safework-pro' },
+      { name: "type", value: "subscription_created" },
+      { name: "app", value: "safework-pro" },
     ],
   });
 }
@@ -218,8 +215,99 @@ export async function sendPaymentFailedEmail(
     html: template.html,
     text: template.text,
     tags: [
-      { name: 'type', value: 'payment_failed' },
+      { name: "type", value: "payment_failed" },
+      { name: "priority", value: "high" },
+      { name: "app", value: "safework-pro" },
+    ],
+  });
+}
+
+/**
+ * Send high-risk TRA notification to supervisors
+ */
+export async function sendHighRiskTraNotification(
+  to: string | string[],
+  data: {
+    traTitle: string;
+    projectName: string;
+    riskLevel: string;
+    riskScore: number;
+    creatorName: string;
+    traLink: string;
+    hazardCount: number;
+  }
+) {
+  const template = getEmailTemplate(EmailType.HIGH_RISK_TRA, data);
+  return sendEmail({
+    to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    tags: [
+      { name: 'type', value: 'high_risk_tra' },
       { name: 'priority', value: 'high' },
+      { name: 'app', value: 'safework-pro' },
+    ],
+  });
+}
+
+/**
+ * Send emergency procedure alert for HIGH/VERY_HIGH risk TRAs
+ */
+export async function sendEmergencyProcedureAlert(
+  to: string | string[],
+  data: {
+    traId: string;
+    traTitle: string;
+    taskDescription: string;
+    riskLevel: string;
+    emergencyContacts: Array<{
+      name: string;
+      role: string;
+      phone: string;
+      email?: string;
+    }>;
+    projectName: string;
+    reportedBy: string;
+  }
+) {
+  const template = getEmailTemplate(EmailType.EMERGENCY_PROCEDURE_ALERT, data);
+  return sendEmail({
+    to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    tags: [
+      { name: 'type', value: 'emergency_procedure_alert' },
+      { name: 'priority', value: 'high' },
+      { name: 'app', value: 'safework-pro' },
+    ],
+  });
+}
+
+/**
+ * Send supervisor acknowledgment request
+ */
+export async function sendSupervisorAcknowledgmentRequest(
+  to: string | string[],
+  data: {
+    eventType: 'high_risk_tra' | 'stop_work';
+    eventTitle: string;
+    projectName: string;
+    location?: string;
+    reason: string;
+    acknowledgeLink: string;
+  }
+) {
+  const template = getEmailTemplate(EmailType.SUPERVISOR_ACKNOWLEDGMENT, data);
+  return sendEmail({
+    to,
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+    tags: [
+      { name: 'type', value: 'supervisor_acknowledgment' },
+      { name: 'priority', value: 'critical' },
       { name: 'app', value: 'safework-pro' },
     ],
   });

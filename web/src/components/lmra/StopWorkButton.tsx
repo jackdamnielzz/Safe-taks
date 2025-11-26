@@ -4,18 +4,18 @@
  * W1.6: Stop-Work Authority Implementation
  */
 
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useAuth } from '@/components/AuthProvider';
-import { 
-  getStopWorkService, 
-  getStopWorkSeverityLabel, 
-  getStopWorkCategoryLabel 
-} from '@/lib/stopWorkService';
-import { CreateStopWorkRequest, StopWorkAlert } from '@/lib/types/lmra';
-import SignaturePad from './SignaturePad';
-import PhotoCapture from './PhotoCapture';
+import React, { useState } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import {
+  getStopWorkService,
+  getStopWorkSeverityLabel,
+  getStopWorkCategoryLabel,
+} from "@/lib/stopWorkService";
+import { CreateStopWorkRequest, StopWorkAlert } from "@/lib/types/lmra";
+import SignaturePad from "./SignaturePad";
+import PhotoCapture from "./PhotoCapture";
 
 interface StopWorkButtonProps {
   lmraId: string;
@@ -24,33 +24,35 @@ interface StopWorkButtonProps {
   className?: string;
 }
 
-type DialogStep = 'confirm' | 'details' | 'signature' | 'success';
+type DialogStep = "confirm" | "details" | "signature" | "success";
 
-export function StopWorkButton({ 
-  lmraId, 
-  onStopWork, 
+export function StopWorkButton({
+  lmraId,
+  onStopWork,
   disabled = false,
-  className = '' 
+  className = "",
 }: StopWorkButtonProps) {
   // Get auth context
   const { user, userProfile } = useAuth();
-  
+
   const [isOpen, setIsOpen] = useState(false);
-  const [currentStep, setCurrentStep] = useState<DialogStep>('confirm');
+  const [currentStep, setCurrentStep] = useState<DialogStep>("confirm");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Form state
-  const [severity, setSeverity] = useState<'moderate' | 'high' | 'critical'>('high');
-  const [category, setCategory] = useState<'weather' | 'equipment' | 'personnel' | 'hazard' | 'other'>('hazard');
-  const [reason, setReason] = useState('');
-  const [description, setDescription] = useState('');
+  const [severity, setSeverity] = useState<"moderate" | "high" | "critical">("high");
+  const [category, setCategory] = useState<
+    "weather" | "equipment" | "personnel" | "hazard" | "other"
+  >("hazard");
+  const [reason, setReason] = useState("");
+  const [description, setDescription] = useState("");
   const [photoIds, setPhotoIds] = useState<string[]>([]);
   const [signature, setSignature] = useState<string | null>(null);
 
   const handleOpen = () => {
     setIsOpen(true);
-    setCurrentStep('confirm');
+    setCurrentStep("confirm");
     setError(null);
   };
 
@@ -58,44 +60,45 @@ export function StopWorkButton({
     if (isSubmitting) return;
     setIsOpen(false);
     // Reset form
-    setSeverity('high');
-    setCategory('hazard');
-    setReason('');
-    setDescription('');
+    setSeverity("high");
+    setCategory("hazard");
+    setReason("");
+    setDescription("");
     setPhotoIds([]);
     setSignature(null);
-    setCurrentStep('confirm');
+    setCurrentStep("confirm");
     setError(null);
   };
 
   const handleConfirm = () => {
-    setCurrentStep('details');
+    setCurrentStep("details");
   };
 
   const handleDetailsNext = () => {
     if (!reason.trim()) {
-      setError('Reden is verplicht');
+      setError("Reden is verplicht");
       return;
     }
     if (!description.trim()) {
-      setError('Beschrijving is verplicht');
+      setError("Beschrijving is verplicht");
       return;
     }
     setError(null);
-    setCurrentStep('signature');
+    setCurrentStep("signature");
   };
 
   const handleDetailsBack = () => {
-    setCurrentStep('confirm');
+    setCurrentStep("confirm");
   };
 
   const handleSignatureBack = () => {
-    setCurrentStep('details');
+    setCurrentStep("details");
   };
 
   const handleSubmit = async () => {
+    // Validate signature synchronously so tests can observe the error immediately
     if (!signature) {
-      setError('Handtekening is verplicht');
+      setError("Handtekening is verplicht");
       return;
     }
 
@@ -104,12 +107,12 @@ export function StopWorkButton({
 
     try {
       const stopWorkService = getStopWorkService();
-      
+
       // Get user info from auth context
-      const userId = user?.uid || 'unknown-user';
-      const userName = userProfile 
-        ? `${userProfile.firstName} ${userProfile.lastName}`.trim() 
-        : user?.email || 'Unknown User';
+      const userId = user?.uid || "unknown-user";
+      const userName = userProfile
+        ? `${userProfile.firstName} ${userProfile.lastName}`.trim()
+        : user?.email || "Unknown User";
 
       const request: CreateStopWorkRequest = {
         lmraId,
@@ -128,9 +131,9 @@ export function StopWorkButton({
       };
 
       const alert = await stopWorkService.createStopWorkAlert(request);
-      
-      setCurrentStep('success');
-      
+
+      setCurrentStep("success");
+
       if (onStopWork) {
         onStopWork(alert);
       }
@@ -140,15 +143,15 @@ export function StopWorkButton({
         handleClose();
       }, 3000);
     } catch (err) {
-      console.error('Failed to create stop-work alert:', err);
-      setError(err instanceof Error ? err.message : 'Er is een fout opgetreden');
+      console.error("Failed to create stop-work alert:", err);
+      setError(err instanceof Error ? err.message : "Er is een fout opgetreden");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handlePhotoCapture = (photoId: string) => {
-    setPhotoIds(prev => [...prev, photoId]);
+    setPhotoIds((prev) => [...prev, photoId]);
   };
 
   return (
@@ -166,44 +169,39 @@ export function StopWorkButton({
 
       {/* Dialog */}
       {isOpen && (
-        <div className="stop-work-dialog-overlay" onClick={(e) => {
-          if (e.target === e.currentTarget && !isSubmitting) {
-            handleClose();
-          }
-        }}>
+        <div
+          className="stop-work-dialog-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !isSubmitting) {
+              handleClose();
+            }
+          }}
+        >
           <div className="stop-work-dialog">
             {/* Step 1: Confirm Intent */}
-            {currentStep === 'confirm' && (
+            {currentStep === "confirm" && (
               <div className="dialog-content">
                 <div className="dialog-header">
                   <h2 className="dialog-title">⚠️ STOP WERK BEVESTIGING</h2>
                 </div>
-                
+
                 <div className="dialog-body">
                   <p className="warning-text">
-                    Weet u zeker dat u het werk wilt stopzetten? Dit zal onmiddellijk 
-                    supervisors waarschuwen en alle activiteiten stilleggen.
+                    Weet u zeker dat u het werk wilt stopzetten? Dit zal onmiddellijk supervisors
+                    waarschuwen en alle activiteiten stilleggen.
                   </p>
-                  
+
                   <div className="warning-box">
-                    <strong>Let op:</strong> Gebruik deze functie alleen bij ernstige 
+                    <strong>Let op:</strong> Gebruik deze functie alleen bij ernstige
                     veiligheidssituaties die onmiddellijke actie vereisen.
                   </div>
                 </div>
 
                 <div className="dialog-footer">
-                  <button
-                    onClick={handleClose}
-                    className="btn-secondary"
-                    disabled={isSubmitting}
-                  >
+                  <button onClick={handleClose} className="btn-secondary" disabled={isSubmitting}>
                     Annuleren
                   </button>
-                  <button
-                    onClick={handleConfirm}
-                    className="btn-danger"
-                    disabled={isSubmitting}
-                  >
+                  <button onClick={handleConfirm} className="btn-danger" disabled={isSubmitting}>
                     Doorgaan
                   </button>
                 </div>
@@ -211,18 +209,14 @@ export function StopWorkButton({
             )}
 
             {/* Step 2: Capture Details */}
-            {currentStep === 'details' && (
+            {currentStep === "details" && (
               <div className="dialog-content">
                 <div className="dialog-header">
                   <h2 className="dialog-title">🛑 STOP WERK DETAILS</h2>
                 </div>
 
                 <div className="dialog-body">
-                  {error && (
-                    <div className="error-message">
-                      {error}
-                    </div>
-                  )}
+                  {error && <div className="error-message">{error}</div>}
 
                   <div className="form-group">
                     <label htmlFor="severity">Ernst *</label>
@@ -232,9 +226,9 @@ export function StopWorkButton({
                       onChange={(e) => setSeverity(e.target.value as any)}
                       className="form-select"
                     >
-                      <option value="moderate">{getStopWorkSeverityLabel('moderate')}</option>
-                      <option value="high">{getStopWorkSeverityLabel('high')}</option>
-                      <option value="critical">{getStopWorkSeverityLabel('critical')}</option>
+                      <option value="moderate">{getStopWorkSeverityLabel("moderate")}</option>
+                      <option value="high">{getStopWorkSeverityLabel("high")}</option>
+                      <option value="critical">{getStopWorkSeverityLabel("critical")}</option>
                     </select>
                   </div>
 
@@ -246,11 +240,11 @@ export function StopWorkButton({
                       onChange={(e) => setCategory(e.target.value as any)}
                       className="form-select"
                     >
-                      <option value="weather">{getStopWorkCategoryLabel('weather')}</option>
-                      <option value="equipment">{getStopWorkCategoryLabel('equipment')}</option>
-                      <option value="personnel">{getStopWorkCategoryLabel('personnel')}</option>
-                      <option value="hazard">{getStopWorkCategoryLabel('hazard')}</option>
-                      <option value="other">{getStopWorkCategoryLabel('other')}</option>
+                      <option value="weather">{getStopWorkCategoryLabel("weather")}</option>
+                      <option value="equipment">{getStopWorkCategoryLabel("equipment")}</option>
+                      <option value="personnel">{getStopWorkCategoryLabel("personnel")}</option>
+                      <option value="hazard">{getStopWorkCategoryLabel("hazard")}</option>
+                      <option value="other">{getStopWorkCategoryLabel("other")}</option>
                     </select>
                   </div>
 
@@ -286,7 +280,9 @@ export function StopWorkButton({
                     <label>Foto's (optioneel)</label>
                     <button
                       type="button"
-                      onClick={() => {/* TODO: Open photo capture modal */}}
+                      onClick={() => {
+                        /* TODO: Open photo capture modal */
+                      }}
                       className="btn-secondary"
                     >
                       📷 Foto toevoegen ({photoIds.length}/3)
@@ -317,32 +313,30 @@ export function StopWorkButton({
             )}
 
             {/* Step 3: Digital Signature */}
-            {currentStep === 'signature' && (
+            {currentStep === "signature" && (
               <div className="dialog-content">
                 <div className="dialog-header">
                   <h2 className="dialog-title">✍️ HANDTEKENING VEREIST</h2>
                 </div>
 
                 <div className="dialog-body">
-                  {error && (
-                    <div className="error-message">
-                      {error}
-                    </div>
-                  )}
+                  {error && <div className="error-message">{error}</div>}
 
                   <p className="info-text">
-                    Door te tekenen bevestigt u dat u de situatie heeft beoordeeld 
-                    en heeft bepaald dat het werk moet worden stopgezet.
+                    Door te tekenen bevestigt u dat u de situatie heeft beoordeeld en heeft bepaald
+                    dat het werk moet worden stopgezet.
                   </p>
 
                   {!signature ? (
                     <SignaturePad
                       onSave={(signatureData) => setSignature(signatureData)}
-                      onCancel={() => setCurrentStep('details')}
-                      signerName={userProfile 
-                        ? `${userProfile.firstName} ${userProfile.lastName}`.trim() 
-                        : user?.email || 'Unknown User'}
-                      role={userProfile?.role || 'field_worker'}
+                      onCancel={() => setCurrentStep("details")}
+                      signerName={
+                        userProfile
+                          ? `${userProfile.firstName} ${userProfile.lastName}`.trim()
+                          : user?.email || "Unknown User"
+                      }
+                      role={userProfile?.role || "field_worker"}
                     />
                   ) : (
                     <div className="signature-preview">
@@ -371,14 +365,14 @@ export function StopWorkButton({
                     className="btn-danger"
                     disabled={isSubmitting || !signature}
                   >
-                    {isSubmitting ? 'Bezig...' : 'Stop Werk Bevestigen'}
+                    {isSubmitting ? "Bezig..." : "Stop Werk Bevestigen"}
                   </button>
                 </div>
               </div>
             )}
 
             {/* Step 4: Success */}
-            {currentStep === 'success' && (
+            {currentStep === "success" && (
               <div className="dialog-content">
                 <div className="dialog-header">
                   <h2 className="dialog-title">✅ STOP WERK GEACTIVEERD</h2>
@@ -389,18 +383,15 @@ export function StopWorkButton({
                     <div className="success-icon">✓</div>
                     <p className="success-text">
                       Stop-werk melding is succesvol aangemaakt.
-                      {navigator.onLine 
-                        ? ' Supervisors zijn gewaarschuwd.' 
-                        : ' Melding wordt verzonden zodra u online bent.'}
+                      {navigator.onLine
+                        ? " Supervisors zijn gewaarschuwd."
+                        : " Melding wordt verzonden zodra u online bent."}
                     </p>
                   </div>
                 </div>
 
                 <div className="dialog-footer">
-                  <button
-                    onClick={handleClose}
-                    className="btn-primary"
-                  >
+                  <button onClick={handleClose} className="btn-primary">
                     Sluiten
                   </button>
                 </div>
@@ -416,9 +407,9 @@ export function StopWorkButton({
           align-items: center;
           gap: 0.5rem;
           padding: 0.75rem 1.5rem;
-          background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+          background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
           color: white;
-          border: 2px solid #7F1D1D;
+          border: 2px solid #7f1d1d;
           border-radius: 0.5rem;
           font-weight: 700;
           font-size: 1.125rem;
@@ -428,7 +419,7 @@ export function StopWorkButton({
         }
 
         .stop-work-button:hover:not(:disabled) {
-          background: linear-gradient(135deg, #991B1B 0%, #7F1D1D 100%);
+          background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
           transform: translateY(-2px);
           box-shadow: 0 6px 12px rgba(220, 38, 38, 0.4);
         }
@@ -475,7 +466,7 @@ export function StopWorkButton({
 
         .dialog-header {
           padding: 1.5rem;
-          border-bottom: 2px solid #E5E7EB;
+          border-bottom: 2px solid #e5e7eb;
         }
 
         .dialog-title {
@@ -493,7 +484,7 @@ export function StopWorkButton({
 
         .dialog-footer {
           padding: 1.5rem;
-          border-top: 2px solid #E5E7EB;
+          border-top: 2px solid #e5e7eb;
           display: flex;
           gap: 1rem;
           justify-content: flex-end;
@@ -508,16 +499,16 @@ export function StopWorkButton({
 
         .warning-box {
           padding: 1rem;
-          background: #FEF3C7;
-          border-left: 4px solid #F59E0B;
+          background: #fef3c7;
+          border-left: 4px solid #f59e0b;
           border-radius: 0.375rem;
-          color: #92400E;
+          color: #92400e;
         }
 
         .info-text {
           font-size: 1rem;
           line-height: 1.5;
-          color: #6B7280;
+          color: #6b7280;
           margin-bottom: 1.5rem;
         }
 
@@ -537,7 +528,7 @@ export function StopWorkButton({
         .form-textarea {
           width: 100%;
           padding: 0.75rem;
-          border: 2px solid #D1D5DB;
+          border: 2px solid #d1d5db;
           border-radius: 0.375rem;
           font-size: 1rem;
           transition: border-color 0.2s;
@@ -547,22 +538,22 @@ export function StopWorkButton({
         .form-input:focus,
         .form-textarea:focus {
           outline: none;
-          border-color: #3B82F6;
+          border-color: #3b82f6;
         }
 
         .form-hint {
           display: block;
           margin-top: 0.25rem;
           font-size: 0.875rem;
-          color: #6B7280;
+          color: #6b7280;
         }
 
         .error-message {
           padding: 0.75rem;
-          background: #FEE2E2;
-          border-left: 4px solid #EF4444;
+          background: #fee2e2;
+          border-left: 4px solid #ef4444;
           border-radius: 0.375rem;
-          color: #991B1B;
+          color: #991b1b;
           margin-bottom: 1rem;
         }
 
@@ -575,7 +566,7 @@ export function StopWorkButton({
           width: 4rem;
           height: 4rem;
           margin: 0 auto 1rem;
-          background: #10B981;
+          background: #10b981;
           color: white;
           border-radius: 50%;
           display: flex;
@@ -604,30 +595,30 @@ export function StopWorkButton({
         }
 
         .btn-primary {
-          background: #3B82F6;
+          background: #3b82f6;
           color: white;
         }
 
         .btn-primary:hover:not(:disabled) {
-          background: #2563EB;
+          background: #2563eb;
         }
 
         .btn-secondary {
-          background: #E5E7EB;
+          background: #e5e7eb;
           color: #374151;
         }
 
         .btn-secondary:hover:not(:disabled) {
-          background: #D1D5DB;
+          background: #d1d5db;
         }
 
         .btn-danger {
-          background: #DC2626;
+          background: #dc2626;
           color: white;
         }
 
         .btn-danger:hover:not(:disabled) {
-          background: #991B1B;
+          background: #991b1b;
         }
 
         .btn-primary:disabled,
@@ -640,15 +631,15 @@ export function StopWorkButton({
         .signature-preview {
           text-align: center;
           padding: 1rem;
-          border: 2px solid #D1D5DB;
+          border: 2px solid #d1d5db;
           border-radius: 0.5rem;
-          background: #F9FAFB;
+          background: #f9fafb;
         }
 
         .signature-image {
           max-width: 100%;
           height: auto;
-          border: 1px solid #E5E7EB;
+          border: 1px solid #e5e7eb;
           border-radius: 0.375rem;
           margin-bottom: 1rem;
           background: white;

@@ -36,7 +36,7 @@ export async function POST(request: Request, { params }: { params: { alertId: st
       .doc(orgId)
       .collection("stopWorkAlerts")
       .doc(alertId);
-    
+
     const alertSnap = await alertRef.get();
     if (!alertSnap.exists) {
       return NextResponse.json({ error: "Stop-work alert not found" }, { status: 404 });
@@ -45,19 +45,16 @@ export async function POST(request: Request, { params }: { params: { alertId: st
     const alertData = alertSnap.data();
 
     // Check if already resolved
-    if (alertData?.status === 'resolved') {
-      return NextResponse.json(
-        { error: "Alert already resolved" },
-        { status: 400 }
-      );
+    if (alertData?.status === "resolved") {
+      return NextResponse.json({ error: "Alert already resolved" }, { status: 400 });
     }
 
     // Update alert
     const now = new Date();
     await alertRef.update({
-      status: 'resolved',
+      status: "resolved",
       resolvedBy: user.uid,
-      resolvedByName: 'Supervisor', // TODO: Get actual name from user profile
+      resolvedByName: "Supervisor", // TODO: Get actual name from user profile
       resolvedAt: now,
       resolutionNotes: data.resolutionNotes,
       updatedAt: now,
@@ -70,11 +67,11 @@ export async function POST(request: Request, { params }: { params: { alertId: st
         .doc(orgId)
         .collection("lmras")
         .doc(alertData.lmraId);
-      
+
       const lmraSnap = await lmraRef.get();
       if (lmraSnap.exists) {
         await lmraRef.update({
-          status: 'completed', // Or appropriate status
+          status: "completed", // Or appropriate status
           updatedAt: now,
         });
       }
@@ -92,10 +89,7 @@ export async function POST(request: Request, { params }: { params: { alertId: st
       },
     });
   } catch (error: any) {
-    console.error('Error resolving stop-work alert:', error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
-    );
+    console.error("Error resolving stop-work alert:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

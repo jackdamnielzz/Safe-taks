@@ -4,6 +4,8 @@ import { requireOrgAuth } from "@/lib/server-helpers";
 import type { CreateApprovalPayload, ApprovalRequest, ApprovalStep } from "@/types/approval";
 import { writeAuditLog } from "@/lib/audit";
 import { sendTraApprovalRequest } from "@/lib/notifications/notification-service";
+import { calculateVCACompliance } from "@/lib/vca-compliance";
+import type { TRA } from "@/lib/types/tra";
 
 /**
  * POST /api/approvals/create
@@ -29,12 +31,17 @@ export async function POST(request: Request) {
   }
 
   if (!body || !body.traId || !Array.isArray(body.steps) || body.steps.length === 0) {
-    return NextResponse.json({ error: "Invalid payload - traId and steps required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid payload - traId and steps required" },
+      { status: 400 }
+    );
   }
 
   const traId = body.traId;
 
   try {
+    const now = Date.now();
+
     // ensure TRA exists
     const traRef = db.collection(`organizations/${orgId}/tras`).doc(traId);
     const traSnap = await traRef.get();
@@ -42,7 +49,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "TRA not found" }, { status: 404 });
     }
 
-    const now = Date.now();
+    // Check VCA compliance before allowing approval submission
+    const traData = traSnap.data() as TRA;
+    const complianceResult = calculateVCACompliance(traData);
+
+    // Block approval if compliance score is below 85%
+    if (!complianceResult.isCompliant) {
+      return NextResponse.json(
+        {
+          error: "VCA_COMPLIANCE_REQUIRED",
+          message:
+            "TRA moet minimaal 85% VCA-compliant zijn voordat het kan worden ingediend voor goedkeuring",
+          complianceScore: complianceResult.score,
+          complianceLevel: complianceResult.level,
+          issues: complianceResult.issues,
+          recommendations: complianceResult.recommendations,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Store compliance result in TRA for audit trail
+    await traRef.update({
+      complianceScore: complianceResult.score,
+      complianceLevel: complianceResult.level,
+      lastComplianceCheck: now,
+      updatedAt: now,
+    });
 
     // normalize steps into ApprovalStep shape
     const stepsNormalized: ApprovalStep[] = body.steps.map((s, idx) => ({
@@ -100,22 +133,27 @@ export async function POST(request: Request) {
     try {
       const firstStep = stepsNormalized[0];
       if (firstStep?.approverId) {
-        const approverSnap = await db.collection(`organizations/${orgId}/users`).doc(firstStep.approverId).get();
+        const approverSnap = await db
+          .collection(`organizations/${orgId}/users`)
+          .doc(firstStep.approverId)
+          .get();
         const approver = approverSnap.data();
         const tra = traSnap.data();
-        
+
         if (approver?.email) {
           await sendTraApprovalRequest(approver.email, {
-            traTitle: tra?.title || 'TRA',
+            traTitle: tra?.title || "TRA",
             creatorName: userName,
-            projectName: tra?.projectName || 'Project',
+            projectName: tra?.projectName || "Project",
             approvalLink: `${process.env.NEXT_PUBLIC_APP_URL}/approvals/${approvalId}`,
-            dueDate: firstStep.dueDate ? new Date(firstStep.dueDate).toLocaleDateString('nl-NL') : undefined,
+            dueDate: firstStep.dueDate
+              ? new Date(firstStep.dueDate).toLocaleDateString("nl-NL")
+              : undefined,
           });
         }
       }
     } catch (emailError) {
-      console.error('Failed to send approval request email:', emailError);
+      console.error("Failed to send approval request email:", emailError);
       // Don't fail the approval creation if email fails
     }
 

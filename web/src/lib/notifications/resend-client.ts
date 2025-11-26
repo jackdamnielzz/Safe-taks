@@ -37,6 +37,9 @@ export enum EmailType {
   PAYMENT_FAILED = "payment_failed",
   TRIAL_ENDING = "trial_ending",
   USAGE_LIMIT_WARNING = "usage_limit_warning",
+  HIGH_RISK_TRA = "high_risk_tra",
+  SUPERVISOR_ACKNOWLEDGMENT = "supervisor_acknowledgment",
+  EMERGENCY_PROCEDURE_ALERT = "emergency_procedure_alert",
 }
 
 /**

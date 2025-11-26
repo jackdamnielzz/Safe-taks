@@ -11,8 +11,8 @@ const createStopWorkSchema = z.object({
   triggeredBy: z.string(),
   triggeredByName: z.string(),
   reason: z.string().min(1).max(100),
-  severity: z.enum(['moderate', 'high', 'critical']),
-  category: z.enum(['weather', 'equipment', 'personnel', 'hazard', 'other']),
+  severity: z.enum(["moderate", "high", "critical"]),
+  category: z.enum(["weather", "equipment", "personnel", "hazard", "other"]),
   description: z.string().min(1).max(500),
   photoIds: z.array(z.string()).optional(),
   signature: z.object({
@@ -45,15 +45,23 @@ export async function POST(request: Request, context: any) {
     // Attempt to read LMRA. In dev we may be in a different Next.js process that doesn't see
     // the seeded doc; fall back to creating the alert anyway and only update the LMRA if present.
     console.log("[dev] stop-work POST - orgId:", orgId, "lmraId:", lmraId);
-    const lmraRef = firestore.collection("organizations").doc(orgId).collection("lmras").doc(lmraId);
+    const lmraRef = firestore
+      .collection("organizations")
+      .doc(orgId)
+      .collection("lmras")
+      .doc(lmraId);
     const lmraSnap = await lmraRef.get();
-    console.log("[dev] lmraSnap:", { exists: lmraSnap.exists, id: lmraSnap.id, data: lmraSnap.exists ? lmraSnap.data() : null });
+    console.log("[dev] lmraSnap:", {
+      exists: lmraSnap.exists,
+      id: lmraSnap.id,
+      data: lmraSnap.exists ? lmraSnap.data() : null,
+    });
     const lmraData = lmraSnap.exists ? lmraSnap.data() : null;
 
     // Create stop-work alert
     const now = new Date();
     const alertId = `stopwork_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const alertData = {
       id: alertId,
       lmraId,
@@ -73,7 +81,7 @@ export async function POST(request: Request, context: any) {
         signatureData: data.signature.signatureData,
         signedAt: now,
       },
-      status: 'active',
+      status: "active",
       acknowledgedBy: null,
       acknowledgedByName: null,
       acknowledgedAt: null,
@@ -91,12 +99,12 @@ export async function POST(request: Request, context: any) {
       .doc(orgId)
       .collection("stopWorkAlerts")
       .doc(alertId);
-    
+
     await alertRef.set(alertData);
 
     // Update LMRA status to indicate stop-work
     await lmraRef.update({
-      status: 'stop_work',
+      status: "stop_work",
       stopWorkAlertId: alertId,
       updatedAt: now,
     });
@@ -109,10 +117,7 @@ export async function POST(request: Request, context: any) {
       data: alertData,
     });
   } catch (error: any) {
-    console.error('Error creating stop-work alert:', error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
-    );
+    console.error("Error creating stop-work alert:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

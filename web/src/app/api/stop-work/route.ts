@@ -16,8 +16,8 @@ export async function GET(request: Request) {
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const statusFilter = searchParams.get('status');
-    const lmraIdFilter = searchParams.get('lmraId');
+    const statusFilter = searchParams.get("status");
+    const lmraIdFilter = searchParams.get("lmraId");
 
     // Build query
     let query = firestore
@@ -36,8 +36,8 @@ export async function GET(request: Request) {
 
     // Execute query
     const snapshot = await query.get();
-    
-    const alerts = snapshot.docs.map(doc => ({
+
+    const alerts = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
@@ -48,10 +48,7 @@ export async function GET(request: Request) {
       count: alerts.length,
     });
   } catch (error: any) {
-    console.error('Error fetching stop-work alerts:', error);
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
-    );
+    console.error("Error fetching stop-work alerts:", error);
+    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
   }
 }

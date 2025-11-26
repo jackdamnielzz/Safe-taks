@@ -19,10 +19,15 @@ export const __mockUsers: Record<string, any> = {};
 
 // Helper to reset mock state between tests
 export function __resetAuthMock() {
-  Object.keys(__mockUsers).forEach(key => delete __mockUsers[key]);
+  Object.keys(__mockUsers).forEach((key) => delete __mockUsers[key]);
   if (globalAuthInstance) {
     globalAuthInstance.currentUser = null;
   }
+}
+
+// Expose a getter so tests can inspect the in-memory users map without mutating it.
+export function __getUsers() {
+  return __mockUsers;
 }
 
 export async function createUserWithEmailAndPassword(auth: any, email: string, password: string) {
@@ -38,7 +43,7 @@ export async function createUserWithEmailAndPassword(auth: any, email: string, p
   if (__mockUsers[email]) {
     return Promise.reject(new Error("auth/email-already-in-use"));
   }
-  
+
   // Create a more complete user object that matches Firebase User interface
   const user = {
     uid: `uid-${Math.random().toString(36).slice(2, 9)}`,
@@ -52,18 +57,20 @@ export async function createUserWithEmailAndPassword(auth: any, email: string, p
       creationTime: new Date().toISOString(),
       lastSignInTime: new Date().toISOString(),
     },
-    providerData: [{
-      providerId: 'password',
-      uid: email,
-      displayName: null,
-      email,
-      phoneNumber: null,
-      photoURL: null,
-    }],
-    refreshToken: 'mock-refresh-token',
+    providerData: [
+      {
+        providerId: "password",
+        uid: email,
+        displayName: null,
+        email,
+        phoneNumber: null,
+        photoURL: null,
+      },
+    ],
+    refreshToken: "mock-refresh-token",
     tenantId: null,
   };
-  
+
   __mockUsers[email] = { password, user };
   if (auth) auth.currentUser = user;
   return Promise.resolve({ user });
@@ -91,7 +98,10 @@ export async function signOut(auth: any) {
   return Promise.resolve();
 }
 
-export async function updateProfile(user: any, { displayName, photoURL }: { displayName?: string; photoURL?: string }) {
+export async function updateProfile(
+  user: any,
+  { displayName, photoURL }: { displayName?: string; photoURL?: string }
+) {
   if (!user) return Promise.reject(new Error("auth/no-current-user"));
   // Find mock user by uid
   const record = Object.values(__mockUsers).find((r: any) => r.user.uid === user.uid);
@@ -138,7 +148,8 @@ export async function updatePassword(user: any, newPassword: string) {
     return Promise.reject(new Error("auth/requires-recent-login"));
   }
 
-  if (!newPassword || newPassword.length < 6) return Promise.reject(new Error("auth/weak-password"));
+  if (!newPassword || newPassword.length < 6)
+    return Promise.reject(new Error("auth/weak-password"));
   record.password = newPassword;
   return Promise.resolve();
 }
@@ -185,7 +196,13 @@ export async function deleteUser(user: any) {
     for (const key of Object.keys(g)) {
       try {
         const val = (g as any)[key];
-        if (val && typeof val === "object" && "currentUser" in val && val.currentUser && val.currentUser.uid === user.uid) {
+        if (
+          val &&
+          typeof val === "object" &&
+          "currentUser" in val &&
+          val.currentUser &&
+          val.currentUser.uid === user.uid
+        ) {
           val.currentUser = null;
         }
       } catch (e) {

@@ -16,8 +16,8 @@ export async function GET(request: Request, context: any) {
     if (!lmraId) {
       try {
         const url = new URL(request.url);
-        const parts = url.pathname.split('/').filter(Boolean);
-        const lmrasIndex = parts.indexOf('lmras');
+        const parts = url.pathname.split("/").filter(Boolean);
+        const lmrasIndex = parts.indexOf("lmras");
         if (lmrasIndex !== -1 && parts.length > lmrasIndex + 1) {
           lmraId = parts[lmrasIndex + 1];
         } else {

@@ -83,10 +83,7 @@ export async function POST(
 
     // Check if approval is still pending
     if (approval.status !== "pending") {
-      return NextResponse.json(
-        { error: `Approval already ${approval.status}` },
-        { status: 409 }
-      );
+      return NextResponse.json({ error: `Approval already ${approval.status}` }, { status: 409 });
     }
 
     // Get current step
@@ -156,17 +153,23 @@ export async function POST(
 
       // Send email notifications
       try {
-        const traSnap = await db.collection(`organizations/${orgId}/tras`).doc(approval.traId).get();
+        const traSnap = await db
+          .collection(`organizations/${orgId}/tras`)
+          .doc(approval.traId)
+          .get();
         const tra = traSnap.data();
-        
+
         if (isComplete) {
           // Notify TRA creator that TRA is approved
           if (tra?.createdBy) {
-            const creatorSnap = await db.collection(`organizations/${orgId}/users`).doc(tra.createdBy).get();
+            const creatorSnap = await db
+              .collection(`organizations/${orgId}/users`)
+              .doc(tra.createdBy)
+              .get();
             const creator = creatorSnap.data();
             if (creator?.email) {
               await sendTraApprovedNotification(creator.email, {
-                traTitle: tra.title || 'TRA',
+                traTitle: tra.title || "TRA",
                 approverName: userName,
                 traLink: `${process.env.NEXT_PUBLIC_APP_URL}/tras/${approval.traId}`,
               });
@@ -176,20 +179,23 @@ export async function POST(
           // Notify next approver
           const nextStepData = updatedSteps[nextStep - 1];
           if (nextStepData?.approverId) {
-            const approverSnap = await db.collection(`organizations/${orgId}/users`).doc(nextStepData.approverId).get();
+            const approverSnap = await db
+              .collection(`organizations/${orgId}/users`)
+              .doc(nextStepData.approverId)
+              .get();
             const approver = approverSnap.data();
             if (approver?.email) {
               await sendTraApprovalRequest(approver.email, {
-                traTitle: tra?.title || 'TRA',
+                traTitle: tra?.title || "TRA",
                 creatorName: userName,
-                projectName: tra?.projectName || 'Project',
+                projectName: tra?.projectName || "Project",
                 approvalLink: `${process.env.NEXT_PUBLIC_APP_URL}/approvals/${approvalId}`,
               });
             }
           }
         }
       } catch (emailError) {
-        console.error('Failed to send approval email notification:', emailError);
+        console.error("Failed to send approval email notification:", emailError);
         // Don't fail the approval if email fails
       }
     } else if (body.action === "reject") {
@@ -231,23 +237,29 @@ export async function POST(
 
       // Send rejection notification to TRA creator
       try {
-        const traSnap = await db.collection(`organizations/${orgId}/tras`).doc(approval.traId).get();
+        const traSnap = await db
+          .collection(`organizations/${orgId}/tras`)
+          .doc(approval.traId)
+          .get();
         const tra = traSnap.data();
-        
+
         if (tra?.createdBy) {
-          const creatorSnap = await db.collection(`organizations/${orgId}/users`).doc(tra.createdBy).get();
+          const creatorSnap = await db
+            .collection(`organizations/${orgId}/users`)
+            .doc(tra.createdBy)
+            .get();
           const creator = creatorSnap.data();
           if (creator?.email) {
             await sendTraRejectedNotification(creator.email, {
-              traTitle: tra.title || 'TRA',
+              traTitle: tra.title || "TRA",
               rejectorName: userName,
-              reason: body.comments || 'Geen reden opgegeven',
+              reason: body.comments || "Geen reden opgegeven",
               traLink: `${process.env.NEXT_PUBLIC_APP_URL}/tras/${approval.traId}`,
             });
           }
         }
       } catch (emailError) {
-        console.error('Failed to send rejection email notification:', emailError);
+        console.error("Failed to send rejection email notification:", emailError);
         // Don't fail the rejection if email fails
       }
     } else if (body.action === "request_changes") {
@@ -270,24 +282,30 @@ export async function POST(
 
       // Send changes requested notification to TRA creator
       try {
-        const traSnap = await db.collection(`organizations/${orgId}/tras`).doc(approval.traId).get();
+        const traSnap = await db
+          .collection(`organizations/${orgId}/tras`)
+          .doc(approval.traId)
+          .get();
         const tra = traSnap.data();
-        
+
         if (tra?.createdBy) {
-          const creatorSnap = await db.collection(`organizations/${orgId}/users`).doc(tra.createdBy).get();
+          const creatorSnap = await db
+            .collection(`organizations/${orgId}/users`)
+            .doc(tra.createdBy)
+            .get();
           const creator = creatorSnap.data();
           if (creator?.email) {
             // Use rejection template for changes requested (similar notification)
             await sendTraRejectedNotification(creator.email, {
-              traTitle: tra.title || 'TRA',
+              traTitle: tra.title || "TRA",
               rejectorName: userName,
-              reason: `Wijzigingen gevraagd: ${body.comments || 'Zie opmerkingen'}`,
+              reason: `Wijzigingen gevraagd: ${body.comments || "Zie opmerkingen"}`,
               traLink: `${process.env.NEXT_PUBLIC_APP_URL}/tras/${approval.traId}`,
             });
           }
         }
       } catch (emailError) {
-        console.error('Failed to send changes requested email notification:', emailError);
+        console.error("Failed to send changes requested email notification:", emailError);
         // Don't fail the request if email fails
       }
     }

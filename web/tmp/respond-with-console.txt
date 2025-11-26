@@ -1,0 +1,25 @@
+Kort verzoek — plak aub de browser-logs
+
+Ik heb de client- en server-aanpassingen gedaan. Om het probleem af te ronden heb ik jouw hulp nodig:
+
+1) Start dev-server (indien nog niet gestart):
+   cd web && npm run dev
+
+2) Open de LMRA-wizard → Stap 1 (TRA selectie)
+
+3) Open Developer Tools → Console en Network
+
+4) Klik "Sjablonen opnieuw laden"
+
+5) Plak hier (kopieer/paste):
+   - Console regels die beginnen met:
+     [Step1_TraSelection] fetch loadedTemplates count:
+     [Step1_TraSelection] manual fetchTemplates count:
+   - De zichtbare tekst op de pagina bij "X sjablonen geladen"
+   - Eventuele netwerkfouten voor /api/templates (status / response)
+
+Als je liever wilt dat ik direct verder ga zonder logs, reageer met:
+   Voer optie A uit
+(Optie A forceert fetch('/api/templates') en voegt een zichtbare badge met het aantal geladen sjablonen.)
+
+Ik wacht op je console-output om het selecteren en doorgaan in de wizard te verifiëren.

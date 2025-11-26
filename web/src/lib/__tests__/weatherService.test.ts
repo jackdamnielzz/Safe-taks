@@ -63,9 +63,9 @@ describe("WeatherService", () => {
     it("should throw error when API key is missing", async () => {
       const serviceWithoutKey = new WeatherService({ apiKey: "" });
 
-      await expect(
-        serviceWithoutKey.getCurrentWeather(52.0907, 5.1214)
-      ).rejects.toThrow("OpenWeather API key not configured");
+      await expect(serviceWithoutKey.getCurrentWeather(52.0907, 5.1214)).rejects.toThrow(
+        "OpenWeather API key not configured"
+      );
     });
 
     it("should throw error on API failure", async () => {
@@ -75,9 +75,9 @@ describe("WeatherService", () => {
         statusText: "Unauthorized",
       });
 
-      await expect(
-        weatherService.getCurrentWeather(52.0907, 5.1214)
-      ).rejects.toThrow("Weather API error: 401 Unauthorized");
+      await expect(weatherService.getCurrentWeather(52.0907, 5.1214)).rejects.toThrow(
+        "Weather API error: 401 Unauthorized"
+      );
     });
   });
 
@@ -104,9 +104,7 @@ describe("WeatherService", () => {
     it("should throw error after max retries", async () => {
       (global.fetch as jest.Mock).mockRejectedValue(new Error("Network error"));
 
-      await expect(
-        weatherService.getCurrentWeatherWithRetry(52.0907, 5.1214, 2)
-      ).rejects.toThrow();
+      await expect(weatherService.getCurrentWeatherWithRetry(52.0907, 5.1214, 2)).rejects.toThrow();
 
       expect(global.fetch).toHaveBeenCalledTimes(2);
     });
@@ -242,7 +240,7 @@ describe("WeatherService", () => {
 
       expect(result.safe).toBe(false);
       expect(result.blocking).toBe(true);
-      expect(result.blockingReasons.some(r => r.includes("Onweer"))).toBe(true);
+      expect(result.blockingReasons.some((r) => r.includes("Onweer"))).toBe(true);
     });
 
     it("should block for extreme temperature", () => {
@@ -260,7 +258,7 @@ describe("WeatherService", () => {
 
       expect(result.safe).toBe(false);
       expect(result.blocking).toBe(true);
-      expect(result.blockingReasons.some(r => r.includes("Extreme hitte"))).toBe(true);
+      expect(result.blockingReasons.some((r) => r.includes("Extreme hitte"))).toBe(true);
     });
 
     it("should apply stricter limits for work at height", () => {
@@ -277,7 +275,7 @@ describe("WeatherService", () => {
       const result = weatherService.isSafeForWork(weather, undefined, "height");
 
       expect(result.safe).toBe(false);
-      expect(result.warnings.some(w => w.includes("werken op hoogte"))).toBe(true);
+      expect(result.warnings.some((w) => w.includes("werken op hoogte"))).toBe(true);
     });
 
     it("should warn for rain during electrical work", () => {
@@ -295,7 +293,7 @@ describe("WeatherService", () => {
       const result = weatherService.isSafeForWork(weather, undefined, "electrical");
 
       expect(result.safe).toBe(false);
-      expect(result.warnings.some(w => w.includes("elektrisch werk"))).toBe(true);
+      expect(result.warnings.some((w) => w.includes("elektrisch werk"))).toBe(true);
     });
   });
 

@@ -10,6 +10,6 @@ function initializeAdmin() {
 
 module.exports = {
   requireOrgAuth: async (req, res, next) => next(),
-  getOrgIdFromRequest: () => 'test-org',
+  getOrgIdFromRequest: () => "test-org",
   initializeAdmin,
 };

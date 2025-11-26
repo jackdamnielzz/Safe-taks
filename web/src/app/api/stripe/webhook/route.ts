@@ -5,25 +5,22 @@
  * Handles Stripe webhook events for subscription lifecycle management
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { getFirestore, Timestamp } from 'firebase-admin/firestore';
-import { verifyWebhookSignature } from '@/lib/payments/stripe-client';
-import Stripe from 'stripe';
+import { NextRequest, NextResponse } from "next/server";
+import { getFirestore, Timestamp } from "firebase-admin/firestore";
+import { verifyWebhookSignature } from "@/lib/payments/stripe-client";
+import Stripe from "stripe";
 
 // Disable body parsing for webhook signature verification
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
     // Get raw body for signature verification
     const body = await request.text();
-    const signature = request.headers.get('stripe-signature');
+    const signature = request.headers.get("stripe-signature");
 
     if (!signature) {
-      return NextResponse.json(
-        { error: 'No signature provided' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No signature provided" }, { status: 400 });
     }
 
     // Verify webhook signature
@@ -31,35 +28,32 @@ export async function POST(request: NextRequest) {
     try {
       event = verifyWebhookSignature(body, signature);
     } catch (err: any) {
-      console.error('Webhook signature verification failed:', err.message);
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 400 }
-      );
+      console.error("Webhook signature verification failed:", err.message);
+      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
     console.log(`Processing webhook event: ${event.type}`);
 
     // Handle different event types
     switch (event.type) {
-      case 'checkout.session.completed':
+      case "checkout.session.completed":
         await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
         break;
 
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated':
+      case "customer.subscription.created":
+      case "customer.subscription.updated":
         await handleSubscriptionUpdate(event.data.object as Stripe.Subscription);
         break;
 
-      case 'customer.subscription.deleted':
+      case "customer.subscription.deleted":
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
         break;
 
-      case 'invoice.payment_succeeded':
+      case "invoice.payment_succeeded":
         await handlePaymentSucceeded(event.data.object as Stripe.Invoice);
         break;
 
-      case 'invoice.payment_failed':
+      case "invoice.payment_failed":
         await handlePaymentFailed(event.data.object as Stripe.Invoice);
         break;
 
@@ -71,11 +65,10 @@ export async function POST(request: NextRequest) {
     await storeBillingEvent(event);
 
     return NextResponse.json({ received: true });
-
   } catch (error: any) {
-    console.error('Webhook handler error:', error);
+    console.error("Webhook handler error:", error);
     return NextResponse.json(
-      { error: error.message || 'Webhook processing failed' },
+      { error: error.message || "Webhook processing failed" },
       { status: 500 }
     );
   }
@@ -86,21 +79,21 @@ export async function POST(request: NextRequest) {
  */
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   const organizationId = session.metadata?.organizationId;
-  const tier = session.metadata?.tier as 'starter' | 'professional' | 'enterprise';
+  const tier = session.metadata?.tier as "starter" | "professional" | "enterprise";
 
   if (!organizationId || !tier) {
-    console.error('Missing metadata in checkout session');
+    console.error("Missing metadata in checkout session");
     return;
   }
 
   const db = getFirestore();
-  const orgRef = db.collection('organizations').doc(organizationId);
+  const orgRef = db.collection("organizations").doc(organizationId);
 
   await orgRef.update({
-    'subscription.status': 'active',
-    'subscription.tier': tier,
-    'subscription.stripeSubscriptionId': session.subscription as string,
-    'subscription.startDate': Timestamp.now(),
+    "subscription.status": "active",
+    "subscription.tier": tier,
+    "subscription.stripeSubscriptionId": session.subscription as string,
+    "subscription.startDate": Timestamp.now(),
     updatedAt: Timestamp.now(),
   });
 
@@ -114,29 +107,29 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const organizationId = subscription.metadata?.organizationId;
 
   if (!organizationId) {
-    console.error('Missing organizationId in subscription metadata');
+    console.error("Missing organizationId in subscription metadata");
     return;
   }
 
   const db = getFirestore();
-  const orgRef = db.collection('organizations').doc(organizationId);
+  const orgRef = db.collection("organizations").doc(organizationId);
 
   // Map Stripe status to our status
   const statusMap: Record<string, string> = {
-    'active': 'active',
-    'trialing': 'trial',
-    'past_due': 'past_due',
-    'canceled': 'canceled',
-    'unpaid': 'past_due',
+    active: "active",
+    trialing: "trial",
+    past_due: "past_due",
+    canceled: "canceled",
+    unpaid: "past_due",
   };
 
-  const status = statusMap[subscription.status] || 'active';
+  const status = statusMap[subscription.status] || "active";
   const currentPeriodEnd = (subscription as any).current_period_end;
 
   await orgRef.update({
-    'subscription.status': status,
-    'subscription.currentPeriodEnd': Timestamp.fromMillis(currentPeriodEnd * 1000),
-    'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end || false,
+    "subscription.status": status,
+    "subscription.currentPeriodEnd": Timestamp.fromMillis(currentPeriodEnd * 1000),
+    "subscription.cancelAtPeriodEnd": subscription.cancel_at_period_end || false,
     updatedAt: Timestamp.now(),
   });
 
@@ -150,16 +143,16 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const organizationId = subscription.metadata?.organizationId;
 
   if (!organizationId) {
-    console.error('Missing organizationId in subscription metadata');
+    console.error("Missing organizationId in subscription metadata");
     return;
   }
 
   const db = getFirestore();
-  const orgRef = db.collection('organizations').doc(organizationId);
+  const orgRef = db.collection("organizations").doc(organizationId);
 
   await orgRef.update({
-    'subscription.status': 'canceled',
-    'subscription.tier': 'trial',
+    "subscription.status": "canceled",
+    "subscription.tier": "trial",
     updatedAt: Timestamp.now(),
   });
 
@@ -171,32 +164,33 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
  */
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
   // Get organizationId from customer metadata or subscription
-  const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
-  
+  const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+
   if (!customerId) {
-    console.error('Missing customer in invoice');
+    console.error("Missing customer in invoice");
     return;
   }
 
   // We'll need to look up the organization by customer ID
   const db = getFirestore();
-  const orgsSnapshot = await db.collection('organizations')
-    .where('subscription.stripeCustomerId', '==', customerId)
+  const orgsSnapshot = await db
+    .collection("organizations")
+    .where("subscription.stripeCustomerId", "==", customerId)
     .limit(1)
     .get();
 
   if (orgsSnapshot.empty) {
-    console.error('Organization not found for customer:', customerId);
+    console.error("Organization not found for customer:", customerId);
     return;
   }
 
   const organizationId = orgsSnapshot.docs[0].id;
-  const orgRef = db.collection('organizations').doc(organizationId);
+  const orgRef = db.collection("organizations").doc(organizationId);
 
   // Update last payment date
   await orgRef.update({
-    'subscription.lastPaymentDate': Timestamp.now(),
-    'subscription.status': 'active',
+    "subscription.lastPaymentDate": Timestamp.now(),
+    "subscription.status": "active",
     updatedAt: Timestamp.now(),
   });
 
@@ -210,30 +204,31 @@ async function handlePaymentSucceeded(invoice: Stripe.Invoice) {
  */
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
   // Get organizationId from customer metadata or subscription
-  const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
-  
+  const customerId = typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+
   if (!customerId) {
-    console.error('Missing customer in invoice');
+    console.error("Missing customer in invoice");
     return;
   }
 
   // We'll need to look up the organization by customer ID
   const db = getFirestore();
-  const orgsSnapshot = await db.collection('organizations')
-    .where('subscription.stripeCustomerId', '==', customerId)
+  const orgsSnapshot = await db
+    .collection("organizations")
+    .where("subscription.stripeCustomerId", "==", customerId)
     .limit(1)
     .get();
 
   if (orgsSnapshot.empty) {
-    console.error('Organization not found for customer:', customerId);
+    console.error("Organization not found for customer:", customerId);
     return;
   }
 
   const organizationId = orgsSnapshot.docs[0].id;
-  const orgRef = db.collection('organizations').doc(organizationId);
+  const orgRef = db.collection("organizations").doc(organizationId);
 
   await orgRef.update({
-    'subscription.status': 'past_due',
+    "subscription.status": "past_due",
     updatedAt: Timestamp.now(),
   });
 
@@ -247,27 +242,29 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
  */
 async function storeBillingEvent(event: Stripe.Event) {
   const db = getFirestore();
-  
+
   // Extract organizationId from event metadata
   let organizationId: string | undefined;
-  
-  if (event.type.startsWith('checkout.session')) {
+
+  if (event.type.startsWith("checkout.session")) {
     const session = event.data.object as Stripe.Checkout.Session;
     organizationId = session.metadata?.organizationId;
-  } else if (event.type.startsWith('customer.subscription')) {
+  } else if (event.type.startsWith("customer.subscription")) {
     const subscription = event.data.object as Stripe.Subscription;
     organizationId = subscription.metadata?.organizationId;
-  } else if (event.type.startsWith('invoice')) {
+  } else if (event.type.startsWith("invoice")) {
     const invoice = event.data.object as Stripe.Invoice;
-    const customerId = typeof invoice.customer === 'string' ? invoice.customer : invoice.customer?.id;
-    
+    const customerId =
+      typeof invoice.customer === "string" ? invoice.customer : invoice.customer?.id;
+
     if (customerId) {
       // Look up organization by customer ID
-      const orgsSnapshot = await db.collection('organizations')
-        .where('subscription.stripeCustomerId', '==', customerId)
+      const orgsSnapshot = await db
+        .collection("organizations")
+        .where("subscription.stripeCustomerId", "==", customerId)
         .limit(1)
         .get();
-      
+
       if (!orgsSnapshot.empty) {
         organizationId = orgsSnapshot.docs[0].id;
       }
@@ -275,14 +272,14 @@ async function storeBillingEvent(event: Stripe.Event) {
   }
 
   if (!organizationId) {
-    console.warn('Could not extract organizationId from event, skipping billing event storage');
+    console.warn("Could not extract organizationId from event, skipping billing event storage");
     return;
   }
 
   const billingEventRef = db
-    .collection('organizations')
+    .collection("organizations")
     .doc(organizationId)
-    .collection('billingEvents')
+    .collection("billingEvents")
     .doc(event.id);
 
   await billingEventRef.set({

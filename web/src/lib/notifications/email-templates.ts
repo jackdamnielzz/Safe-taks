@@ -48,6 +48,12 @@ export function getEmailTemplate(type: EmailType, data: Record<string, any>): Em
       return getTrialEndingEmail(data as any);
     case EmailType.USAGE_LIMIT_WARNING:
       return getUsageLimitWarningEmail(data as any);
+    case EmailType.HIGH_RISK_TRA:
+      return getHighRiskTraEmail(data as any);
+    case EmailType.SUPERVISOR_ACKNOWLEDGMENT:
+      return getSupervisorAcknowledgmentEmail(data as any);
+    case EmailType.EMERGENCY_PROCEDURE_ALERT:
+      return getEmergencyProcedureAlertEmail(data as any);
     default:
       throw new Error(`Unknown email type: ${type}`);
   }
@@ -207,7 +213,7 @@ function getTraApprovalRequestEmail(data: {
         <p><strong>${data.creatorName}</strong> heeft een TRA ingediend die jouw goedkeuring vereist:</p>
         <p><strong>Titel:</strong> ${data.traTitle}</p>
         <p><strong>Project:</strong> ${data.projectName}</p>
-        ${data.dueDate ? `<p><strong>Deadline:</strong> ${data.dueDate}</p>` : ''}
+        ${data.dueDate ? `<p><strong>Deadline:</strong> ${data.dueDate}</p>` : ""}
         <p style="background-color: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b;">
           <strong>Actie vereist:</strong> Beoordeel deze TRA en neem een beslissing.
         </p>
@@ -227,7 +233,7 @@ ${data.creatorName} heeft een TRA ingediend die jouw goedkeuring vereist:
 
 Titel: ${data.traTitle}
 Project: ${data.projectName}
-${data.dueDate ? `Deadline: ${data.dueDate}` : ''}
+${data.dueDate ? `Deadline: ${data.dueDate}` : ""}
 
 ACTIE VEREIST: Beoordeel deze TRA en neem een beslissing.
 
@@ -464,33 +470,37 @@ function getCompetencyExpiryWarningEmail(data: {
 }): EmailTemplate {
   const isUrgent = data.daysUntilExpiry <= 7;
   return {
-    subject: `${isUrgent ? '⚠️ URGENT: ' : ''}Competentie Verloopt Binnenkort - ${data.competencyName}`,
+    subject: `${isUrgent ? "⚠️ URGENT: " : ""}Competentie Verloopt Binnenkort - ${data.competencyName}`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; ${isUrgent ? 'border: 2px solid #ef4444;' : ''}">
-        ${isUrgent ? '<div style="background-color: #ef4444; color: white; padding: 15px;"><h2 style="margin: 0;">⚠️ URGENTE WAARSCHUWING</h2></div>' : ''}
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; ${isUrgent ? "border: 2px solid #ef4444;" : ""}">
+        ${isUrgent ? '<div style="background-color: #ef4444; color: white; padding: 15px;"><h2 style="margin: 0;">⚠️ URGENTE WAARSCHUWING</h2></div>' : ""}
         <div style="padding: 20px;">
-          <h1 style="color: ${isUrgent ? '#ef4444' : '#f59e0b'};">Competentie Verloopt Binnenkort</h1>
+          <h1 style="color: ${isUrgent ? "#ef4444" : "#f59e0b"};">Competentie Verloopt Binnenkort</h1>
           <p>Hallo ${data.userName},</p>
           <p>Je competentie <strong>${data.competencyName}</strong> verloopt over <strong>${data.daysUntilExpiry} dagen</strong>.</p>
           <p><strong>Vervaldatum:</strong> ${data.expiryDate}</p>
-          <p style="background-color: ${isUrgent ? '#fee2e2' : '#fef3c7'}; padding: 15px; border-left: 4px solid ${isUrgent ? '#ef4444' : '#f59e0b'};">
+          <p style="background-color: ${isUrgent ? "#fee2e2" : "#fef3c7"}; padding: 15px; border-left: 4px solid ${isUrgent ? "#ef4444" : "#f59e0b"};">
             <strong>Actie vereist:</strong> Vernieuw je competentie vóór de vervaldatum om te blijven werken aan projecten die deze competentie vereisen.
           </p>
-          ${data.renewalLink ? `
+          ${
+            data.renewalLink
+              ? `
           <p>
             <a href="${data.renewalLink}"
-               style="background-color: ${isUrgent ? '#ef4444' : '#f97316'}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+               style="background-color: ${isUrgent ? "#ef4444" : "#f97316"}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
               Vernieuw Competentie
             </a>
           </p>
-          ` : ''}
+          `
+              : ""
+          }
           <p>Neem contact op met je supervisor of HR-afdeling voor meer informatie over het vernieuwingsproces.</p>
           <p>Met vriendelijke groet,<br>Het SafeWork Pro Team</p>
         </div>
       </div>
     `,
     text: `
-${isUrgent ? '⚠️ URGENTE WAARSCHUWING\n\n' : ''}Competentie Verloopt Binnenkort
+${isUrgent ? "⚠️ URGENTE WAARSCHUWING\n\n" : ""}Competentie Verloopt Binnenkort
 
 Hallo ${data.userName},
 
@@ -500,7 +510,7 @@ Vervaldatum: ${data.expiryDate}
 
 ACTIE VEREIST: Vernieuw je competentie vóór de vervaldatum om te blijven werken aan projecten die deze competentie vereisen.
 
-${data.renewalLink ? `Vernieuw competentie: ${data.renewalLink}\n\n` : ''}Neem contact op met je supervisor of HR-afdeling voor meer informatie over het vernieuwingsproces.
+${data.renewalLink ? `Vernieuw competentie: ${data.renewalLink}\n\n` : ""}Neem contact op met je supervisor of HR-afdeling voor meer informatie over het vernieuwingsproces.
 
 Met vriendelijke groet,
 Het SafeWork Pro Team
@@ -686,6 +696,397 @@ Huidig gebruik: ${data.currentUsage} van ${data.limit}
 Overweeg een upgrade naar een hoger plan om meer capaciteit te krijgen.
 
 Bekijk upgrade opties: ${process.env.NEXT_PUBLIC_APP_URL}/billing
+
+Met vriendelijke groet,
+Het SafeWork Pro Team
+    `,
+  };
+}
+
+/**
+ * VCA Compliance Weekly Summary (for managers)
+ */
+export function getVcaComplianceWeeklySummaryEmail(data: {
+  organizationName: string;
+  averageScore: number;
+  trend: string;
+  nonCompliantCount: number;
+  dashboardUrl: string;
+}): EmailTemplate {
+  return {
+    subject: `VCA Compliance Wekelijks Overzicht - ${data.organizationName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #f97316;">VCA Compliance Overzicht</h1>
+        <p>Wekelijks overzicht van VCA compliance voor ${data.organizationName}:</p>
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <p><strong>Gemiddelde Score:</strong> ${data.averageScore}%</p>
+          <p><strong>Trend:</strong> ${data.trend}</p>
+          <p><strong>Niet-conforme TRA's:</strong> ${data.nonCompliantCount}</p>
+        </div>
+        <p>
+          <a href="${data.dashboardUrl}" 
+             style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            Bekijk Compliance Dashboard
+          </a>
+        </p>
+        <p>Met vriendelijke groet,<br>Het SafeWork Pro Team</p>
+      </div>
+    `,
+    text: `
+VCA Compliance Overzicht
+
+Wekelijks overzicht van VCA compliance voor ${data.organizationName}:
+
+Gemiddelde Score: ${data.averageScore}%
+Trend: ${data.trend}
+Niet-conforme TRA's: ${data.nonCompliantCount}
+
+Bekijk Compliance Dashboard: ${data.dashboardUrl}
+
+Met vriendelijke groet,
+Het SafeWork Pro Team
+    `,
+  };
+}
+
+/**
+ * VCA Compliance Score Declined Alert
+ */
+export function getVcaComplianceDeclinedEmail(data: {
+  traTitle: string;
+  previousScore: number;
+  currentScore: number;
+  traLink: string;
+}): EmailTemplate {
+  return {
+    subject: `⚠️ VCA Compliance Score Gedaald - ${data.traTitle}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #f59e0b;">⚠️ Compliance Score Gedaald</h1>
+        <p>De VCA compliance score van een TRA is gedaald:</p>
+        <p><strong>TRA:</strong> ${data.traTitle}</p>
+        <p><strong>Vorige Score:</strong> ${data.previousScore}%</p>
+        <p><strong>Huidige Score:</strong> ${data.currentScore}%</p>
+        <p style="background-color: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b;">
+          <strong>Actie aanbevolen:</strong> Bekijk de TRA en verbeter de compliance score.
+        </p>
+        <p>
+          <a href="${data.traLink}" 
+             style="background-color: #f97316; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+            Bekijk TRA
+          </a>
+        </p>
+        <p>Met vriendelijke groet,<br>Het SafeWork Pro Team</p>
+      </div>
+    `,
+    text: `
+⚠️ Compliance Score Gedaald
+
+De VCA compliance score van een TRA is gedaald:
+
+TRA: ${data.traTitle}
+Vorige Score: ${data.previousScore}%
+Huidige Score: ${data.currentScore}%
+
+ACTIE AANBEVOLEN: Bekijk de TRA en verbeter de compliance score.
+
+Bekijk TRA: ${data.traLink}
+
+Met vriendelijke groet,
+Het SafeWork Pro Team
+    `,
+  };
+}
+
+/**
+ * Non-Compliant TRA Alert
+ */
+export function getVcaNonCompliantTraEmail(data: {
+  traTitle: string;
+  score: number;
+  issues: string[];
+  traLink: string;
+}): EmailTemplate {
+  return {
+    subject: `🚨 Niet-Conforme TRA - ${data.traTitle}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #ef4444;">
+        <div style="background-color: #ef4444; color: white; padding: 15px;">
+          <h1 style="margin: 0;">🚨 Niet-Conforme TRA</h1>
+        </div>
+        <div style="padding: 20px;">
+          <p>Een TRA voldoet niet aan de VCA compliance vereisten:</p>
+          <p><strong>TRA:</strong> ${data.traTitle}</p>
+          <p><strong>Score:</strong> ${data.score}% (minimaal 85% vereist)</p>
+          <p><strong>Problemen:</strong></p>
+          <ul>
+            ${data.issues.map((issue) => `<li>${issue}</li>`).join("")}
+          </ul>
+          <p style="background-color: #fee2e2; padding: 15px; border-left: 4px solid #ef4444;">
+            <strong>Actie vereist:</strong> Deze TRA moet worden verbeterd voordat deze kan worden goedgekeurd.
+          </p>
+          <p>
+            <a href="${data.traLink}" 
+               style="background-color: #ef4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Bekijk en Verbeter TRA
+            </a>
+          </p>
+        </div>
+      </div>
+    `,
+    text: `
+🚨 Niet-Conforme TRA
+
+Een TRA voldoet niet aan de VCA compliance vereisten:
+
+TRA: ${data.traTitle}
+Score: ${data.score}% (minimaal 85% vereist)
+
+Problemen:
+${data.issues.map((issue) => `- ${issue}`).join("\n")}
+
+ACTIE VEREIST: Deze TRA moet worden verbeterd voordat deze kan worden goedgekeurd.
+
+Bekijk en verbeter TRA: ${data.traLink}
+
+Met vriendelijke groet,
+Het SafeWork Pro Team
+    `,
+  };
+}
+
+/**
+ * High-risk TRA notification for supervisors
+ */
+function getHighRiskTraEmail(data: {
+  traTitle: string;
+  projectName: string;
+  riskLevel: string;
+  riskScore: number;
+  creatorName: string;
+  traLink: string;
+  hazardCount: number;
+}): EmailTemplate {
+  return {
+    subject: `⚠️ Hoog Risico TRA - ${data.traTitle}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #f59e0b;">
+        <div style="background-color: #f59e0b; color: white; padding: 15px;">
+          <h1 style="margin: 0;">⚠️ Hoog Risico TRA Gedetecteerd</h1>
+        </div>
+        <div style="padding: 20px;">
+          <p>Er is een TRA met hoog risico aangemaakt die uw aandacht vereist:</p>
+          <p><strong>TRA:</strong> ${data.traTitle}</p>
+          <p><strong>Project:</strong> ${data.projectName}</p>
+          <p><strong>Risiconiveau:</strong> <span style="color: #dc2626; font-weight: bold;">${data.riskLevel}</span></p>
+          <p><strong>Risicoscore:</strong> ${data.riskScore}</p>
+          <p><strong>Aantal gevaren:</strong> ${data.hazardCount}</p>
+          <p><strong>Aangemaakt door:</strong> ${data.creatorName}</p>
+          <p style="background-color: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b;">
+            <strong>Actie vereist:</strong> Beoordeel deze TRA en zorg ervoor dat alle beheersmaatregelen adequaat zijn voordat werkzaamheden beginnen.
+          </p>
+          <p>
+            <a href="${data.traLink}"
+               style="background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Bekijk TRA
+            </a>
+          </p>
+        </div>
+      </div>
+    `,
+    text: `
+⚠️ Hoog Risico TRA Gedetecteerd
+
+Er is een TRA met hoog risico aangemaakt die uw aandacht vereist:
+
+TRA: ${data.traTitle}
+Project: ${data.projectName}
+Risiconiveau: ${data.riskLevel}
+Risicoscore: ${data.riskScore}
+Aantal gevaren: ${data.hazardCount}
+Aangemaakt door: ${data.creatorName}
+
+ACTIE VEREIST: Beoordeel deze TRA en zorg ervoor dat alle beheersmaatregelen adequaat zijn voordat werkzaamheden beginnen.
+
+Bekijk TRA: ${data.traLink}
+
+Met vriendelijke groet,
+Het SafeWork Pro Team
+    `,
+  };
+}
+
+/**
+ * Supervisor acknowledgment request
+ */
+function getSupervisorAcknowledgmentEmail(data: {
+  eventType: 'high_risk_tra' | 'stop_work';
+  eventTitle: string;
+  projectName: string;
+  location?: string;
+  reason: string;
+  acknowledgeLink: string;
+}): EmailTemplate {
+  const isCritical = data.eventType === 'stop_work';
+  const eventLabel = isCritical ? 'STOP WERK SITUATIE' : 'Hoog Risico TRA';
+  
+  return {
+    subject: `${isCritical ? '🚨' : '⚠️'} Bevestiging Vereist: ${eventLabel}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 3px solid ${isCritical ? '#ef4444' : '#f59e0b'};">
+        <div style="background-color: ${isCritical ? '#ef4444' : '#f59e0b'}; color: white; padding: 20px;">
+          <h1 style="margin: 0;">${isCritical ? '🚨' : '⚠️'} ${eventLabel}</h1>
+        </div>
+        <div style="padding: 20px;">
+          <p><strong>Uw bevestiging is vereist voor de volgende situatie:</strong></p>
+          <p><strong>Gebeurtenis:</strong> ${data.eventTitle}</p>
+          <p><strong>Project:</strong> ${data.projectName}</p>
+          ${data.location ? `<p><strong>Locatie:</strong> ${data.location}</p>` : ''}
+          <p><strong>Reden:</strong> ${data.reason}</p>
+          <p style="background-color: ${isCritical ? '#fee2e2' : '#fef3c7'}; padding: 15px; border-left: 4px solid ${isCritical ? '#ef4444' : '#f59e0b'};">
+            <strong>Actie vereist:</strong> U moet deze situatie beoordelen en uw bevestiging geven dat u op de hoogte bent en passende maatregelen neemt.
+          </p>
+          <p>
+            <a href="${data.acknowledgeLink}"
+               style="background-color: ${isCritical ? '#ef4444' : '#f59e0b'}; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Bevestig Kennisname
+            </a>
+          </p>
+          <p style="font-size: 12px; color: #6b7280; margin-top: 20px;">
+            Deze bevestiging wordt geregistreerd voor audit doeleinden.
+          </p>
+        </div>
+      </div>
+    `,
+    text: `
+${isCritical ? '🚨' : '⚠️'} ${eventLabel}
+
+Uw bevestiging is vereist voor de volgende situatie:
+
+Gebeurtenis: ${data.eventTitle}
+Project: ${data.projectName}
+${data.location ? `Locatie: ${data.location}` : ''}
+Reden: ${data.reason}
+
+ACTIE VEREIST: U moet deze situatie beoordelen en uw bevestiging geven dat u op de hoogte bent en passende maatregelen neemt.
+
+Bevestig kennisname: ${data.acknowledgeLink}
+
+Deze bevestiging wordt geregistreerd voor audit doeleinden.
+
+Met vriendelijke groet,
+Het SafeWork Pro Team
+    `,
+  };
+}
+
+/**
+ * Emergency procedure alert for HIGH/VERY_HIGH risk TRAs
+ */
+function getEmergencyProcedureAlertEmail(data: {
+  traId: string;
+  traTitle: string;
+  taskDescription: string;
+  riskLevel: string;
+  emergencyContacts: Array<{
+    name: string;
+    role: string;
+    phone: string;
+    email?: string;
+  }>;
+  projectName: string;
+  reportedBy: string;
+}): EmailTemplate {
+  const contactsList = data.emergencyContacts
+    .map(
+      (contact) =>
+        `<li><strong>${contact.name}</strong> (${contact.role})<br/>Tel: ${contact.phone}${
+          contact.email ? `<br/>Email: ${contact.email}` : ""
+        }</li>`
+    )
+    .join("");
+
+  const contactsText = data.emergencyContacts
+    .map(
+      (contact) =>
+        `${contact.name} (${contact.role})\nTel: ${contact.phone}${contact.email ? `\nEmail: ${contact.email}` : ""}`
+    )
+    .join("\n\n");
+
+  return {
+    subject: `⚠️ Hoog Risico TRA: Noodprocedures Vereist - ${data.traTitle}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #f59e0b;">
+        <div style="background-color: #f59e0b; color: white; padding: 15px;">
+          <h1 style="margin: 0;">⚠️ Hoog Risico TRA - Noodprocedures Vereist</h1>
+        </div>
+        <div style="padding: 20px;">
+          <p>Er is een TRA met <strong>${data.riskLevel}</strong> risiconiveau aangemaakt die noodprocedures vereist:</p>
+          
+          <div style="background-color: #fef3c7; padding: 15px; border-left: 4px solid #f59e0b; margin: 20px 0;">
+            <p style="margin: 0;"><strong>TRA:</strong> ${data.traTitle}</p>
+            <p style="margin: 5px 0 0 0;"><strong>Project:</strong> ${data.projectName}</p>
+            <p style="margin: 5px 0 0 0;"><strong>Taak:</strong> ${data.taskDescription}</p>
+            <p style="margin: 5px 0 0 0;"><strong>Risiconiveau:</strong> <span style="color: #dc2626; font-weight: bold;">${data.riskLevel}</span></p>
+            <p style="margin: 5px 0 0 0;"><strong>Aangemaakt door:</strong> ${data.reportedBy}</p>
+          </div>
+
+          <h3 style="color: #dc2626; margin-top: 20px;">📞 Nood Contactpersonen</h3>
+          <ul style="list-style-type: none; padding-left: 0;">
+            ${contactsList}
+          </ul>
+
+          <div style="background-color: #fee2e2; padding: 15px; border-left: 4px solid #dc2626; margin: 20px 0;">
+            <p style="margin: 0;"><strong>⚠️ BELANGRIJK:</strong></p>
+            <p style="margin: 5px 0 0 0;">Deze TRA heeft hoog risico en vereist:</p>
+            <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+              <li>Gedocumenteerde noodprocedures</li>
+              <li>Bereikbare noodcontacten tijdens werkzaamheden</li>
+              <li>Stop-werk condities gedefinieerd</li>
+              <li>Noodrespons stappen beschikbaar</li>
+              <li>Locatie van nooduitrusting bekend</li>
+            </ul>
+          </div>
+
+          <p>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/tras/${data.traId}"
+               style="background-color: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+              Bekijk TRA en Noodprocedures
+            </a>
+          </p>
+
+          <p style="font-size: 12px; color: #6b7280; margin-top: 30px; border-top: 1px solid #e5e7eb; padding-top: 15px;">
+            Deze melding wordt verzonden omdat de TRA een hoog risiconiveau heeft en VCA compliance noodprocedures vereist voor dergelijke taken.
+          </p>
+        </div>
+      </div>
+    `,
+    text: `
+⚠️ Hoog Risico TRA - Noodprocedures Vereist
+
+Er is een TRA met ${data.riskLevel} risiconiveau aangemaakt die noodprocedures vereist:
+
+TRA: ${data.traTitle}
+Project: ${data.projectName}
+Taak: ${data.taskDescription}
+Risiconiveau: ${data.riskLevel}
+Aangemaakt door: ${data.reportedBy}
+
+📞 NOOD CONTACTPERSONEN:
+${contactsText}
+
+⚠️ BELANGRIJK:
+Deze TRA heeft hoog risico en vereist:
+- Gedocumenteerde noodprocedures
+- Bereikbare noodcontacten tijdens werkzaamheden
+- Stop-werk condities gedefinieerd
+- Noodrespons stappen beschikbaar
+- Locatie van nooduitrusting bekend
+
+Bekijk TRA en noodprocedures: ${process.env.NEXT_PUBLIC_APP_URL}/tras/${data.traId}
+
+Deze melding wordt verzonden omdat de TRA een hoog risiconiveau heeft en VCA compliance noodprocedures vereist voor dergelijke taken.
 
 Met vriendelijke groet,
 Het SafeWork Pro Team

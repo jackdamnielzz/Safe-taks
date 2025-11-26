@@ -1,0 +1,24 @@
+Ik heb de client en server aangepast zodat sjablonen via /api/templates geladen worden en er debughelpers in Stap 1 zijn.
+Graag jouw actie in de browser en de output hier plakken zodat ik verder kan verifiëren.
+
+Wat je moet doen (kort):
+1. Start dev-server (indien nog niet gestart):
+   cd web && npm run dev
+
+2. Open de LMRA-wizard en ga naar Stap 1 — TRA selectie.
+
+3. Open Developer Tools → Console en Network.
+
+4. Klik de knop "Sjablonen opnieuw laden".
+
+5. Plak hier:
+   - Console regels die beginnen met:
+     [Step1_TraSelection] fetch loadedTemplates count:
+     [Step1_TraSelection] manual fetchTemplates count:
+   - De zichtbare tekst op de pagina bij "X sjablonen geladen" (of de foutmelding)
+   - Eventuele netwerkfouten voor /api/templates uit de Network-tab (statuscode / response)
+
+Als je wil dat ik het direct forceer zonder debugstappen (altijd via fetch), reageer hier met:
+   Voer optie A uit
+
+Dank — ik wacht op de console- of paginalogs om door te gaan.

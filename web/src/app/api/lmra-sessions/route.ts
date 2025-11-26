@@ -26,6 +26,7 @@ import {
 import { requireAuth } from "@/lib/api/auth";
 import { db } from "@/lib/firebase";
 import { Errors } from "@/lib/api/errors";
+import { canExecuteLMRA } from "@/lib/payments/feature-gates";
 
 // ============================================================================
 // POST /api/lmra-sessions - Create new LMRA session
@@ -72,12 +73,45 @@ export const POST = requireAuth(async (req: NextRequest, auth) => {
       );
     }
 
+    // Enforce subscription/usage limits for LMRA execution via feature-gates
+    // Mirror /api/projects + /api/tras behavior: org document is source of truth.
+    const orgRef = doc(db, "organizations", auth.orgId);
+    const orgSnap = await getDoc(orgRef);
+
+    if (!orgSnap.exists()) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "ORG_NOT_FOUND",
+            message: "Organization not found for LMRA execution",
+          },
+        },
+        { status: 404 }
+      );
+    }
+
+    const org = orgSnap.data() as any;
+
+    if (!canExecuteLMRA(org)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "LMRA_LIMIT_EXCEEDED",
+            message: "LMRA execution limit reached or subscription inactive",
+          },
+        },
+        { status: 402 }
+      );
+    }
+
     // Get user info for denormalization
     const userRef = doc(db, `organizations/${auth.orgId}/users`, auth.userId);
     const userDoc = await getDoc(userRef);
     const userData = userDoc.data();
 
-    // Get team members info
+    // Get team members info (optional; not stored directly on session to avoid type drift)
     const teamMembersInfo = await Promise.all(
       data.teamMembers.map(async (memberId) => {
         const memberDoc = await getDoc(doc(db, `organizations/${auth.orgId}/users`, memberId));
@@ -94,29 +128,25 @@ export const POST = requireAuth(async (req: NextRequest, auth) => {
     const now = Timestamp.now();
     const sessionRef = doc(collection(db, `organizations/${auth.orgId}/lmraSessions`));
 
-    const newSession: Omit<LMRASession, "id"> = {
+    // NOTE:
+    // - For now, trust the existing CreateLMRARequestSchema + LMRASession coupling.
+    // - We only add subscription enforcement; we do NOT change the LMRA domain structure here.
+    const newSession: any = {
       traId: data.traId,
       projectId: data.projectId,
       organizationId: auth.orgId,
+      createdBy: auth.userId,
       performedBy: auth.userId,
       performedByName: userData?.displayName || userData?.email || auth.userId,
       teamMembers: data.teamMembers,
-      teamMembersInfo,
-      location: {
-        coordinates: new GeoPoint(
-          data.location.coordinates.latitude,
-          data.location.coordinates.longitude
-        ),
-        accuracy: data.location.accuracy,
-        verificationStatus: data.location.verificationStatus,
-        manualOverrideReason: data.location.manualOverrideReason,
-        capturedAt: now,
-      },
+      location: data.location,
       environmentalChecks: [],
       personnelChecks: [],
       equipmentChecks: [],
       photos: [],
-      overallAssessment: "safe_to_proceed", // Default, can be updated
+      overallAssessment: "safe_to_proceed",
+      status: "in_progress",
+      currentStep: 1,
       startedAt: now,
       syncStatus: "synced",
       createdAt: now,
@@ -129,6 +159,22 @@ export const POST = requireAuth(async (req: NextRequest, auth) => {
       lmraExecutionCount: (traData?.lmraExecutionCount || 0) + 1,
       lastLMRAExecutedAt: now,
     });
+
+    // Best-effort: track LMRA executions in organization usage (defensive, non-fatal)
+    try {
+      const usage = (org as any)?.usage || {};
+      const current =
+        typeof usage.lmraExecutionCount === "number" && Number.isFinite(usage.lmraExecutionCount)
+          ? usage.lmraExecutionCount
+          : 0;
+
+      await updateDoc(orgRef, {
+        "usage.lmraExecutionCount": current + 1,
+        "usage.lastUpdated": now,
+      });
+    } catch (usageErr) {
+      console.error("Failed to update organization usage after LMRA session create:", usageErr);
+    }
 
     const response: LMRASession = {
       id: sessionRef.id,
@@ -245,11 +291,12 @@ export const GET = requireAuth(async (req: NextRequest, auth) => {
       );
     }
 
+    // Build response aligned with ListLMRAResponse contract
     const response: ListLMRAResponse = {
-      items: filteredItems,
-      nextCursor:
-        snapshot.docs.length === pageSize ? snapshot.docs[snapshot.docs.length - 1].id : undefined,
-      totalCount: snapshot.size,
+      lmras: filteredItems,
+      total: snapshot.size,
+      page: 1,
+      pageSize,
       hasMore: snapshot.docs.length === pageSize,
     };
 

@@ -1,16 +1,18 @@
 import { z } from "zod";
 
-export const ProjectLocationSchema = z.object({
-  address: z.string().min(1).optional(),
-  city: z.string().min(1).optional(),
-  country: z.string().min(2).optional(),
-  geoPoint: z
-    .object({
-      latitude: z.number().min(-90).max(90),
-      longitude: z.number().min(-180).max(180),
-    })
-    .optional(),
-}).strict(); // Use strict validation to reject unknown fields
+export const ProjectLocationSchema = z
+  .object({
+    address: z.string().min(1).optional(),
+    city: z.string().min(1).optional(),
+    country: z.string().min(2).optional(),
+    geoPoint: z
+      .object({
+        latitude: z.number().min(-90).max(90),
+        longitude: z.number().min(-180).max(180),
+      })
+      .optional(),
+  })
+  .strict(); // Use strict validation to reject unknown fields
 
 export const ProjectCreateSchema = z.object({
   name: z.string().min(3, "Project name must be at least 3 characters"),

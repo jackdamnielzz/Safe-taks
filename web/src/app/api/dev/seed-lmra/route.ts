@@ -10,8 +10,8 @@ import { initializeAdmin } from "@/lib/server-helpers";
 
 export async function POST(request: Request) {
   try {
-    if (process.env.NODE_ENV !== 'development') {
-      return new Response(JSON.stringify({ error: 'Not available' }), { status: 404 });
+    if (process.env.NODE_ENV !== "development") {
+      return new Response(JSON.stringify({ error: "Not available" }), { status: 404 });
     }
     const body = await request.json().catch(() => ({}));
     const { id = "test-lmra-id", orgId = "test-org", title = "Test LMRA (dev-seed)" } = body;
@@ -37,17 +37,17 @@ export async function POST(request: Request) {
 
     // Persist seed to web/.dev-seed.json so other Next dev processes pick it up
     try {
-      const fs = require('fs');
-      const path = require('path');
-      const seedPath = path.join(__dirname, '..', '..', '..', '.dev-seed.json');
+      const fs = require("fs");
+      const path = require("path");
+      const seedPath = path.join(__dirname, "..", "..", "..", ".dev-seed.json");
       let seed = { lmras: {}, stopWorkAlerts: {} };
       if (fs.existsSync(seedPath)) {
-        const raw = fs.readFileSync(seedPath, 'utf8');
+        const raw = fs.readFileSync(seedPath, "utf8");
         seed = JSON.parse(raw);
       }
       seed.lmras = seed.lmras || {};
       seed.lmras[id] = lmraData;
-      fs.writeFileSync(seedPath, JSON.stringify(seed, null, 2), 'utf8');
+      fs.writeFileSync(seedPath, JSON.stringify(seed, null, 2), "utf8");
     } catch (e) {
       console.warn("Could not persist .dev-seed.json from seed-lmra route:", e && e.message);
     }

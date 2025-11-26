@@ -1,0 +1,19 @@
+- [x] Analyze the current VCA compliance visual display issue
+- [x] Remove the redundant red cross (XCircle) icon from Non-Compliant status
+- [x] Update ComplianceBadge component to show cleaner display
+- [x] Fix layout overflow issue for Non-Compliant badge
+- [x] Ensure consistent styling between compact and detailed modes
+- [x] Make all text black as requested by user
+- [x] Apply black text to all sections (titles, problems, suggestions)
+- [x] Ensure both compact and detailed modes have black text
+- [x] Make VCA Tips block background light gray with black text
+- [x] Make "Categorie Scores" title less gray (text-gray-800)
+- [x] Make category names less gray/darker (text-gray-800 dark:text-gray-400)  
+- [x] Make red percentages less intense (text-red-500)
+- [x] Remove bold formatting from percentage scores
+- [x] Apply text-gray-800 dark:text-gray-400 to both title and categories
+- [x] Apply text-gray-800 dark:text-gray-400 to "Totale Score" (compact + detailed)
+- [x] Remove percentage from "Niet Conform" badge (show only status)
+- [x] Make XCircle icons darker red (text-red-800 dark:text-red-800) to match borders
+- [x] Test the fix to ensure visual clarity is maintained
+- [x] Verify no other compliance statuses are affected

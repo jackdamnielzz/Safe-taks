@@ -67,7 +67,9 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
         {showLogo && (
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-3 mb-2">
-              <span className="text-4xl">🏗️</span>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-lg">
+                SW
+              </div>
               <span className="text-2xl font-bold text-gray-900">SafeWork Pro</span>
             </div>
             <p className="text-gray-600">Task Risk Assessment Platform</p>
