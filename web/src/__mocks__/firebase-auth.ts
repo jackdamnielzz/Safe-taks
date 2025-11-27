@@ -3,6 +3,8 @@
  * Exports commonly used functions so tests don't make real network calls.
  */
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 // Global auth instance that can be accessed across tests
 let globalAuthInstance: any = null;
 

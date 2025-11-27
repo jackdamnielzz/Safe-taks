@@ -2,6 +2,8 @@
  * Direct test of the next-intl mock to see if it's being used at all
  */
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 describe("Direct next-intl mock test", () => {
   test("should use the mock and return Dutch translations", () => {
     // Import next-intl after jest setup

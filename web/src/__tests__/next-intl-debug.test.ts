@@ -2,6 +2,8 @@
  * Debug test for next-intl mock - detailed logging
  */
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 describe("next-intl mock debugging", () => {
   test("should debug translation lookup", () => {
     // Import after Jest has set up mocks

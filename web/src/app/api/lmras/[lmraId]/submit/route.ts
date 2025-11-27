@@ -5,13 +5,13 @@ import { initializeAdmin, requireOrgAuth } from "@/lib/server-helpers";
  * POST /api/lmras/[lmraId]/submit
  * Mark LMRA as submitted for review/approval.
  */
-export async function POST(request: Request, { params }: { params: { lmraId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ lmraId: string }> }) {
   try {
     const user = await requireOrgAuth(request);
     const body = await request.json();
     const { firestore } = initializeAdmin();
     const orgId = user.orgId;
-    const { lmraId } = params;
+    const { lmraId } = await params;
 
     const docRef = firestore.collection("organizations").doc(orgId).collection("lmras").doc(lmraId);
     const snap = await docRef.get();

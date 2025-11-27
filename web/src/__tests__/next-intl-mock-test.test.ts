@@ -2,6 +2,8 @@
  * Test to verify next-intl mock is working correctly
  */
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 describe("next-intl mock verification", () => {
   test("should load and use Dutch translations", () => {
     // Import after Jest has set up mocks

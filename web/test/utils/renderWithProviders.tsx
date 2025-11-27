@@ -1,4 +1,4 @@
-/* eslint-disable global-require, @typescript-eslint/no-var-requires, react/display-name */
+/* eslint-disable global-require, @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports, react/display-name */
 import React from "react";
 import { render, RenderOptions } from "@testing-library/react";
 import type { ReactElement } from "react";

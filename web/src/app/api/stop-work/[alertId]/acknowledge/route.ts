@@ -5,12 +5,12 @@ import { initializeAdmin, requireOrgAuth } from "@/lib/server-helpers";
  * POST /api/stop-work/[alertId]/acknowledge
  * Acknowledge a stop-work alert (supervisor action)
  */
-export async function POST(request: Request, { params }: { params: { alertId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ alertId: string }> }) {
   try {
     const user = await requireOrgAuth(request);
     const { firestore } = initializeAdmin();
     const orgId = user.orgId;
-    const { alertId } = params;
+    const { alertId } = await params;
 
     // Find the alert
     const alertRef = firestore

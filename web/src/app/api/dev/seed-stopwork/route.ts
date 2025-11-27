@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 import { NextResponse } from "next/server";
 import { initializeAdmin } from "@/lib/server-helpers";
 

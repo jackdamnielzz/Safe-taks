@@ -7,13 +7,13 @@
 import { NextResponse } from "next/server";
 import { getComplianceHistory } from "@/lib/compliance-analytics";
 
-export async function GET(request: Request, { params }: { params: { traId: string } }) {
+export async function GET(request: Request, { params }: { params: Promise<{ traId: string }> }) {
   try {
     // In production, use requireOrgAuth from lib/server-helpers
     // For now, using test-org for development
     const organizationId = "test-org";
 
-    const { traId } = params;
+    const { traId } = await params;
 
     if (!traId) {
       return NextResponse.json({ error: "TRA ID is required" }, { status: 400 });

@@ -6,6 +6,8 @@
  * and Next.js route handler invocation. Adjust mocks if necessary.
  */
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 import { POST } from "@/app/api/tras/[traId]/submit/route";
 import { db } from "@/lib/firebase-admin";
 

@@ -11,13 +11,13 @@ const resolveSchema = z.object({
   resolutionNotes: z.string().min(1).max(1000),
 });
 
-export async function POST(request: Request, { params }: { params: { alertId: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ alertId: string }> }) {
   try {
     const user = await requireOrgAuth(request);
     const body = await request.json();
     const { firestore } = initializeAdmin();
     const orgId = user.orgId;
-    const { alertId } = params;
+    const { alertId } = await params;
 
     // Validate request body
     const validationResult = resolveSchema.safeParse(body);
