@@ -5,24 +5,14 @@
 
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
-// Mock Firebase Analytics
-const mockLogEvent = jest.fn();
-const mockSetUserId = jest.fn();
-const mockSetUserProperties = jest.fn();
-const mockGetAnalytics = jest.fn(() => ({}));
+// Use the global mocks from jest.setup.js
+// Access them via global object
+const mockAnalyticsInstance = (global as any).mockAnalyticsInstance;
+const mockLogEvent = (global as any).mockLogEvent;
+const mockSetUserId = (global as any).mockSetUserId;
+const mockSetUserProperties = (global as any).mockSetUserProperties;
 
-jest.mock("firebase/analytics", () => ({
-  getAnalytics: mockGetAnalytics,
-  logEvent: mockLogEvent,
-  setUserId: mockSetUserId,
-  setUserProperties: mockSetUserProperties,
-}));
-
-jest.mock("firebase/app", () => ({
-  getApp: jest.fn(() => ({})),
-}));
-
-// Import after mocks are set up
+// Import after accessing global mocks
 import {
   setAnalyticsUserId,
   setAnalyticsUserProperties,
@@ -56,7 +46,7 @@ describe("Analytics Service", () => {
   describe("User Identification", () => {
     it("should set user ID", () => {
       setAnalyticsUserId("user-123");
-      expect(mockSetUserId).toHaveBeenCalledWith({}, "user-123");
+      expect(mockSetUserId).toHaveBeenCalledWith(mockAnalyticsInstance, "user-123");
     });
 
     it("should set user properties", () => {
@@ -66,7 +56,7 @@ describe("Analytics Service", () => {
         subscriptionTier: "professional",
       };
       setAnalyticsUserProperties(properties);
-      expect(mockSetUserProperties).toHaveBeenCalledWith({}, properties);
+      expect(mockSetUserProperties).toHaveBeenCalledWith(mockAnalyticsInstance, properties);
     });
   });
 
@@ -81,7 +71,7 @@ describe("Analytics Service", () => {
         hazardCount: 5,
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "tra_created", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "tra_created", {
         tra_id: "tra-123",
         project_id: "project-123",
         template_id: "template-123",
@@ -98,7 +88,7 @@ describe("Analytics Service", () => {
         overallRiskScore: 150,
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "tra_submitted", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "tra_submitted", {
         tra_id: "tra-123",
         project_id: "project-123",
         risk_score: 150,
@@ -112,7 +102,7 @@ describe("Analytics Service", () => {
         approvalTimeHours: 24,
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "tra_approved", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "tra_approved", {
         tra_id: "tra-123",
         project_id: "project-123",
         approval_time_hours: 24,
@@ -126,7 +116,7 @@ describe("Analytics Service", () => {
         reason: "Incomplete hazard analysis",
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "tra_rejected", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "tra_rejected", {
         tra_id: "tra-123",
         project_id: "project-123",
         reason: "Incomplete hazard analysis",
@@ -139,7 +129,7 @@ describe("Analytics Service", () => {
         format: "pdf",
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "tra_exported", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "tra_exported", {
         tra_id: "tra-123",
         format: "pdf",
       });
@@ -154,7 +144,7 @@ describe("Analytics Service", () => {
         projectId: "project-123",
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "lmra_started", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "lmra_started", {
         session_id: "session-123",
         tra_id: "tra-123",
         project_id: "project-123",
@@ -171,7 +161,7 @@ describe("Analytics Service", () => {
         photoCount: 3,
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "lmra_completed", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "lmra_completed", {
         session_id: "session-123",
         tra_id: "tra-123",
         project_id: "project-123",
@@ -189,7 +179,7 @@ describe("Analytics Service", () => {
         reason: "Unsafe weather conditions",
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "lmra_stop_work", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "lmra_stop_work", {
         session_id: "session-123",
         tra_id: "tra-123",
         project_id: "project-123",
@@ -207,7 +197,7 @@ describe("Analytics Service", () => {
         timeToCompleteHours: 12,
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "approval_step_completed", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "approval_step_completed", {
         tra_id: "tra-123",
         step_name: "Safety Manager Review",
         approver_role: "safety_manager",
@@ -224,7 +214,7 @@ describe("Analytics Service", () => {
         dateRange: "2025-01-01_2025-01-31",
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "report_exported", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "report_exported", {
         report_type: "dashboard",
         format: "pdf",
         date_range: "2025-01-01_2025-01-31",
@@ -235,12 +225,14 @@ describe("Analytics Service", () => {
   describe("User Engagement Events", () => {
     it("should track user login", () => {
       trackUserLogin({ method: "email" });
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "login", { method: "email" });
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "login", {
+        method: "email",
+      });
     });
 
     it("should track user registration", () => {
       trackUserRegistration({ method: "google", role: "field_worker" });
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "sign_up", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "sign_up", {
         method: "google",
         role: "field_worker",
       });
@@ -252,7 +244,7 @@ describe("Analytics Service", () => {
         subscriptionTier: "professional",
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "organization_created", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "organization_created", {
         organization_id: "org-123",
         subscription_tier: "professional",
       });
@@ -260,14 +252,14 @@ describe("Analytics Service", () => {
 
     it("should track team member invited", () => {
       trackTeamMemberInvited({ inviteeRole: "supervisor" });
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "team_member_invited", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "team_member_invited", {
         invitee_role: "supervisor",
       });
     });
 
     it("should track project created", () => {
       trackProjectCreated({ projectId: "project-123" });
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "project_created", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "project_created", {
         project_id: "project-123",
       });
     });
@@ -281,7 +273,7 @@ describe("Analytics Service", () => {
         resultsCount: 15,
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "search", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "search", {
         search_term: "electrical work",
         search_type: "tra",
         results_count: 15,
@@ -290,7 +282,7 @@ describe("Analytics Service", () => {
 
     it("should track dashboard viewed", () => {
       trackDashboardViewed({ dashboardType: "executive" });
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "dashboard_viewed", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "dashboard_viewed", {
         dashboard_type: "executive",
       });
     });
@@ -301,7 +293,7 @@ describe("Analytics Service", () => {
         source: "tooltip",
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "help_viewed", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "help_viewed", {
         help_topic: "risk_assessment",
         source: "tooltip",
       });
@@ -316,7 +308,7 @@ describe("Analytics Service", () => {
         errorContext: "TRA creation form",
       });
 
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "app_error", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "app_error", {
         error_type: "validation_error",
         error_message: "Invalid TRA data",
         error_context: "TRA creation form",
@@ -327,7 +319,7 @@ describe("Analytics Service", () => {
   describe("Custom Events", () => {
     it("should track custom events", () => {
       trackCustomEvent("custom_action", { key: "value", count: 42 });
-      expect(mockLogEvent).toHaveBeenCalledWith({}, "custom_action", {
+      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalyticsInstance, "custom_action", {
         key: "value",
         count: 42,
       });

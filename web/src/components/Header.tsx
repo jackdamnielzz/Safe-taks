@@ -2,6 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { MobileMenu } from "@/components/MobileMenu";
 import { NotificationHeader } from "@/app/components/NotificationHeader";
 import { useAuth } from "@/components/AuthProvider";
@@ -27,7 +29,10 @@ interface DropdownItem {
 }
 
 export function Header() {
-  const { userProfile } = useAuth();
+  const t = useTranslations();
+  const router = useRouter();
+  const { userProfile, signOutUser } = useAuth();
+  const pathname = usePathname();
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0 });
@@ -66,16 +71,32 @@ export function Header() {
     };
   }, [accountDropdownOpen]);
 
-  const handleSignOut = () => {
-    // TODO: Implement sign out logic
-    console.log("Signing out...");
-    setAccountDropdownOpen(false);
+  const handleSignOut = async () => {
+    try {
+      console.log("Starting sign out process...");
+      setAccountDropdownOpen(false);
+      
+      // Sign out from Firebase and clear all persistence
+      await signOutUser();
+      console.log("Sign out successful - all auth data cleared");
+      
+      // Small delay to ensure all async cleanup operations complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Force a hard redirect to login page to clear all state and bypass client-side routing
+      // Using window.location.href ensures a full page reload, clearing all React state
+      window.location.href = "/auth/login";
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      alert("Uitloggen mislukt. Probeer het opnieuw.");
+      setAccountDropdownOpen(false);
+    }
   };
 
   const dropdownItems: DropdownItem[] = [
     {
       id: "account",
-      label: "Mijn Account",
+      label: t("header.myAccount"),
       href: "/account",
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +111,7 @@ export function Header() {
     },
     {
       id: "settings",
-      label: "Instellingen",
+      label: t("header.settings"),
       href: "/settings",
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +132,7 @@ export function Header() {
     },
     {
       id: "admin",
-      label: "Beheer Hub",
+      label: t("header.adminHub"),
       href: "/admin/hub",
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,7 +148,7 @@ export function Header() {
     },
     {
       id: "signout",
-      label: "Uitloggen",
+      label: t("header.signOut"),
       onClick: handleSignOut,
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,53 +169,53 @@ export function Header() {
   );
 
   return (
-    <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm sticky top-0 z-50">
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <Link href="/" className="inline-flex items-center gap-3 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-lg group-hover:shadow-indigo-500/50 transition-all">
+              <div className="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm group-hover:bg-blue-700 transition-colors">
                 SW
               </div>
-              <span className="font-bold text-xl bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="font-bold text-lg text-slate-900">
                 SafeWork Pro
               </span>
             </Link>
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-2" data-tour="navigation">
-            <NavLink href="/tras" data-tour="create-tra">
-              TRAs
+          <nav className="hidden md:flex items-center space-x-1" data-tour="navigation">
+            <NavLink href="/tras" isActive={pathname === "/tras"} data-tour="create-tra">
+              {t("nav.tras")}
             </NavLink>
-            <NavLink href="/mobile" data-tour="execute-lmra">
-              Mobile
+            <NavLink href="/reports" isActive={pathname === "/reports"} data-tour="view-reports">
+              {t("nav.reports")}
             </NavLink>
-            <NavLink href="/reports" data-tour="view-reports">
-              Reports
+            <NavLink href="/team" isActive={pathname === "/team"}>
+              {t("nav.team")}
             </NavLink>
-            <NavLink href="/team">Team</NavLink>
           </nav>
 
           {/* User actions */}
           <div className="flex items-center space-x-2 relative">
             <NotificationHeader />
 
-            <div className="hidden sm:block relative" ref={accountDropdownRef}>
-              <button
-                onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-all group"
-                aria-label="Account menu"
-              >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold text-sm shadow-md">
-                  {userProfile?.firstName?.[0] || "J"}
-                </div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600">
-                  {userProfile?.firstName || "John"}
-                </span>
+            {userProfile ? (
+              <div className="hidden sm:block relative" ref={accountDropdownRef}>
+                <button
+                  onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                  className="inline-flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-slate-50 transition-colors group border border-transparent hover:border-slate-200"
+                  aria-label={t("nav.accountMenu")}
+                >
+                  <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-semibold text-xs border border-slate-200">
+                    {userProfile.firstName?.[0] || "U"}
+                  </div>
+                  <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
+                    {userProfile.firstName}
+                  </span>
                 <svg
-                  className={`w-4 h-4 text-gray-400 transition-transform ${accountDropdownOpen ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 text-slate-400 transition-transform ${accountDropdownOpen ? "rotate-180" : ""}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -211,38 +232,38 @@ export function Header() {
               {/* Account Dropdown */}
               {accountDropdownOpen && (
                 <div
-                  className="fixed w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                  className="fixed w-56 bg-white rounded-lg shadow-lg border border-slate-200 z-50"
                   style={{
                     top: `${dropdownPosition.top}px`,
                     right: `${dropdownPosition.right}px`,
                     left: "auto",
                   }}
                 >
-                  <div className="p-3 border-b border-gray-200">
+                  <div className="p-3 border-b border-slate-100">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-semibold shadow-md">
-                        {userProfile?.firstName?.[0] || "J"}
+                      <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-semibold border border-slate-200">
+                        {userProfile.firstName?.[0] || "U"}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {userProfile?.firstName} {userProfile?.lastName}
+                        <p className="text-sm font-medium text-slate-900 truncate">
+                          {userProfile.firstName} {userProfile.lastName}
                         </p>
-                        <p className="text-sm text-gray-500 truncate">{userProfile?.email}</p>
+                        <p className="text-xs text-slate-500 truncate">{userProfile.email}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="py-2">
+                  <div className="py-1">
                     {visibleItems.map((item) => (
                       <div key={item.id}>
                         {item.href ? (
                           <Link
                             href={item.href}
-                            className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                            className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
                             onClick={() => setAccountDropdownOpen(false)}
                           >
                             <span
-                              className={`text-gray-400 ${item.variant === "danger" ? "text-red-400" : ""}`}
+                              className={`text-slate-400 ${item.variant === "danger" ? "text-red-400" : ""}`}
                             >
                               {item.icon}
                             </span>
@@ -254,14 +275,14 @@ export function Header() {
                               item.onClick?.();
                               setAccountDropdownOpen(false);
                             }}
-                            className={`flex items-center gap-3 px-4 py-2 text-sm w-full text-left hover:bg-gray-100 transition-colors ${
+                            className={`flex items-center gap-3 px-4 py-2 text-sm w-full text-left hover:bg-slate-50 transition-colors ${
                               item.variant === "danger"
                                 ? "text-red-600 hover:text-red-700 hover:bg-red-50"
-                                : "text-gray-700 hover:text-gray-900"
+                                : "text-slate-700 hover:text-slate-900"
                             }`}
                           >
                             <span
-                              className={`text-gray-400 ${item.variant === "danger" ? "text-red-400" : ""}`}
+                              className={`text-slate-400 ${item.variant === "danger" ? "text-red-400" : ""}`}
                             >
                               {item.icon}
                             </span>
@@ -273,7 +294,15 @@ export function Header() {
                   </div>
                 </div>
               )}
-            </div>
+              </div>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+              >
+                {t("auth.signIn")}
+              </Link>
+            )}
 
             <MobileMenu />
           </div>
@@ -286,20 +315,25 @@ export function Header() {
 function NavLink({
   href,
   children,
+  isActive,
   ...props
 }: {
   href: string;
   children: React.ReactNode;
+  isActive?: boolean;
   [key: string]: any;
 }) {
   return (
     <Link
       href={href}
-      className="relative px-4 py-2 text-sm font-medium text-gray-700 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all group"
+      className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+        isActive
+          ? "text-blue-600 bg-blue-50"
+          : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+      }`}
       {...props}
     >
       {children}
-      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
     </Link>
   );
 }

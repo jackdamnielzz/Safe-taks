@@ -21,6 +21,7 @@ import {
   sendPasswordResetEmail,
   User,
 } from "firebase/auth";
+import { __resetAuthMock } from "../__mocks__/firebase-auth";
 import {
   getFirestore,
   connectFirestoreEmulator,
@@ -70,6 +71,9 @@ describe("Authentication System", () => {
   });
 
   beforeEach(async () => {
+    // Reset auth mock state between tests
+    __resetAuthMock();
+
     // Sign out any existing user
     if (auth.currentUser) {
       await signOut(auth);
@@ -157,6 +161,16 @@ describe("Authentication System", () => {
 
   describe("Password Reset", () => {
     test("should send password reset email", async () => {
+      // Ensure test user exists first
+      try {
+        await createUserWithEmailAndPassword(auth, testEmail, testPassword);
+      } catch (error: any) {
+        // User might already exist from previous test, that's okay
+        if (error.message !== "auth/email-already-in-use") {
+          throw error;
+        }
+      }
+
       // This would normally send an email, but in emulator it just succeeds
       await expect(sendPasswordResetEmail(auth, testEmail)).resolves.not.toThrow();
     });

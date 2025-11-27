@@ -10,18 +10,8 @@ import type {
   LocationCoordinates,
 } from "@/lib/types/location";
 
-// Mock Geolocation API
-const mockGeolocation = {
-  getCurrentPosition: jest.fn(),
-  watchPosition: jest.fn(),
-  clearWatch: jest.fn(),
-};
-
-// Mock navigator.geolocation
-Object.defineProperty(global.navigator, "geolocation", {
-  value: mockGeolocation,
-  writable: true,
-});
+// Use the global navigator.geolocation mock configured in jest.setup.js
+const mockGeolocation = global.navigator.geolocation as any;
 
 // Mock localStorage
 const localStorageMock = {
@@ -44,6 +34,15 @@ describe("LocationService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorageMock.getItem.mockReturnValue(null);
+    localStorageMock.setItem.mockClear();
+    localStorageMock.removeItem.mockClear();
+    localStorageMock.clear.mockClear();
+
+    // Reset the locationService instance to clear cache and state
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (locationService as any).cache.clear();
+    (locationService as any).isWatching = false;
+    (locationService as any).watchId = null;
   });
 
   describe("getCurrentLocation", () => {
@@ -209,12 +208,18 @@ describe("LocationService", () => {
   });
 
   describe("stopWatchingLocation", () => {
-    it("should stop watching location", () => {
-      // Mock watchId
+    it("should stop watching location", async () => {
+      // Mock privacy consent
+      localStorageMock.getItem.mockReturnValue("granted");
+      
+      // Mock watchId deterministically for this test
       mockGeolocation.watchPosition.mockReturnValue(123);
 
+      const callback = jest.fn();
+      await locationService.startWatchingLocation(callback);
+
       locationService.stopWatchingLocation();
-      expect(mockGeolocation.clearWatch).toHaveBeenCalled();
+      expect(mockGeolocation.clearWatch).toHaveBeenCalledWith(123);
     });
   });
 
@@ -256,35 +261,36 @@ describe("LocationService", () => {
     });
 
     it("should retrieve cached locations", () => {
-      // Mock cached data in localStorage
-      const cachedData = JSON.stringify([
-        {
-          id: "loc_123",
-          location: {
-            id: "loc_123",
-            coordinates: {
-              latitude: 52.3676,
-              longitude: 4.9041,
-              accuracy: 5,
-            },
-            timestamps: {
-              capturedAt: new Date().toISOString(),
-              expiresAt: new Date(Date.now() + 3600000).toISOString(),
-              lastVerifiedAt: new Date().toISOString(),
-            },
-            metadata: {
-              source: "gps",
-              privacyConsent: true,
-              isOffline: false,
-            },
-            verificationStatus: "verified",
-            verificationScore: 85,
-          },
-          isPendingSync: false,
+      // Seed the in-memory cache directly on the singleton instance.
+      // This matches the implementation contract: getCachedLocations reads from the internal cache map.
+      const now = new Date();
+      const location = {
+        id: "loc_123",
+        coordinates: {
+          latitude: 52.3676,
+          longitude: 4.9041,
+          accuracy: 5,
         },
-      ]);
+        timestamps: {
+          capturedAt: now,
+          expiresAt: new Date(now.getTime() + 3600000),
+          lastVerifiedAt: now,
+        },
+        metadata: {
+          source: "gps",
+          privacyConsent: true,
+          isOffline: false,
+        },
+        verificationStatus: "verified",
+        verificationScore: 85,
+      };
 
-      localStorageMock.getItem.mockReturnValue(cachedData);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (locationService as any).cache.set("loc_123", {
+        id: "loc_123",
+        location,
+        isPendingSync: false,
+      });
 
       const cachedLocations = locationService.getCachedLocations();
 

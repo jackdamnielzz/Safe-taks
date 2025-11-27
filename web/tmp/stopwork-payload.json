@@ -1,0 +1,14 @@
+{
+  "triggeredBy": "test-runner",
+  "triggeredByName": "Test Runner",
+  "reason": "Test alert",
+  "severity": "high",
+  "category": "other",
+  "description": "Test description",
+  "photoIds": [],
+  "signature": {
+    "signerId": "test-runner",
+    "signerName": "Test Runner",
+    "signatureData": "test-sig"
+  }
+}

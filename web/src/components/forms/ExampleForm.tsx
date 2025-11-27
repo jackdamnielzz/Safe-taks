@@ -4,26 +4,39 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useTranslations } from "next-intl";
 import { FormField } from "../ui/FormField";
 import { TextArea } from "../ui/TextArea";
 import { Button } from "../ui/Button";
 
-// Define Zod schema for form validation
-const exampleFormSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters").max(100),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  email: z.string().email("Invalid email address"),
-  projectName: z.string().min(2, "Project name is required"),
-});
-
-type ExampleFormData = z.infer<typeof exampleFormSchema>;
-
 interface ExampleFormProps {
-  onSubmit: (data: ExampleFormData) => Promise<void>;
-  initialData?: Partial<ExampleFormData>;
+  onSubmit: (data: {
+    title: string;
+    description: string;
+    email: string;
+    projectName: string;
+  }) => Promise<void>;
+  initialData?: Partial<{
+    title: string;
+    description: string;
+    email: string;
+    projectName: string;
+  }>;
 }
 
 export const ExampleForm: React.FC<ExampleFormProps> = ({ onSubmit, initialData }) => {
+  const t = useTranslations();
+
+  // Define Zod schema for form validation with translated messages
+  const exampleFormSchema = z.object({
+    title: z.string().min(3, t("form.validation.titleMin")).max(100, t("form.validation.titleMax")),
+    description: z.string().min(10, t("form.validation.descriptionMin")),
+    email: z.string().email(t("form.validation.invalidEmail")),
+    projectName: z.string().min(2, t("form.validation.projectNameRequired")),
+  });
+
+  type ExampleFormData = z.infer<typeof exampleFormSchema>;
+
   const {
     register,
     handleSubmit,
@@ -45,12 +58,12 @@ export const ExampleForm: React.FC<ExampleFormProps> = ({ onSubmit, initialData 
 
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)} className="max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6">Example Form with Validation</h2>
+      <h2 className="text-2xl font-bold mb-6">{t("form.exampleTitle")}</h2>
 
       <FormField
         id="title"
-        label="Title"
-        placeholder="Enter a title"
+        label={t("wizard.titleLabel")}
+        placeholder={t("wizard.titlePlaceholder")}
         register={register}
         error={errors.title}
         required
@@ -58,8 +71,8 @@ export const ExampleForm: React.FC<ExampleFormProps> = ({ onSubmit, initialData 
 
       <FormField
         id="projectName"
-        label="Project Name"
-        placeholder="Enter project name"
+        label={t("form.projectNameLabel")}
+        placeholder={t("form.projectNamePlaceholder")}
         register={register}
         error={errors.projectName}
         required
@@ -67,9 +80,9 @@ export const ExampleForm: React.FC<ExampleFormProps> = ({ onSubmit, initialData 
 
       <FormField
         id="email"
-        label="Email Address"
+        label={t("form.emailLabel")}
         type="email"
-        placeholder="your.email@example.com"
+        placeholder={t("form.emailPlaceholder")}
         register={register}
         error={errors.email}
         required
@@ -77,8 +90,8 @@ export const ExampleForm: React.FC<ExampleFormProps> = ({ onSubmit, initialData 
 
       <TextArea
         id="description"
-        label="Description"
-        placeholder="Enter a detailed description..."
+        label={t("form.descriptionLabel")}
+        placeholder={t("form.descriptionPlaceholder")}
         register={register}
         error={errors.description}
         required
@@ -87,10 +100,10 @@ export const ExampleForm: React.FC<ExampleFormProps> = ({ onSubmit, initialData 
 
       <div className="flex gap-4 mt-6">
         <Button type="submit" variant="primary" loading={isSubmitting} disabled={isSubmitting}>
-          Submit
+          {t("form.submit")}
         </Button>
         <Button type="button" variant="outline" onClick={() => reset()} disabled={isSubmitting}>
-          Reset
+          {t("form.reset")}
         </Button>
       </div>
     </form>

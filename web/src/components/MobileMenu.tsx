@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function MobileMenu() {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -10,7 +12,7 @@ export function MobileMenu() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-        aria-label="Toggle menu"
+        aria-label={t("menu.toggleMenu")}
         aria-expanded={isOpen}
       >
         <svg
@@ -58,28 +60,28 @@ export function MobileMenu() {
                 onClick={() => setIsOpen(false)}
                 className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"
               >
-                Mobile
+                {t("menu.mobile")}
               </a>
               <a
                 href="/reports"
                 onClick={() => setIsOpen(false)}
                 className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"
               >
-                Reports
+                {t("menu.reports")}
               </a>
               <a
                 href="/team"
                 onClick={() => setIsOpen(false)}
                 className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"
               >
-                Team
+                {t("nav.team")}
               </a>
               <a
                 href="/settings"
                 onClick={() => setIsOpen(false)}
                 className="block px-4 py-3 text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg"
               >
-                Settings
+                {t("menu.settings")}
               </a>
 
               <div className="pt-4 mt-4 border-t border-gray-200">
@@ -92,8 +94,8 @@ export function MobileMenu() {
                     J
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">John</div>
-                    <div className="text-sm text-gray-500">View Account</div>
+                    <div className="font-medium text-gray-900">{t("header.defaultName")}</div>
+                    <div className="text-sm text-gray-500">{t("menu.viewAccount")}</div>
                   </div>
                 </a>
               </div>

@@ -1,0 +1,20 @@
+Kort en direct — ik heb alles klaargezet. Ik heb nu één van deze twee inputs van jou nodig om verder te verifiëren en afronden:
+
+Optie 1 (aanbevolen — geeft me exacte debugdata)
+1. Start dev-server (indien nog niet gestart):
+   cd web && npm run dev
+2. Open de LMRA-wizard → Stap 1 (TRA selectie)
+3. Open DevTools → Console en Network
+4. Klik "Sjablonen opnieuw laden"
+5. Plak hier in de chat:
+   - Console regels die beginnen met:
+     [Step1_TraSelection] fetch loadedTemplates count: ...
+     [Step1_TraSelection] manual fetchTemplates count: ...
+   - De zichtbare tekst op de pagina: "X sjablonen geladen"
+   - Eventuele netwerkfouten voor /api/templates (status / response)
+
+Optie 2 (snelle weg — ik forceer fetch en toon badge)
+- Antwoord hier exact: Voer optie A uit
+  (dan dwing ik de client om altijd /api/templates te fetchen en voeg ik een zichtbare badge toe met het aantal sjablonen)
+
+Kies 1 of 2. Zodra je reactie binnen is, maak ik de laatste verificaties en zorg dat klikken op een sjabloon de LMRA-stap bijwerkt en je verder kunt.

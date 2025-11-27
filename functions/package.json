@@ -18,7 +18,8 @@
     "logs": "firebase functions:log",
     "test": "echo \"No tests configured yet\" && exit 0",
     "lint": "eslint . --ext .ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "seed:templates": "npm run build && node dist/seedTemplates.js"
   },
   "dependencies": {
     "algoliasearch": "^4.17.0",

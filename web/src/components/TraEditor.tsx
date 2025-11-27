@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { auth, db } from "../lib/firebase";
 import { doc, getDoc, onSnapshot, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { v4 as uuidv4 } from "uuid";
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export default function TraEditor({ orgId, traId }: Props) {
+  const t = useTranslations();
   const [tra, setTra] = useState<any>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -151,10 +153,10 @@ export default function TraEditor({ orgId, traId }: Props) {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="TRA title"
+            placeholder={t("editor.traTitle")}
             className="text-xl font-semibold border-b px-1 py-1 focus:outline-none"
           />
-          <div className="text-sm text-slate-500">Auto-saved — collaborative</div>
+          <div className="text-sm text-slate-500">{t("editor.autoSaved")}</div>
         </div>
 
         <div className="text-sm">
@@ -167,7 +169,7 @@ export default function TraEditor({ orgId, traId }: Props) {
               ))}
             </div>
           ) : (
-            <div className="text-slate-400">No collaborators</div>
+            <div className="text-slate-400">{t("editor.noCollaborators")}</div>
           )}
         </div>
       </div>
@@ -175,13 +177,13 @@ export default function TraEditor({ orgId, traId }: Props) {
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="TRA description..."
+        placeholder={t("editor.traDescription")}
         rows={8}
         className="w-full border rounded p-2"
       />
 
       <div className="mt-3">
-        <strong>Remote TRA snapshot:</strong>
+        <strong>{t("editor.remoteSnapshot")}</strong>
         <pre className="mt-2 p-2 bg-slate-50 rounded text-xs">
           {JSON.stringify(tra ? { title: tra.title, description: tra.description } : {}, null, 2)}
         </pre>

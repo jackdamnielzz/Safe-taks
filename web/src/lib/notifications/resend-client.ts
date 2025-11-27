@@ -25,16 +25,21 @@ export enum EmailType {
   WELCOME = "welcome",
   INVITATION = "invitation",
   TRA_CREATED = "tra_created",
+  TRA_APPROVAL_REQUEST = "tra_approval_request",
   TRA_APPROVED = "tra_approved",
   TRA_REJECTED = "tra_rejected",
   LMRA_STOP_WORK = "lmra_stop_work",
   LMRA_COMPLETED = "lmra_completed",
   PASSWORD_RESET = "password_reset",
+  COMPETENCY_EXPIRY_WARNING = "competency_expiry_warning",
   SUBSCRIPTION_CREATED = "subscription_created",
   SUBSCRIPTION_CANCELLED = "subscription_cancelled",
   PAYMENT_FAILED = "payment_failed",
   TRIAL_ENDING = "trial_ending",
   USAGE_LIMIT_WARNING = "usage_limit_warning",
+  HIGH_RISK_TRA = "high_risk_tra",
+  SUPERVISOR_ACKNOWLEDGMENT = "supervisor_acknowledgment",
+  EMERGENCY_PROCEDURE_ALERT = "emergency_procedure_alert",
 }
 
 /**

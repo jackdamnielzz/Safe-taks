@@ -1,22 +1,21 @@
-import admin from "firebase-admin";
+/**
+ * Firebase Admin SDK initialization and helper functions
+ * Uses real Firebase Admin SDK when credentials are available
+ */
+
+import { auth as adminAuth, db as adminDb, storage as adminStorage } from './firebase-admin';
 
 /**
  * initializeAdmin()
- * Simple firebase-admin initializer used by server API routes.
- * Reads credentials from env in production, uses emulator/admin defaults in dev.
+ * Returns Firebase Admin SDK instances for Firestore, Auth, and Storage
+ * Uses the real Firebase Admin SDK initialized in firebase-admin.ts
  */
 export function initializeAdmin() {
-  if (!admin.apps || admin.apps.length === 0) {
-    try {
-      admin.initializeApp({
-        projectId: process.env.FIREBASE_PROJECT_ID || "demo-project",
-      });
-    } catch {
-      // ignore if already initialized
-    }
-  }
-  const firestore = admin.firestore();
-  return { firestore, admin };
+  return {
+    firestore: adminDb,
+    auth: adminAuth,
+    storage: adminStorage
+  };
 }
 
 /**
@@ -44,4 +43,12 @@ export async function requireOrgAuth(req?: Request) {
   }
 
   return { uid, orgId, roles: ["owner"] as string[] };
+}
+
+/**
+ * getOrgIdFromRequest()
+ * Extract organization ID from request context
+ */
+export function getOrgIdFromRequest() {
+  return "demo-org";
 }

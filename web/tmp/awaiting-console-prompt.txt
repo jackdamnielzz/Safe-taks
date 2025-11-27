@@ -1,0 +1,20 @@
+Korte herinnering — even testen a.u.b.
+
+Ik heb de code bijgewerkt en debug-hulpmiddelen toegevoegd. Om verder te kunnen heb ik één van deze twee dingen nodig:
+
+A) Plak hier de browser-console / network-output (voorkeur):
+   - Open dev-server: cd web && npm run dev
+   - Ga naar LMRA-wizard → Stap 1 (TRA selectie)
+   - Open DevTools → Console & Network
+   - Klik "Sjablonen opnieuw laden"
+   - Plak hier:
+     * Console regels zoals:
+       - [Step1_TraSelection] fetch loadedTemplates count: ...
+       - [Step1_TraSelection] manual fetchTemplates count: ...
+     * Of de zichtbare tekst op de pagina bij "X sjablonen geladen"
+     * Eventuele netwerkfouten voor /api/templates (status / response)
+
+B) Of laat mij direct forceren dat de client altijd fetch('/api/templates') gebruikt en toon het aantal sjablonen op de pagina:
+   - Antwoord hier met exact: "Voer optie A uit"
+
+Zodra je één van de twee doet, verifieer ik direct en maak ik selectie en navigatie af.

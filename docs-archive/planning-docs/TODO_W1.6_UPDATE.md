@@ -1,0 +1,1 @@
+- [x] Implement dev endpoint gating (NODE_ENV check)\n- [x] Add manual testing note to W1.6_MANUAL_TESTING_GUIDE.md\n- [x] Restart dev server and re-run final verification (if needed)

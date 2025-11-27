@@ -123,6 +123,115 @@ export interface UserRef {
 }
 
 /**
+ * Team Role - VCA-compliant role definitions for TRA team members
+ */
+export enum TeamRole {
+  OPDRACHTGEVER = 'opdrachtgever', // Client/Project Owner
+  WERKUITVOERDER = 'werkuitvoerder', // Work Supervisor/Executor
+  VEILIGHEIDSKUNDIGE = 'veiligheidskundige', // Safety Officer
+  VAKMAN = 'vakman', // Skilled Worker
+  HULPKRACHT = 'hulpkracht', // Helper/Assistant
+  ANDERE = 'andere' // Other (with custom responsibility description)
+}
+
+/**
+ * Team Member Information with role and responsibilities
+ */
+export interface TeamMemberInfo {
+  uid: string;
+  name: string;
+  email: string;
+  role: TeamRole;
+  responsibilities?: string[]; // Optional list of specific responsibilities
+  addedAt: Timestamp | Date;
+  addedBy: string;
+}
+
+/**
+ * Get role display name in Dutch
+ */
+export function getTeamRoleDisplayName(role: TeamRole): string {
+  const displayNames: Record<TeamRole, string> = {
+    [TeamRole.OPDRACHTGEVER]: 'Opdrachtgever',
+    [TeamRole.WERKUITVOERDER]: 'Werkuitvoerder',
+    [TeamRole.VEILIGHEIDSKUNDIGE]: 'Veiligheidskundige',
+    [TeamRole.VAKMAN]: 'Vakman',
+    [TeamRole.HULPKRACHT]: 'Hulpkracht',
+    [TeamRole.ANDERE]: 'Andere',
+  };
+  return displayNames[role];
+}
+
+/**
+ * Get default responsibilities per role (VCA-based)
+ */
+export function getDefaultResponsibilities(role: TeamRole): string[] {
+  const responsibilities: Record<TeamRole, string[]> = {
+    [TeamRole.OPDRACHTGEVER]: [
+      'Goedkeuring TRA',
+      'Budget verantwoordelijkheid',
+      'Projectdoelstellingen',
+      'Eindverantwoordelijkheid'
+    ],
+    [TeamRole.WERKUITVOERDER]: [
+      'Directe supervisie werkzaamheden',
+      'Dagelijkse veiligheidschecks',
+      'Team coördinatie',
+      'Uitvoering werkplan'
+    ],
+    [TeamRole.VEILIGHEIDSKUNDIGE]: [
+      'Risico-analyses',
+      'VCA compliance',
+      'Veiligheidsinspecties',
+      'Incident response'
+    ],
+    [TeamRole.VAKMAN]: [
+      'Vakbekwame uitvoering',
+      'Gebruik PBM',
+      'Melding gevaren',
+      'Naleving procedures'
+    ],
+    [TeamRole.HULPKRACHT]: [
+      'Assistentie vakman',
+      'Materiaal handling',
+      'Werkplek schoonhouden',
+      'Instructies opvolgen'
+    ],
+    [TeamRole.ANDERE]: [] // Custom responsibilities
+  };
+  return responsibilities[role];
+}
+
+/**
+ * Validate team composition for VCA compliance
+ * Returns true if team has required roles
+ */
+export function hasRequiredTeamRoles(members: TeamMemberInfo[]): boolean {
+  // VCA requires at least one WERKUITVOERDER for valid TRA
+  return members.some(member => member.role === TeamRole.WERKUITVOERDER);
+}
+
+/**
+ * Migrate legacy team member (string UID) to TeamMemberInfo
+ */
+export function migrateTeamMemberToInfo(
+  uid: string,
+  email?: string,
+  name?: string,
+  addedBy?: string
+): TeamMemberInfo {
+  return {
+    uid,
+    name: name || email || uid,
+    email: email || `${uid}@unknown.com`,
+    role: TeamRole.VAKMAN, // Default role for migration
+    responsibilities: getDefaultResponsibilities(TeamRole.VAKMAN),
+    addedAt: new Date(),
+    addedBy: addedBy || 'system'
+  };
+}
+
+/**
  * Control Measure - actions to mitigate hazards
  */
 export interface ControlMeasure {
@@ -171,6 +280,77 @@ export interface Hazard {
 }
 
 /**
+ * Emergency Contact - contact information for emergency situations
+ */
+export interface EmergencyContact {
+  name: string;
+  role: string; // "Site Safety Officer", "Emergency Coordinator", "Medical", etc.
+  phone: string;
+  email?: string;
+  availabilityHours?: string;
+}
+
+/**
+ * Emergency Procedure - emergency response procedures for high-risk tasks
+ * Required for HIGH and VERY_HIGH risk level tasks per VCA compliance
+ */
+export interface EmergencyProcedure {
+  emergencyContacts: EmergencyContact[];
+  stopWorkConditions: string[];
+  responseSteps: string[];
+  emergencyEquipment: string[];
+  evacuationRoute?: string;
+  assemblyPoint?: string;
+  nearestMedicalFacility?: string;
+  createdAt: Timestamp | Date;
+  updatedAt?: Timestamp | Date;
+}
+
+/**
+ * Workplace conditions tracking for VCA compliance
+ */
+export interface WorkplaceConditions {
+  lighting: 'adequate' | 'poor' | 'dark' | 'bright';
+  ventilation: 'good' | 'moderate' | 'poor' | 'none';
+  temperature: 'comfortable' | 'hot' | 'cold' | 'extreme';
+  noise: 'quiet' | 'moderate' | 'loud' | 'extreme';
+  spaceConstraint: 'open' | 'confined' | 'cramped' | 'restricted';
+  groundCondition: 'stable' | 'uneven' | 'slippery' | 'unstable';
+  weatherExposure: 'indoor' | 'sheltered' | 'exposed' | 'extreme';
+  notes?: string;
+}
+
+/**
+ * Material tracking for TRA compliance
+ */
+export interface MaterialMSDSFile {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+  storagePath: string;
+  downloadUrl?: string;
+  uploadedAt: Timestamp | Date;
+  uploadedByUserId: string;
+}
+
+export interface Material {
+  id: string;
+  name: string;
+  quantity: string;
+  unit: string;
+  hazardous: boolean;
+  msdsRequired: boolean; // Material Safety Data Sheet required
+  storageRequirements?: string;
+
+  /**
+   * Optionele gekoppelde MSDS-documenten (bijvoorbeeld PDF's in storage).
+   * Hiermee kan per materiaal één of meerdere veiligheidsbladen getoond worden.
+   */
+  msdsFiles?: MaterialMSDSFile[];
+}
+
+/**
  * Task Step - breakdown of work with associated hazards
  */
 export interface TaskStep {
@@ -183,6 +363,13 @@ export interface TaskStep {
 
   // Hazards identified in this step
   hazards: Hazard[];
+
+  // Context fields for VCA compliance (Phase 1.3)
+  materials?: Material[];
+  workplaceConditions?: WorkplaceConditions;
+
+  // Emergency procedures (required for HIGH/VERY_HIGH risk tasks)
+  emergencyProcedure?: EmergencyProcedure;
 
   // Metadata
   notes?: string;
@@ -254,8 +441,8 @@ export interface TRA {
   overallRiskLevel: RiskLevel;
 
   // Team & Competencies
-  teamMembers: string[]; // User IDs
-  teamMembersInfo?: UserRef[]; // Denormalized for display
+  teamMembers: string[]; // User IDs (legacy, deprecated - use teamMembersInfo)
+  teamMembersInfo?: TeamMemberInfo[]; // Team members with roles and responsibilities
   requiredCompetencies: string[]; // Required certifications/training
 
   // Approval Workflow
@@ -524,17 +711,18 @@ export function isTRAValid(tra: TRA, now: Date = new Date()): boolean {
 }
 
 /**
- * Check if TRA is expiring soon (within 30 days)
+ * Check if TRA is expiring soon (within threshold days)
  */
-export function isTRAExpiringSoon(tra: TRA, daysThreshold: number = 30): boolean {
+export function isTRAExpiringSoon(tra: TRA, daysThreshold: number = 30, now: Date = new Date()): boolean {
   if (!tra.validUntil) return false;
 
   const validUntil =
     tra.validUntil instanceof Date ? tra.validUntil : (tra.validUntil as any).toDate();
-  const now = new Date();
-  const threshold = new Date(now.getTime() + daysThreshold * 24 * 60 * 60 * 1000);
 
-  return validUntil <= threshold && validUntil > now;
+  // Calculate days difference using UTC timestamps
+  const daysDiff = (validUntil.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+
+  return daysDiff > 0 && daysDiff <= daysThreshold;
 }
 
 /**
@@ -592,13 +780,22 @@ export function canEditTRA(status: TRAStatus): boolean {
 
 /**
  * Check if TRA can be submitted for approval
+ * Enhanced to check for required team roles (WERKUITVOERDER) for VCA compliance
  */
 export function canSubmitTRA(tra: TRA): boolean {
+  const hasTeamMembers = tra.teamMembers.length > 0;
+  
+  // Check if team has proper role assignments (new requirement)
+  const hasProperRoles = tra.teamMembersInfo && tra.teamMembersInfo.length > 0
+    ? hasRequiredTeamRoles(tra.teamMembersInfo)
+    : true; // Allow submission for legacy TRAs without role info
+  
   return (
     tra.status === "draft" &&
     tra.taskSteps.length > 0 &&
     tra.taskSteps.every((step) => step.hazards.length > 0) &&
-    tra.teamMembers.length > 0
+    hasTeamMembers &&
+    hasProperRoles
   );
 }
 

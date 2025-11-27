@@ -1,0 +1,177 @@
+{
+  "id": "template-electrical-construction",
+  "name": "Elektriciteitswerk - Bouw (Laag- en Hoogspanning)",
+  "description": "VCA-compliant template voor elektriciteitswerk in bouwprojecten, inclusief laagspannings- en hoogspanningswerk",
+  "industry": "construction",
+  "category": "electrical",
+  "vcaCompliant": true,
+  "vcaVersion": "VCA 2017 v5.1",
+  "validityPeriod": 12,
+  "createdBy": "system",
+  "version": 1,
+  "steps": [
+    {
+      "order": 1,
+      "title": "Voorbereiding en Veiligheidscheck",
+      "description": "Controleer alle gereedschappen, persoonlijke beschermingsmiddelen en de werkplek op veiligheid",
+      "duration": 15,
+      "requiredPersonnel": 1,
+      "location": "Werkplek"
+    },
+    {
+      "order": 2,
+      "title": "Spanningsvrij Maken",
+      "description": "Zet de stroomvoorziening uit, vergrendel en label de schakelaars (LOTOTO-procedure)",
+      "duration": 10,
+      "requiredPersonnel": 1,
+      "location": "Elektrische installatie"
+    },
+    {
+      "order": 3,
+      "title": "Verificatie Spanningsvrij",
+      "description": "Controleer met geschikte meetapparatuur dat de installatie daadwerkelijk spanningsloos is",
+      "duration": 5,
+      "requiredPersonnel": 1,
+      "location": "Werkplek"
+    },
+    {
+      "order": 4,
+      "title": "Werkzaamheden Uitvoeren",
+      "description": "Voer de elektriciteitswerk uit volgens werkplan en veiligheidsmaatregelen",
+      "duration": 120,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    },
+    {
+      "order": 5,
+      "title": "Controle en Testen",
+      "description": "Controleer het werk en voer veiligheidstest uit voordat spanning wordt hersteld",
+      "duration": 20,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    },
+    {
+      "order": 6,
+      "title": "Spanning Herstellen",
+      "description": "Verwijder LOTOTO-maatregelen en herstel de stroomvoorziening",
+      "duration": 10,
+      "requiredPersonnel": 1,
+      "location": "Elektrische installatie"
+    },
+    {
+      "order": 7,
+      "title": "Opruimen en Documentatie",
+      "description": "Ruim werkplek op en documenteer uitgevoerde werkzaamheden",
+      "duration": 15,
+      "requiredPersonnel": 1,
+      "location": "Werkplek"
+    }
+  ],
+  "hazards": [
+    {
+      "id": "hazard-electric-shock",
+      "name": "Elektrische schok",
+      "category": "electrical",
+      "description": "Risico op elektrische schok door contact met onder spanning staande delen",
+      "typicalEffect": 40,
+      "typicalExposure": 3,
+      "typicalProbability": 3,
+      "controlMeasures": [
+        {
+          "description": "Spanningsvrij maken van installatie (LOTOTO-procedure)",
+          "type": "elimination",
+          "responsible": "Elektricien",
+          "verificationMethod": "Verificatie met multimeter"
+        },
+        {
+          "description": "Gebruik van geïsoleerde gereedschappen",
+          "type": "engineering",
+          "responsible": "Elektricien",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Dragen van isolerende handschoenen (klasse 2 of hoger)",
+          "type": "ppe",
+          "responsible": "Elektricien",
+          "verificationMethod": "Persoonlijke controle"
+        }
+      ]
+    },
+    {
+      "id": "hazard-arc-flash",
+      "name": "Boogflits (Arc Flash)",
+      "category": "electrical",
+      "description": "Risico op brandwonden door boogflits bij werken aan onder spanning staande installaties",
+      "typicalEffect": 15,
+      "typicalExposure": 2,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Spanningsvrij maken van installatie",
+          "type": "elimination",
+          "responsible": "Elektricien",
+          "verificationMethod": "Verificatie met multimeter"
+        },
+        {
+          "description": "Dragen van vuurvaste kleding en gezichtsbescherming",
+          "type": "ppe",
+          "responsible": "Elektricien",
+          "verificationMethod": "Persoonlijke controle"
+        }
+      ]
+    },
+    {
+      "id": "hazard-thermal-burn",
+      "name": "Thermische brandwonden",
+      "category": "electrical",
+      "description": "Risico op brandwonden door hitte van elektrische installaties",
+      "typicalEffect": 7,
+      "typicalExposure": 2,
+      "typicalProbability": 2,
+      "controlMeasures": [
+        {
+          "description": "Afscherming van hete onderdelen",
+          "type": "engineering",
+          "responsible": "Elektricien",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Dragen van hittebestendige handschoenen",
+          "type": "ppe",
+          "responsible": "Elektricien",
+          "verificationMethod": "Persoonlijke controle"
+        }
+      ]
+    },
+    {
+      "id": "hazard-fire-explosion",
+      "name": "Brand- en explosiegevaar",
+      "category": "fire_explosion",
+      "description": "Risico op brand of explosie bij werken in omgeving met brandbare stoffen",
+      "typicalEffect": 100,
+      "typicalExposure": 1,
+      "typicalProbability": 0.5,
+      "controlMeasures": [
+        {
+          "description": "Controleer op aanwezigheid van brandbare stoffen",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Werkplek inspectie"
+        },
+        {
+          "description": "Zorg voor voldoende ventilatie",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        }
+      ]
+    }
+  ],
+  "requiredCompetencies": [
+    "VCA Basis Veiligheid",
+    "Elektricien Licentie (Niveau 2 of hoger)",
+    "LOTOTO Training",
+    "Eerste Hulp"
+  ],
+  "notes": "Deze template is van toepassing op elektriciteitswerk in bouwprojecten. Voor hoogspanningswerk (>1000V) zijn aanvullende maatregelen en specialistische training vereist. Raadpleeg altijd de NEN 3140 norm voor elektriciteitswerk."
+}

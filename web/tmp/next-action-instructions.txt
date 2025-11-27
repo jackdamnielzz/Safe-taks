@@ -1,0 +1,29 @@
+Actie benodigd: korte test in je browser
+
+Samenvatting van status:
+- TemplateSelector UI is verbeterd en is responsive.
+- Server API toegevoegd: GET /api/templates (web/src/app/api/templates/route.ts).
+- Step1 (TRA selectie) laadt templates via /api/templates en heeft een knop "Sjablonen opnieuw laden".
+- Debug-hulpmiddelen: zichtbare telling op de pagina en console-logregels met prefix "[Step1_TraSelection]".
+
+Graag even uitvoeren in je browser:
+1) Start dev-server (als nog niet gestart):
+   cd web && npm run dev
+
+2) Open de LMRA-wizard -> Stap 1 (TRA selectie).
+
+3) Open Developer Tools → Console en Network.
+
+4) Klik "Sjablonen opnieuw laden".
+
+5) Plak hier (in de chat):
+   - Console regels die beginnen met:
+     [Step1_TraSelection] fetch loadedTemplates count:
+     [Step1_TraSelection] manual fetchTemplates count:
+   - De zichtbare tekst op de pagina bij "X sjablonen geladen"
+   - Eventuele netwerkfouten voor /api/templates (status / response)
+
+Als je wilt dat ik het onmiddellijk forceer zonder logs, antwoord hier exact:
+   Voer optie A uit
+
+Ik wacht op je output om de laatste verificatie en fix te doen.

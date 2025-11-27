@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useTranslations } from "next-intl";
 
 interface SearchResultItem {
   id: string;
@@ -149,6 +150,7 @@ function SearchFiltersComponent({
 }
 
 export default function TraSearch() {
+  const t = useTranslations();
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [filters, setFilters] = useState<SearchFilters>({});
@@ -210,46 +212,46 @@ export default function TraSearch() {
   return (
     <div className="max-w-7xl mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-4">TRA Search</h1>
+        <h1 className="text-2xl font-bold mb-4">{t("search.title")}</h1>
+      </div>
 
-        {/* Search Input */}
-        <div className="flex gap-2 mb-4">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Search TRAs by title, description, project..."
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <Button onClick={handleSearch} disabled={isSearching}>
-            {isSearching ? <LoadingSpinner size="sm" /> : "Search"}
-          </Button>
-        </div>
+      {/* Search Input */}
+      <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder={t("search.inputPlaceholder")}
+          className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <Button onClick={handleSearch} disabled={isSearching}>
+          {isSearching ? <LoadingSpinner size="sm" /> : t("search.button")}
+        </Button>
+      </div>
 
-        {/* Filters and Sort */}
-        <div className="flex gap-4 mb-4">
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="px-3 py-2 border rounded"
-          >
-            <option value="relevance">Relevance</option>
-            <option value="createdAt">Created Date</option>
-            <option value="updatedAt">Updated Date</option>
-            <option value="name">Name</option>
-            <option value="riskScore">Risk Score</option>
-          </select>
+      {/* Filters and Sort */}
+      <div className="flex gap-4 mb-4">
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as any)}
+          className="px-3 py-2 border rounded"
+        >
+          <option value="relevance">Relevance</option>
+          <option value="createdAt">Created Date</option>
+          <option value="updatedAt">Updated Date</option>
+          <option value="name">Name</option>
+          <option value="riskScore">Risk Score</option>
+        </select>
 
-          <select
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value as any)}
-            className="px-3 py-2 border rounded"
-          >
-            <option value="desc">Descending</option>
-            <option value="asc">Ascending</option>
-          </select>
-        </div>
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as any)}
+          className="px-3 py-2 border rounded"
+        >
+          <option value="desc">Descending</option>
+          <option value="asc">Ascending</option>
+        </select>
       </div>
 
       <div className="grid grid-cols-4 gap-6">
@@ -289,17 +291,15 @@ export default function TraSearch() {
             <>
               <div className="mb-4">
                 <p className="text-gray-600">
-                  Found {searchResults.totalCount} results
-                  {searchResults.hasMore && " (more available)"}
+                  {t("search.found", { count: searchResults.totalCount })}
+                  {searchResults.hasMore && ` (${t("search.loadMore")})`}
                 </p>
               </div>
 
               <div>
                 {searchResults.results.length === 0 ? (
                   <Card className="p-8 text-center">
-                    <p className="text-gray-500">
-                      No results found. Try adjusting your search terms or filters.
-                    </p>
+                    <p className="text-gray-500">{t("search.noResults")}</p>
                   </Card>
                 ) : (
                   searchResults.results.map((result) => (
@@ -317,7 +317,7 @@ export default function TraSearch() {
                       console.log("Load more results");
                     }}
                   >
-                    Load More
+                    {t("search.loadMore")}
                   </Button>
                 </div>
               )}
@@ -326,9 +326,7 @@ export default function TraSearch() {
 
           {!searchResults && !isSearching && (
             <Card className="p-8 text-center">
-              <p className="text-gray-500">
-                Enter search terms above to find TRAs, templates, hazards, or projects.
-              </p>
+              <p className="text-gray-500">{t("search.enterInstructions")}</p>
             </Card>
           )}
         </main>

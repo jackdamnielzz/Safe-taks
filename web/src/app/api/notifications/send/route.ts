@@ -27,7 +27,10 @@ export async function POST(request: NextRequest) {
     // Get email template
     const template = getEmailTemplate(type as EmailType, data || {});
 
-    // Send email
+    // Send email via Resend/SendGrid using environment variables:
+    // - RESEND_API_KEY
+    // - RESEND_FROM_EMAIL
+    // - RESEND_FROM_NAME
     const result = await sendEmail({
       to,
       subject: template.subject,

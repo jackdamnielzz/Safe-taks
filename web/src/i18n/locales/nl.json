@@ -1,0 +1,131 @@
+{
+  "tra": {
+    "controlMeasures": {
+      "title": "Beheersmaatregelen",
+      "addCustom": "Nieuwe maatregel",
+      "add": "Toevoegen",
+      "delete": "Verwijderen",
+      "suggestedTitle": "Suggesties uit bibliotheek",
+      "noneAdded": "Er zijn nog geen beheersmaatregelen toegevoegd.",
+      "helpText": "Gebruik de voorgestelde maatregelen of voeg eigen maatregelen toe.",
+      "summaryCount": "Aantal beheersmaatregelen: {count}",
+      "descriptionPlaceholder": "Geef een omschrijving (minimaal 10 tekens)",
+      "responsiblePlaceholder": "Naam of rol van de verantwoordelijke",
+      "type": "Type",
+      "description": "Beschrijving",
+      "responsible": "Verantwoordelijke",
+      "status": "Status",
+      "validation": {
+        "minOne": "Voeg ten minste één beheersmaatregel toe.",
+        "descriptionMin": "Beschrijving moet minimaal 10 tekens bevatten."
+      },
+      "hierarchy": {
+        "elimination": "Eliminatie",
+        "substitution": "Vervanging",
+        "engineering": "Technische maatregelen",
+        "administrative": "Organisatorische maatregelen",
+        "ppe": "Persoonlijke beschermingsmiddelen"
+      },
+      "statuses": {
+        "planned": "Gepland",
+        "in_progress": "In uitvoering",
+        "completed": "Voltooid",
+        "verified": "Geverifieerd"
+      }
+    }
+  },
+  "safety": {
+    "tra": {
+      "wizard": {
+        "createTitle": "TRA Aanmaken - Stap {step} van {total}",
+        "titleLabel": "Titel",
+        "descriptionLabel": "Beschrijving",
+        "projectRequired": "Project is verplicht",
+        "back": "Vorige",
+        "next": "Volgende",
+        "createButton": "TRA Aanmaken",
+        "saving": "Opslaan...",
+        "saved": "Opgeslagen",
+        "saveFailed": "Opslaan mislukt",
+        "projectSelector": {
+          "label": "Project",
+          "placeholder": "Selecteer een project",
+          "loading": "Projecten laden...",
+          "noResults": "Geen projecten gevonden",
+          "searchPlaceholder": "Zoek projecten...",
+          "loadError": "Kan projecten niet laden"
+        },
+        "templates": {
+          "loading": "Template laden...",
+          "loadError": "Fout bij laden van template",
+          "selectedIndicator": "Geselecteerd template: {name}",
+          "resetToTemplate": "Herstel naar template standaard"
+        },
+        "review": {
+          "title": "Controleren en Aanmaken",
+          "basicInfo": "Basisinformatie",
+          "titleField": "Titel",
+          "descriptionField": "Beschrijving",
+          "notFilled": "Nog niet ingevuld",
+          "taskSteps": "Werkstappen",
+          "stepsAdded": "{count} {plural} toegevoegd",
+          "stepSingular": "stap",
+          "stepPlural": "stappen",
+          "noSteps": "Nog geen stappen toegevoegd",
+          "teamMembers": "Teamleden",
+          "addMemberWarning": "Voeg minimaal één teamlid toe",
+          "validationWarning": "Let op:",
+          "validationMessage": "De volgende velden zijn verplicht voordat u kunt aanmaken:",
+          "titleRequired": "Titel is verplicht",
+          "memberRequired": "Minimaal één teamlid is verplicht"
+        },
+        "compliance": {
+          "toggleDetails": "Toon details",
+          "hideDetails": "Verberg details",
+          "tipsTitle": "VCA Compliance Tips",
+          "tip1": "Voeg gedetailleerde gevaren toe bij elke stap",
+          "tip2": "Specificeer duidelijke beheersmaatregelen",
+          "tip3": "Wijs verantwoordelijken toe voor elke maatregel",
+          "tip4": "Zorg voor complete documentatie",
+          "tip5": "Volg de hiërarchie van beheersmaatregelen"
+        },
+        "validation": {
+          "stepDescriptionMin": "Beschrijf de taakstap duidelijk (minimaal enkele woorden) zodat het risico goed beoordeeld kan worden.",
+          "stepHasNoHazards": "Deze taakstap heeft nog geen gevaren. Voeg minstens één gevaar toe om de risicobeoordeling compleet te maken."
+        }
+      }
+    }
+  },
+  "templates": {
+    "selector": {
+      "title": "Kies een Template",
+      "subtitle": "Kies een TRA-template om snel te starten",
+      "searchPlaceholder": "Zoek templates...",
+      "filterByCategory": "Filter op categorie",
+      "allCategories": "Alle categorieën",
+      "templatesFound": "templates gevonden",
+      "resetFilters": "Filters resetten",
+      "noTemplatesFound": "Geen templates gevonden",
+      "noTemplatesDescription": "Er zijn geen templates die aan uw zoekcriteria voldoen."
+    },
+    "loading": "Templates laden...",
+    "startFromScratch": "Begin zonder template",
+    "startFromScratchDesc": "Maak een nieuwe TRA vanaf nul",
+    "selectedIndicator": "Template geselecteerd: {name}",
+    "loadError": "Kan template niet laden",
+    "resetToTemplate": "Herstel naar template",
+    "hazards": "gevaren",
+    "steps": "stappen",
+    "standard": "Standaard",
+    "industries": {
+      "construction": "Bouw",
+      "industrial": "Industrie",
+      "offshore": "Offshore",
+      "infrastructure": "Infrastructuur",
+      "energy": "Energie",
+      "manufacturing": "Productie",
+      "logistics": "Logistiek",
+      "general": "Algemeen"
+    }
+  }
+}

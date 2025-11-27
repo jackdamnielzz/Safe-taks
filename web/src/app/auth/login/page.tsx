@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,8 +24,9 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const { signIn, signInWithGoogle, loading, error, clearError } = useAuth();
+  const { signIn, signInWithGoogle, loading, error, clearError, user } = useAuth();
   const [isLoading, setIsLoading] = React.useState(false);
+  const [waitingForAuthState, setWaitingForAuthState] = React.useState(false);
 
   const {
     register,
@@ -39,18 +41,45 @@ export default function LoginPage() {
     },
   });
 
+  // Redirect when user is authenticated after login attempt
+  React.useEffect(() => {
+    if (waitingForAuthState && user) {
+      // Check if there's a redirect parameter
+      const searchParams = new URLSearchParams(window.location.search);
+      // Default is now de homepage "/" in plaats van /projects of /dashboard
+      const redirectTo = searchParams.get("redirect") || "/";
+      
+      console.log("✅ Auth state confirmed, redirecting to:", redirectTo);
+      // Small delay to ensure cookie is set
+      setTimeout(() => {
+        router.push(redirectTo);
+      }, 100);
+    }
+  }, [user, waitingForAuthState, router]);
+
   const onSubmit = async (data: LoginFormData) => {
+    console.log("🔐 Login form submitted with email:", data.email);
     setIsLoading(true);
     clearError();
 
     try {
-      await signIn(data.email, data.password);
-      router.push("/dashboard");
-    } catch (err) {
-      // Error is handled by AuthProvider
-      console.error("Login failed:", err);
-    } finally {
+      console.log("🔐 Calling signIn...");
+      const result = await signIn(data.email, data.password);
+      console.log("✅ Sign in successful:", result);
+      
+      console.log("🔐 Waiting for auth state change...");
+      setWaitingForAuthState(true);
+      // The redirect will happen in the useEffect above when user state updates
+    } catch (err: any) {
+      // Error is handled by AuthProvider, but log it for debugging
+      console.error("❌ Login failed:", err);
+      console.error("❌ Error details:", {
+        message: err?.message,
+        code: err?.code,
+        stack: err?.stack,
+      });
       setIsLoading(false);
+      setWaitingForAuthState(false);
     }
   };
 
@@ -60,18 +89,34 @@ export default function LoginPage() {
 
     try {
       await signInWithGoogle();
-      router.push("/dashboard");
+      console.log("🔐 Google sign-in successful, waiting for auth state change...");
+      setWaitingForAuthState(true);
+      // The redirect will happen in the useEffect above when user state updates
     } catch (err) {
       // Error is handled by AuthProvider
       console.error("Google sign-in failed:", err);
-    } finally {
       setIsLoading(false);
+      setWaitingForAuthState(false);
     }
   };
 
+  const t = useTranslations();
+  
+  // Add form submit debugging
+  React.useEffect(() => {
+    console.log("🔐 Login page mounted");
+    console.log("🔐 Auth state:", { loading, error });
+  }, [loading, error]);
+
   return (
-    <AuthLayout title="Sign in to your account" subtitle="Welcome back to SafeWork Pro">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <AuthLayout title={t("auth.signIn")} subtitle={t("auth.welcomeBack")}>
+      <form
+        onSubmit={(e) => {
+          console.log("🔐 Form onSubmit event triggered", e);
+          handleSubmit(onSubmit)(e);
+        }}
+        className="space-y-6"
+      >
         {error && (
           <Alert variant="error" onClose={clearError}>
             {error}
@@ -145,11 +190,11 @@ export default function LoginPage() {
         <Button
           type="submit"
           variant="primary"
-          loading={isLoading || loading}
-          disabled={isLoading || loading}
+          loading={isLoading || loading || waitingForAuthState}
+          disabled={isLoading || loading || waitingForAuthState}
           className="w-full"
         >
-          {isLoading || loading ? "Signing in..." : "Sign in"}
+          {isLoading || loading || waitingForAuthState ? t("auth.signingIn") : t("auth.signIn")}
         </Button>
 
         <div className="relative">
@@ -166,8 +211,8 @@ export default function LoginPage() {
             type="button"
             variant="secondary"
             onClick={handleGoogleSignIn}
-            disabled={isLoading || loading}
-            loading={isLoading && loading}
+            disabled={isLoading || loading || waitingForAuthState}
+            loading={(isLoading || waitingForAuthState) && loading}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -185,7 +230,7 @@ export default function LoginPage() {
               // TODO: Microsoft OAuth will be implemented in future version
               console.log("Microsoft OAuth - Coming soon");
             }}
-            disabled={isLoading || loading}
+            disabled={isLoading || loading || waitingForAuthState}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zm12.6 0H12.6V0H24v11.4z" />

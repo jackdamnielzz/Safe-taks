@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import { useHapticFeedback } from "@/hooks/useTouchOptimized";
 
 interface FABProps {
@@ -27,6 +28,7 @@ export function FloatingActionButton({
   extended = false,
   className = "",
 }: FABProps) {
+  const t = useTranslations();
   const { mediumTap } = useHapticFeedback();
 
   const handleClick = () => {
@@ -53,7 +55,7 @@ export function FloatingActionButton({
       type="button"
       onClick={handleClick}
       className={classes}
-      aria-label={label || "Action button"}
+      aria-label={label || t("fab.actionButton")}
     >
       <span className="flex items-center justify-center">{icon}</span>
       {extended && label && <span className="font-semibold text-base">{label}</span>}
@@ -73,6 +75,7 @@ interface FABSpeedDialProps {
 }
 
 export function FABSpeedDial({ mainIcon, actions, className = "" }: FABSpeedDialProps) {
+  const t = useTranslations();
   const [isOpen, setIsOpen] = React.useState(false);
   const { mediumTap } = useHapticFeedback();
 
@@ -112,7 +115,7 @@ export function FABSpeedDial({ mainIcon, actions, className = "" }: FABSpeedDial
       <FloatingActionButton
         icon={mainIcon}
         onClick={toggleOpen}
-        label={isOpen ? "Sluiten" : "Acties"}
+        label={isOpen ? t("fab.closeActions") : t("fab.actions")}
       />
     </div>
   );

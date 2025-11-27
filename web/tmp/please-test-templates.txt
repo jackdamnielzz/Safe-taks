@@ -1,0 +1,20 @@
+Ik heb de loader en UI bijgewerkt. Kun je dit in de browser testen en de resultaten terugplakken?
+
+Stappen:
+1) Start dev-server (indien nog niet gestart):
+   cd web && npm run dev
+
+2) Open de LMRA-wizard en ga naar Stap 1 — TRA selectie.
+
+3) Open Developer Tools → Console en Network.
+
+4) Klik de knop "Sjablonen opnieuw laden".
+
+5) Kopieer en plak hier de console-regels die beginnen met:
+   - [Step1_TraSelection] fetch loadedTemplates count:
+   - [Step1_TraSelection] manual fetchTemplates count:
+   - Eventuele fetch fouten / netwerkstatus voor /api/templates (404/500/etc)
+
+6) Als er geen logs verschijnen, geef de tekst die op de pagina staat bij "X sjablonen geladen" en eventuele foutmeldingen die in de pagina zichtbaar zijn.
+
+Als je wil dat ik direct verder ga en de client loader afdwing via fetch (zonder extra debug), reageer met "Voer optie A uit" en ik forceer de API-fetch en maak een kleine UI-badge die bevestigt het aantal geladen sjablonen.

@@ -1,52 +1,97 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/firebase-admin';
+import { cookies } from 'next/headers';
 
-export async function GET(request: NextRequest) {
+/**
+ * API Route: Create Firebase Session Cookie
+ * 
+ * This endpoint creates an HTTP-only session cookie from a Firebase ID token.
+ * This enables server-side authentication checks in middleware.
+ * 
+ * POST /api/auth/session
+ * Body: { idToken: string }
+ * 
+ * The session cookie is stored as '__session' (Firebase convention for CDN compatibility)
+ * and is validated by the middleware on each request.
+ */
+
+export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("Authorization");
+    const { idToken } = await request.json();
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!idToken) {
       return NextResponse.json(
-        { error: "Authorization token required", code: "AUTH_ERROR" },
-        { status: 401 }
+        { error: 'ID token is required' },
+        { status: 400 }
       );
     }
 
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    // Verify the ID token
+    const decodedToken = await auth.verifyIdToken(idToken);
+    
+    // Create session cookie (expires in 14 days)
+    const expiresIn = 60 * 60 * 24 * 14 * 1000; // 14 days in milliseconds
+    const sessionCookie = await auth.createSessionCookie(idToken, { expiresIn });
 
-    if (!token) {
-      return NextResponse.json({ error: "Invalid token", code: "AUTH_ERROR" }, { status: 401 });
-    }
+    // Set the session cookie
+    const cookieStore = await cookies();
+    cookieStore.set('__session', sessionCookie, {
+      maxAge: expiresIn / 1000, // maxAge is in seconds
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
 
-    // For load testing, we'll simulate session retrieval
-    // In a real implementation, this would verify the JWT token and return session info
-    try {
-      const decodedToken = JSON.parse(Buffer.from(token, "base64").toString());
+    console.log('✅ Session cookie created for user:', decodedToken.uid);
 
-      return NextResponse.json({
-        user: {
-          uid: decodedToken.uid,
-          email: decodedToken.email,
-          displayName: decodedToken.email?.split("@")[0] || "User",
-          role: decodedToken.role || "field_worker",
-          orgId: decodedToken.orgId || "test-org-id",
-        },
-        session: {
-          expiresAt: new Date(Date.now() + 3600000).toISOString(), // 1 hour from now
-          createdAt: new Date().toISOString(),
-          lastActivity: new Date().toISOString(),
-        },
-      });
-    } catch (error) {
+    return NextResponse.json({ 
+      success: true,
+      uid: decodedToken.uid 
+    });
+  } catch (error: any) {
+    console.error('❌ Error creating session cookie:', error);
+    
+    // Handle specific Firebase errors
+    if (error.code === 'auth/id-token-expired') {
       return NextResponse.json(
-        { error: "Invalid token format", code: "AUTH_ERROR" },
+        { error: 'ID token has expired' },
         { status: 401 }
       );
     }
-  } catch (error) {
-    console.error("Session retrieval error:", error);
+    
+    if (error.code === 'auth/invalid-id-token') {
+      return NextResponse.json(
+        { error: 'Invalid ID token' },
+        { status: 401 }
+      );
+    }
 
     return NextResponse.json(
-      { error: "Internal server error", code: "SERVER_ERROR" },
+      { error: 'Failed to create session cookie', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/auth/session
+ * Clear the session cookie on logout
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const cookieStore = await cookies();
+    
+    // Remove the session cookie
+    cookieStore.delete('__session');
+
+    console.log('✅ Session cookie cleared');
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('❌ Error clearing session cookie:', error);
+    return NextResponse.json(
+      { error: 'Failed to clear session cookie' },
       { status: 500 }
     );
   }

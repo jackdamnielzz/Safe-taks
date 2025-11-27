@@ -1,5 +1,9 @@
 {
   "nav": {
+    "tras": "TRA's",
+    "reports": "Rapporten",
+    "team": "Team",
+    "accountMenu": "Account menu",
     "main": {
       "dashboard": "Overzicht",
       "tras": "TRA's",
@@ -24,7 +28,20 @@
       "logout": "Uitloggen"
     }
   },
+  "header": {
+    "myAccount": "Mijn Account",
+    "settings": "Instellingen",
+    "adminHub": "Beheer Hub",
+    "signOut": "Uitloggen",
+    "defaultName": "Gebruiker"
+  },
+  "menu": {
+    "toggleMenu": "Menu openen/sluiten"
+  },
   "auth": {
+    "signIn": "Inloggen",
+    "welcomeBack": "Welkom terug",
+    "signingIn": "Inloggen...",
     "login": {
       "title": "Inloggen",
       "subtitle": "Log in op uw SafeWork Pro account",
@@ -45,6 +62,26 @@
     "register": {
       "title": "Registreren",
       "subtitle": "Maak een nieuw SafeWork Pro account",
+      "companyName": "Bedrijfsnaam",
+      "companyNamePlaceholder": "Voer uw bedrijfsnaam in",
+      "fullName": "Volledige naam",
+      "fullNamePlaceholder": "Voor- en achternaam",
+      "workEmail": "Werk e-mailadres",
+      "workEmailPlaceholder": "voorbeeld@bedrijf.nl",
+      "password": "Wachtwoord",
+      "passwordPlaceholder": "Minimaal 8 tekens",
+      "passwordHint": "Gebruik minimaal 8 tekens met letters en cijfers",
+      "confirmPassword": "Bevestig wachtwoord",
+      "confirmPasswordPlaceholder": "Herhaal uw wachtwoord",
+      "agreeToTerms": "Ik ga akkoord met de",
+      "termsOfService": "Algemene Voorwaarden",
+      "and": "en",
+      "privacyPolicy": "Privacybeleid",
+      "createAccount": "Account Aanmaken",
+      "creatingAccount": "Account aanmaken...",
+      "orSignUpWith": "Of registreer met",
+      "alreadyHaveAccount": "Al een account?",
+      "signIn": "Log hier in",
       "firstName": {
         "label": "Voornaam",
         "placeholder": "Voer uw voornaam in"
@@ -57,14 +94,6 @@
         "label": "E-mailadres",
         "placeholder": "voorbeeld@bedrijf.nl"
       },
-      "password": {
-        "label": "Wachtwoord",
-        "placeholder": "Minimaal 8 tekens"
-      },
-      "confirmPassword": {
-        "label": "Bevestig wachtwoord",
-        "placeholder": "Herhaal uw wachtwoord"
-      },
       "organization": {
         "label": "Organisatie",
         "placeholder": "Naam van uw bedrijf"
@@ -75,11 +104,10 @@
       },
       "agree": "Ik ga akkoord met de",
       "terms": "voorwaarden",
-      "and": "en",
       "privacy": "privacybeleid",
       "submit": "Account aanmaken",
       "hasAccount": "Al een account?",
-      "signIn": "Log hier in"
+      "signUp": "Registreer hier"
     },
     "forgotPassword": {
       "title": "Wachtwoord vergeten",
@@ -101,6 +129,9 @@
       "success": "Uw e-mailadres is succesvol bevestigd!"
     }
   },
+  "loading": {
+    "ariaLabel": "Laden..."
+  },
   "common": {
     "buttons": {
       "save": "Opslaan",
@@ -115,7 +146,9 @@
       "finish": "Voltooien",
       "close": "Sluiten",
       "confirm": "Bevestigen",
-      "back": "Terug"
+      "back": "Terug",
+      "retry": "Opnieuw proberen",
+      "reload": "Opnieuw laden"
     },
     "status": {
       "loading": "Laden...",
@@ -125,7 +158,11 @@
       "success": "Gelukt",
       "pending": "In afwachting",
       "approved": "Goedgekeurd",
-      "rejected": "Afgewezen"
+      "rejected": "Afgewezen",
+      "draft": "Concept",
+      "inProgress": "Bezig",
+      "completed": "Voltooid",
+      "stopped": "Gestopt"
     },
     "actions": {
       "search": "Zoeken",
@@ -144,7 +181,21 @@
       "lastWeek": "Vorige week",
       "thisMonth": "Deze maand",
       "lastMonth": "Vorige maand"
+    },
+    "messages": {
+      "noData": "Geen gegevens beschikbaar",
+      "noResults": "Geen resultaten gevonden",
+      "unknownError": "Onbekende fout",
+      "validationFailed": "Validatie mislukt voor deze stap"
     }
+  },
+  "modal": {
+    "closeButton": "Sluit dialoog",
+    "cancel": "Annuleren",
+    "confirm": "Bevestigen"
+  },
+  "alert": {
+    "closeButton": "Sluiten"
   },
   "validation": {
     "required": "Dit veld is verplicht",
@@ -192,6 +243,149 @@
       "failed": "Upload mislukt. Probeer het opnieuw."
     }
   },
+  "hazards": {
+    "selector": {
+      "title": "Selecteer gevaren",
+      "subtitle": "Kies uit de gevarenbibliotheek of voeg een eigen gevaar toe",
+      "allCategories": "Alle categorieën",
+      "search": "Zoeken...",
+      "results": "{count} gevaren gevonden",
+      "selectedTitle": "Geselecteerde gevaren",
+      "none": "Geen geselecteerd",
+      "summary": "Samenvatting",
+      "count": "{count} geselecteerd",
+      "risk": "Risico",
+      "addCustomTitle": "Eigen gevaar toevoegen",
+      "addCustomPlaceholder": "Omschrijf het gevaar",
+      "add": "Toevoegen",
+      "remove": "Verwijder",
+      "noControls": "-"
+    },
+    "categories": {
+      "electrical": "Elektrische gevaren",
+      "mechanical": "Mechanische gevaren",
+      "chemical": "Chemische gevaren",
+      "biological": "Biologische gevaren",
+      "physical": "Fysieke gevaren",
+      "ergonomic": "Ergonomische gevaren",
+      "psychosocial": "Psychosociale gevaren",
+      "fire_explosion": "Brand/Explosiegevaren",
+      "environmental": "Milieugevaren",
+      "custom": "Aangepaste gevaren"
+    }
+  },
+  "tra": {
+    "controlMeasures": {
+      "title": "Beheersmaatregelen",
+      "addCustom": "Eigen Maatregel Toevoegen",
+      "suggestedTitle": "Aanbevolen Maatregelen",
+      "add": "Toevoegen",
+      "noneAdded": "Nog geen beheersmaatregelen toegevoegd",
+      "helpText": "Voeg minimaal één beheersingsmaatregel toe voor een veilige uitvoering van deze taak",
+      "type": "Type Maatregel",
+      "description": "Beschrijving",
+      "descriptionPlaceholder": "Beschrijf de beheersingsmaatregel in detail...",
+      "responsible": "Verantwoordelijke Persoon",
+      "responsiblePlaceholder": "Naam van de verantwoordelijke...",
+      "status": "Implementatie Status",
+      "delete": "Verwijderen",
+      "summaryCount": "{count} maatregel(en) toegevoegd",
+      "hierarchy": {
+        "elimination": "Eliminatie",
+        "substitution": "Substitutie",
+        "engineering": "Technische Maatregelen",
+        "administrative": "Administratieve Maatregelen",
+        "ppe": "Persoonlijke Beschermingsmiddelen (PBM)"
+      },
+      "statuses": {
+        "planned": "Gepland",
+        "in_progress": "In Uitvoering",
+        "completed": "Voltooid",
+        "verified": "Geverifieerd"
+      },
+      "validation": {
+        "minOne": "Voeg minimaal één beheersingsmaatregel toe",
+        "descriptionMin": "Beschrijving moet minimaal 10 tekens bevatten"
+      }
+    },
+    "contextFields": {
+      "materials": "Materialen",
+      "workplaceConditions": "Werkomstandigheden",
+      "addMaterial": "Materiaal toevoegen",
+      "materialName": "Materiaalnaam",
+      "quantity": "Hoeveelheid",
+      "unit": "Eenheid",
+      "hazardous": "Gevaarlijk",
+      "msdsRequired": "MSDS vereist",
+      "storageRequirements": "Opslagvereisten",
+      "lighting": "Verlichting",
+      "ventilation": "Ventilatie",
+      "temperature": "Temperatuur",
+      "noise": "Geluidsniveau",
+      "spaceConstraint": "Ruimtebeperking",
+      "groundCondition": "Ondergrondconditie",
+      "weatherExposure": "Blootstelling aan weer",
+      "notes": "Opmerkingen",
+      "suggestHazards": "Suggereer Gevaren",
+      "hazardSuggestions": "Gevaarsuggesties",
+      "basedOnMaterials": "Gebaseerd op gebruikte materialen",
+      "basedOnConditions": "Gebaseerd op werkomstandigheden",
+      "addSuggestion": "Voeg toe aan gevarenlijst",
+      "addAllSuggestions": "Voeg alle suggesties toe",
+      "noSuggestions": "Geen suggesties beschikbaar voor deze materialen",
+      "suggestionCount": "{count} suggestie{plural}",
+      "viewRelatedHazards": "Zie gerelateerde gevaren",
+      "conditionSuggestions": "Deze werkomstandigheden kunnen de volgende gevaren veroorzaken",
+      "lightingOptions": {
+        "adequate": "Adequaat",
+        "poor": "Slecht",
+        "dark": "Donker",
+        "bright": "Helder"
+      },
+      "ventilationOptions": {
+        "good": "Goed",
+        "moderate": "Matig",
+        "poor": "Slecht",
+        "none": "Geen"
+      },
+      "temperatureOptions": {
+        "comfortable": "Comfortabel",
+        "hot": "Heet",
+        "cold": "Koud",
+        "extreme": "Extreem"
+      },
+      "noiseOptions": {
+        "quiet": "Stil",
+        "moderate": "Matig",
+        "loud": "Luid",
+        "extreme": "Extreem"
+      },
+      "spaceOptions": {
+        "open": "Open",
+        "confined": "Beperkt",
+        "cramped": "Krap",
+        "restricted": "Beperkt toegankelijk"
+      },
+      "groundOptions": {
+        "stable": "Stabiel",
+        "uneven": "Oneffen",
+        "slippery": "Glad",
+        "unstable": "Onstabiel"
+      },
+      "weatherOptions": {
+        "indoor": "Binnen",
+        "sheltered": "Beschut",
+        "exposed": "Blootgesteld",
+        "extreme": "Extreem"
+      }
+    }
+  },
+  "tras": {
+    "create": {
+      "title": "Nieuwe TRA aanmaken",
+      "modalTitle": "Nieuwe TRA aanmaken"
+    }
+  },
   "safety": {
     "tra": {
       "title": "Taak Risicoanalyse",
@@ -200,12 +394,94 @@
       "new": "Nieuwe TRA",
       "edit": "TRA bewerken",
       "view": "TRA bekijken",
+      "backToList": "Terug naar TRA overzicht",
       "status": {
         "draft": "Concept",
         "review": "In beoordeling",
         "approved": "Goedgekeurd",
         "active": "Actief",
         "expired": "Verlopen"
+      },
+      "riskAssessment": {
+        "title": "Risicobeoordeling",
+        "saveButton": "Risicobeoordeling Opslaan",
+        "unsavedChanges": "U heeft niet-opgeslagen wijzigingen",
+        "notesLabel": "Opmerkingen (Optioneel)",
+        "notesPlaceholder": "Voeg eventuele toelichting of context toe bij deze risicobeoordeling...",
+        "previewLabel": "Risico Score (Voorbeeld)",
+        "confirmDialog": {
+          "title": "Risicobeoordeling Opslaan",
+          "message": "U staat op het punt een nieuwe risicoscore op te slaan. Deze score wordt permanent vastgelegd in de TRA.",
+          "newScoreLabel": "Nieuwe risicoscore:",
+          "levelLabel": "Niveau:",
+          "confirmQuestion": "Weet u zeker dat u deze risicobeoordeling wilt opslaan?",
+          "cancelButton": "Annuleren",
+          "confirmButton": "Ja, Opslaan"
+        },
+        "validation": {
+          "allZeros": "U kunt geen risicobeoordeling opslaan met alle waarden op 0. Voer een geldige beoordeling in."
+        }
+      },
+      "wizard": {
+        "title": "TRA Wizard",
+        "back": "Vorige",
+        "next": "Volgende",
+        "createButton": "TRA Aanmaken",
+        "saving": "Opslaan...",
+        "saved": "Opgeslagen",
+        "saveFailed": "Opslaan mislukt",
+        "validationMessage": "Niet alle verplichte velden zijn ingevuld. Vul eerst alle verplichte velden in voordat je verder gaat.",
+        "step1": "Stap 1: Basisinformatie",
+        "step2": "Stap 2: Gevaren identificeren",
+        "step3": "Stap 3: Risicobeoordeling",
+        "step4": "Stap 4: Beheersmaatregelen",
+        "step5": "Stap 5: Beoordeling",
+        "createTitle": "Stap {step} van {total}",
+        "titleLabel": "Titel",
+        "descriptionLabel": "Beschrijving",
+        "projectRequired": "Project is verplicht",
+        "projectSelector": {
+          "label": "Project",
+          "placeholder": "Selecteer een project...",
+          "loading": "Projecten laden...",
+          "loadError": "Fout bij laden projecten",
+          "noResults": "Geen projecten gevonden"
+        },
+        "templates": {
+          "loading": "Sjabloon laden...",
+          "loadError": "Fout bij laden sjabloon",
+          "selectedIndicator": "Geselecteerd sjabloon: {name}",
+          "resetToTemplate": "Reset naar sjabloon"
+        },
+        "review": {
+          "title": "Controleer je TRA",
+          "basicInfo": "Basis Informatie",
+          "titleField": "Titel:",
+          "descriptionField": "Beschrijving:",
+          "notFilled": "Niet ingevuld",
+          "taskSteps": "Taakstappen",
+          "stepsAdded": "{count} {plural} toegevoegd",
+          "stepSingular": "stap",
+          "stepPlural": "stappen",
+          "noSteps": "Geen taakstappen toegevoegd",
+          "teamMembers": "Teamleden",
+          "noMembers": "Nog geen teamleden toegevoegd",
+          "addMemberWarning": "⚠️ Voeg minimaal 1 teamlid toe om de TRA in te dienen",
+          "validationWarning": "Let op:",
+          "validationMessage": "Vul alle verplichte velden in voordat je de TRA aanmaakt:",
+          "titleRequired": "• Titel is verplicht",
+          "memberRequired": "• Minimaal 1 teamlid is verplicht"
+        },
+        "compliance": {
+          "toggleDetails": "Toon Details",
+          "hideDetails": "Verberg Details",
+          "tipsTitle": "💡 VCA Tips",
+          "tip1": "• Identificeer minimaal 3 gevaren per werkstap",
+          "tip2": "• Voer risicobeoordeling uit voor elk gevaar",
+          "tip3": "• Definieer beheersmaatregelen voor hoge risico's",
+          "tip4": "• Voeg minimaal 1 teamlid toe",
+          "tip5": "• Streef naar 85%+ compliance score"
+        }
       }
     },
     "lmra": {
@@ -214,7 +490,386 @@
       "description": "Laatste veiligheidscheck voor aanvang werkzaamheden",
       "new": "Nieuwe LMRA",
       "execute": "LMRA uitvoeren",
-      "complete": "LMRA voltooien"
+      "complete": "LMRA voltooien",
+      "wizard": {
+        "title": "LMRA - Last Minute Risk Assessment",
+        "subtitle": "Laatste veiligheidscheck voor aanvang werkzaamheden",
+        "progress": "Voortgang",
+        "stepOf": "Stap {current} van {total}",
+        "progressPercent": "Progress: {percent}%",
+        "autoSaving": "Automatisch opslaan...",
+        "validationError": "Validatie mislukt voor deze stap",
+        "unknownStep": "Onbekende stap"
+      },
+      "steps": {
+        "step1": {
+          "title": "Stap 1 — TRA selectie",
+          "subtitle": "Selecteer de bijbehorende TRA",
+          "description": "Selecteer de bijbehorende TRA (Task Risk Analysis) waar deze LMRA bij hoort.",
+          "loading": "Templates laden...",
+          "templatesLoaded": "{count} sjablonen geladen",
+          "reloadButton": "Sjablonen opnieuw laden",
+          "reloadHelp": "Als er geen sjablonen verschijnen, klik om opnieuw te proberen en check de browserconsole voor debuglogs.",
+          "noTemplates": "Er zijn momenteel geen sjablonen geladen ({count}). Controleer de console voor details.",
+          "selected": "Geselecteerd: {title}",
+          "notSelected": "Geen TRA geselecteerd",
+          "version": "v{version}",
+          "errorLoading": "Fout: {error}"
+        },
+        "step2": {
+          "title": "Stap 2 — Locatie verificatie",
+          "subtitle": "Verifieer de werklocatie",
+          "description": "Verifieer uw huidige locatie met GPS voor nauwkeurige registratie van de werkplek.",
+          "locationVerified": "Locatie Geverifieerd",
+          "locationNotVerified": "Locatie Nog Niet Geverifieerd",
+          "clickToVerify": "Klik op de knop hieronder om uw huidige locatie te verifiëren.",
+          "accuracy": "Nauwkeurigheid",
+          "excellent": "Uitstekend",
+          "verifiedAt": "Geverifieerd op",
+          "verifyButton": "Locatie Verifiëren",
+          "reverifyButton": "Locatie Opnieuw Verifiëren",
+          "gettingLocation": "Locatie Ophalen...",
+          "locationName": "Locatie Naam (Optioneel)",
+          "locationNamePlaceholder": "Bijv. Bouwplaats A, Werkplek 3, etc.",
+          "locationNameHelp": "Geef een herkenbare naam aan deze locatie voor eenvoudige identificatie.",
+          "notes": "Opmerkingen (Optioneel)",
+          "notesPlaceholder": "Eventuele opmerkingen over de locatie...",
+          "errorTitle": "Fout bij Locatiebepaling",
+          "lowAccuracyTitle": "Lage GPS Nauwkeurigheid",
+          "lowAccuracyMessage": "De GPS-nauwkeurigheid is ±{accuracy}m. Voor betere nauwkeurigheid, probeer naar buiten te gaan of dichter bij een raam te staan.",
+          "tipsTitle": "💡 Tips voor Nauwkeurige Locatiebepaling",
+          "tip1": "Zorg dat GPS is ingeschakeld op uw apparaat",
+          "tip2": "Ga naar buiten of sta bij een raam voor beter signaal",
+          "tip3": "Wacht enkele seconden voor een nauwkeurige meting",
+          "tip4": "Nauwkeurigheid onder 50m is uitstekend",
+          "errors": {
+            "notSupported": "Geolocatie wordt niet ondersteund door deze browser",
+            "permissionDenied": "Toegang tot locatie geweigerd. Sta locatietoegang toe in uw browserinstellingen.",
+            "positionUnavailable": "Locatie niet beschikbaar. Controleer of GPS is ingeschakeld.",
+            "timeout": "Locatiebepaling duurde te lang. Probeer het opnieuw.",
+            "unknown": "Onbekende fout bij locatiebepaling. Probeer het opnieuw.",
+            "general": "Kon locatie niet ophalen. Controleer uw GPS-instellingen."
+          }
+        },
+        "step3": {
+          "title": "Stap 3 — Weersomstandigheden",
+          "subtitle": "Controleer de weersomstandigheden",
+          "description": "Haal huidige weersomstandigheden op voor de locatie of voer handmatig in indien nodig.",
+          "fetchButton": "Haal weergegevens op",
+          "fetchingButton": "Ophalen…",
+          "manualOverrideOn": "Handmatige override aan",
+          "manualOverrideOff": "Handmatige override uit",
+          "errorPrefix": "Fout:",
+          "noCoordinates": "Geen coördinaten beschikbaar — voer eerst locatie verificatie uit (Stap 2).",
+          "apiKeyNotConfigured": "OpenWeather API key niet geconfigureerd. Neem contact op met de beheerder.",
+          "apiKeyInvalid": "OpenWeather API key ongeldig. Neem contact op met de beheerder.",
+          "tooManyRequests": "Te veel API verzoeken. Probeer het later opnieuw of voer handmatig in.",
+          "fetchErrorSuffix": "Probeer het opnieuw of voer handmatig in.",
+          "blocking": {
+            "title": "GEVAAR: Werk moet worden stopgezet",
+            "actionRequired": "Actie vereist:",
+            "actionText": "Deze LMRA kan niet worden voortgezet onder deze weersomstandigheden. Wacht tot de omstandigheden verbeteren of stel het werk uit."
+          },
+          "warning": {
+            "title": "WAARSCHUWING: Onveilige werkomstandigheden",
+            "extraCaution": "Extra voorzichtigheid en veiligheidsmaatregelen zijn vereist."
+          },
+          "source": "Bron:",
+          "observation": "Waarneming:",
+          "fields": {
+            "temperature": "Temperatuur",
+            "temperaturePlaceholder": "°C",
+            "humidity": "Luchtvochtigheid",
+            "humidityPlaceholder": "%",
+            "wind": "Wind",
+            "windPlaceholder": "m/s",
+            "precipitation": "Neerslag",
+            "precipitationPlaceholder": "mm",
+            "weatherDescription": "Weer beschrijving",
+            "weatherDescriptionPlaceholder": "Bijv. Zwaar bewolkt, sneeuw, harde wind",
+            "manualNotes": "Aantekeningen (handmatig)",
+            "manualNotesPlaceholder": "Extra opmerkingen over de weersomstandigheden..."
+          },
+          "severity": {
+            "label": "Ernst niveau:",
+            "clear": "Helder",
+            "moderate": "Matig",
+            "severe": "Ernstig",
+            "extreme": "Extreem"
+          }
+        },
+        "step4": {
+          "title": "Stap 4 — Team competenties",
+          "subtitle": "Controleer teamleden en competenties",
+          "description": "Verifieer de competenties en certificeringen van alle teamleden voor deze taak.",
+          "teamCompetencies": "Team Competenties",
+          "allQualified": "Alle teamleden zijn gekwalificeerd",
+          "notAllQualified": "Niet alle teamleden zijn volledig gekwalificeerd",
+          "membersRegistered": "{count} teamlid{plural} geregistreerd",
+          "requiredCompetencies": "Vereiste Competenties",
+          "competencyPlaceholder": "Bijv. VCA, Hoogwerker certificaat...",
+          "addButton": "Toevoegen",
+          "teamMembers": "Teamleden",
+          "addMemberButton": "Teamlid Toevoegen",
+          "noMembersYet": "Nog geen teamleden toegevoegd",
+          "addFirstMember": "Eerste Teamlid Toevoegen",
+          "memberNumber": "Teamlid {number}",
+          "fields": {
+            "name": "Naam",
+            "namePlaceholder": "Volledige naam",
+            "competencyLevel": "Competentie Niveau",
+            "certifications": "Certificeringen",
+            "certificationPlaceholder": "Certificaat toevoegen...",
+            "notes": "Opmerkingen",
+            "notesPlaceholder": "Eventuele opmerkingen..."
+          },
+          "competencyLevels": {
+            "certified": "Gecertificeerd",
+            "trained": "Getraind",
+            "supervised": "Onder Toezicht",
+            "not_qualified": "Niet Gekwalificeerd"
+          },
+          "generalNotes": "Algemene Opmerkingen",
+          "generalNotesPlaceholder": "Eventuele algemene opmerkingen over het team...",
+          "infoBox": {
+            "title": "💡 Competentie Niveaus",
+            "certified": "Officieel gecertificeerd voor deze taak",
+            "trained": "Getraind maar niet officieel gecertificeerd",
+            "supervised": "Mag alleen werken onder direct toezicht",
+            "notQualified": "Niet bevoegd voor deze taak"
+          }
+        },
+        "step5": {
+          "title": "Stap 5 — Apparatuur Verificatie",
+          "subtitle": "Controleer apparatuur en uitrusting",
+          "description": "Controleer of alle benodigde apparatuur beschikbaar en in goede staat is.",
+          "traMaterials": {
+            "title": "Let op: Volgende materialen gebruikt in TRA",
+            "description": "Controleer of alle materialen beschikbaar en in goede staat zijn"
+          },
+          "equipmentStatus": {
+            "allAvailable": "Alle apparatuur is beschikbaar",
+            "notAllAvailable": "Niet alle apparatuur is beschikbaar",
+            "someInMaintenance": "Sommige apparatuur in onderhoud",
+            "itemsRegistered": "{count} apparaat/apparaten geregistreerd"
+          },
+          "equipmentList": "Apparatuur Lijst",
+          "addEquipmentButton": "Apparaat Toevoegen",
+          "noEquipmentYet": "Nog geen apparatuur toegevoegd",
+          "addFirstEquipment": "Eerste Apparaat Toevoegen",
+          "equipmentNumber": "Apparaat {number}",
+          "fields": {
+            "name": "Naam",
+            "namePlaceholder": "Bijv. Hoogwerker, Boormachine...",
+            "status": "Status",
+            "serialNumber": "Serienummer",
+            "serialNumberPlaceholder": "Serienummer of identificatie...",
+            "notes": "Opmerkingen",
+            "notesPlaceholder": "Eventuele opmerkingen over dit apparaat...",
+            "inspectedAt": "Geïnspecteerd op"
+          },
+          "statuses": {
+            "available": "Beschikbaar",
+            "unavailable": "Niet Beschikbaar",
+            "damaged": "Beschadigd",
+            "maintenance": "In Onderhoud"
+          },
+          "qrScanner": {
+            "scanButton": "Scan",
+            "scanTitle": "Scan QR Code",
+            "comingSoon": "QR Scanner functionaliteit komt binnenkort beschikbaar. Voor nu kunt u het serienummer handmatig invoeren."
+          },
+          "generalNotes": "Algemene Opmerkingen",
+          "generalNotesPlaceholder": "Eventuele algemene opmerkingen over de apparatuur...",
+          "warning": {
+            "title": "Waarschuwing",
+            "message": "Niet alle benodigde apparatuur is beschikbaar. Controleer of het werk veilig kan worden uitgevoerd zonder deze apparatuur, of wacht tot de apparatuur beschikbaar is."
+          },
+          "infoBox": {
+            "title": "💡 Apparatuur Status",
+            "available": "Apparaat is beschikbaar en in goede staat",
+            "unavailable": "Apparaat is niet aanwezig of niet toegankelijk",
+            "damaged": "Apparaat is beschadigd en mag niet gebruikt worden",
+            "maintenance": "Apparaat is in onderhoud, mogelijk later beschikbaar",
+            "tip": "Gebruik de QR scan functie om snel serienummers te registreren en apparatuur te identificeren."
+          }
+        },
+        "step6": {
+          "title": "Stap 6 — Gevaren Beoordeling",
+          "subtitle": "Identificeer en beoordeel gevaren",
+          "description": "Identificeer gevaren en beoordeel risico's met de Kinney & Wiruth methode.",
+          "riskSummary": {
+            "highRiskHazards": "{count} Hoog Risico Gevaar{plural}",
+            "noHighRisk": "Geen Hoog Risico Gevaren",
+            "hazardsIdentified": "{count} gevaar/gevaren geïdentificeerd"
+          },
+          "identifiedHazards": "Geïdentificeerde Gevaren",
+          "addHazardButton": "Gevaar Toevoegen",
+          "noHazardsYet": "Nog geen gevaren geïdentificeerd",
+          "addFirstHazard": "Eerste Gevaar Toevoegen",
+          "hazardNumber": "Gevaar {number}",
+          "fields": {
+            "description": "Beschrijving",
+            "descriptionPlaceholder": "Beschrijf het gevaar...",
+            "category": "Categorie",
+            "riskScore": "Score"
+          },
+          "categories": {
+            "electrical": "Elektrisch",
+            "mechanical": "Mechanisch",
+            "chemical": "Chemisch",
+            "biological": "Biologisch",
+            "physical": "Fysiek",
+            "ergonomic": "Ergonomisch",
+            "psychosocial": "Psychosociaal",
+            "fire_explosion": "Brand/Explosie",
+            "environmental": "Milieu",
+            "other": "Anders"
+          },
+          "riskAssessment": {
+            "title": "Risico Beoordeling (Kinney & Wiruth)",
+            "effect": "Effect (E)",
+            "exposure": "Blootstelling (B)",
+            "probability": "Waarschijnlijkheid (W)",
+            "formula": "Risico Score = E × B × W"
+          },
+          "riskLevels": {
+            "trivial": "Triviaal",
+            "acceptable": "Acceptabel",
+            "possible": "Mogelijk",
+            "substantial": "Aanzienlijk",
+            "high": "Hoog",
+            "very_high": "Zeer Hoog"
+          },
+          "controlMeasures": {
+            "title": "Beheersmaatregelen",
+            "add": "Toevoegen",
+            "placeholder": "Beschrijving beheersmaatregelen...",
+            "none": "Nog geen beheersmaatregelen toegevoegd"
+          },
+          "generalNotes": "Algemene Opmerkingen",
+          "generalNotesPlaceholder": "Eventuele algemene opmerkingen over de gevaren...",
+          "infoBox": {
+            "title": "Kinney & Wiruth Methode",
+            "formula": "Risico Score = Effect × Blootstelling × Waarschijnlijkheid",
+            "trivial": "Triviaal (geen actie nodig)",
+            "acceptable": "Acceptabel (aandacht vereist)",
+            "possible": "Mogelijk (actie nodig)",
+            "substantial": "Aanzienlijk (directe actie)",
+            "high": "Hoog (onmiddellijke actie)",
+            "veryHigh": "Zeer Hoog (werk stopzetten)"
+          }
+        },
+        "step7": {
+          "title": "Stap 7 — Go / No-Go Beslissing",
+          "subtitle": "Beslissing om door te gaan",
+          "description": "Neem een beslissing of het werk veilig kan worden uitgevoerd op basis van alle voorgaande stappen.",
+          "decisionStatus": {
+            "workMayStart": "Werk Mag Starten",
+            "workMayNotStart": "Werk Mag Niet Starten",
+            "allChecksCompleted": "Alle veiligheidscontroles zijn uitgevoerd en goedgekeurd",
+            "issuesMustBeResolved": "Er zijn veiligheidsissues die eerst moeten worden opgelost"
+          },
+          "selectDecision": "Selecteer Beslissing",
+          "decisions": {
+            "go": {
+              "label": "GO - Werk Mag Starten",
+              "description": "Alle controles zijn uitgevoerd en het werk kan veilig worden uitgevoerd"
+            },
+            "no_go": {
+              "label": "NO-GO - Werk Mag Niet Starten",
+              "description": "Er zijn onveilige situaties of ontbrekende voorwaarden"
+            },
+            "pending": {
+              "label": "In Afwachting",
+              "description": "Wacht op aanvullende informatie of goedkeuring"
+            }
+          },
+          "reason": {
+            "label": "Reden voor Beslissing",
+            "placeholderGo": "Leg uit waarom het werk veilig kan worden uitgevoerd...",
+            "placeholderNoGo": "Leg uit waarom het werk niet kan worden uitgevoerd en wat er moet gebeuren...",
+            "placeholderPending": "Leg uit waarom er nog gewacht moet worden...",
+            "helpText": "Geef een duidelijke uitleg voor deze beslissing. Dit is belangrijk voor de audit trail."
+          },
+          "mitigation": {
+            "title": "Mitigatie Maatregelen",
+            "required": "Mitigatie maatregelen zijn vereist voordat het werk kan starten",
+            "describe": "Beschrijf de Vereiste Maatregelen",
+            "placeholder": "Beschrijf welke maatregelen genomen moeten worden voordat het werk kan starten..."
+          },
+          "summary": {
+            "title": "Beslissing Samenvatting",
+            "decision": "Beslissing:",
+            "reason": "Reden:",
+            "requiredMeasures": "Vereiste Maatregelen:"
+          },
+          "infoBox": {
+            "title": "💡 Go / No-Go Criteria",
+            "chooseGo": "Kies GO als:",
+            "goItem1": "Alle veiligheidscontroles zijn uitgevoerd",
+            "goItem2": "Alle benodigde apparatuur is beschikbaar en in goede staat",
+            "goItem3": "Het team is volledig gekwalificeerd",
+            "goItem4": "Weersomstandigheden zijn acceptabel",
+            "goItem5": "Alle gevaren zijn geïdentificeerd en beheersmaatregelen zijn getroffen",
+            "chooseNoGo": "Kies NO-GO als:",
+            "noGoItem1": "Er zijn hoog-risico gevaren zonder adequate beheersing",
+            "noGoItem2": "Kritieke apparatuur ontbreekt of is defect",
+            "noGoItem3": "Teamleden zijn niet gekwalificeerd",
+            "noGoItem4": "Weersomstandigheden zijn onveilig",
+            "noGoItem5": "Er zijn andere veiligheidsissues"
+          },
+          "warning": {
+            "title": "Belangrijk",
+            "message": "Met een NO-GO beslissing mag het werk niet starten. Zorg ervoor dat alle veiligheidsissues zijn opgelost voordat een nieuwe LMRA wordt uitgevoerd."
+          }
+        },
+        "step8": {
+          "title": "Stap 8 — Handtekeningen",
+          "subtitle": "Onderteken de LMRA",
+          "description": "Verzamel handtekeningen van alle betrokken partijen om de LMRA te voltooien.",
+          "digitalSignatures": "Digitale Handtekeningen",
+          "signaturesCollected": "{count} Handtekening{plural} Verzameld",
+          "signaturesCollectedDescription": "De LMRA is ondertekend en kan worden ingediend",
+          "signatures": "Handtekeningen",
+          "addSignatureButton": "Handtekening Toevoegen",
+          "noSignaturesYet": "Nog geen handtekeningen verzameld",
+          "addFirstSignature": "Eerste Handtekening Toevoegen",
+          "signedOn": "Ondertekend op:",
+          "role": "Rol:",
+          "roles": {
+            "field_worker": "Veldwerker",
+            "supervisor": "Supervisor",
+            "safety_manager": "Veiligheidsmanager",
+            "other": "Anders"
+          },
+          "actions": {
+            "edit": "Bewerken",
+            "remove": "Verwijderen"
+          },
+          "notes": {
+            "label": "Opmerkingen",
+            "placeholder": "Eventuele opmerkingen over de handtekeningen..."
+          },
+          "infoBox": {
+            "title": "💡 Handtekening Informatie",
+            "item1": "Handtekeningen worden digitaal vastgelegd met datum en tijd",
+            "item2": "Elke handtekening is gekoppeld aan een specifieke gebruiker",
+            "item3": "Handtekeningen kunnen niet worden gewijzigd na indiening",
+            "item4": "Minimaal één handtekening is vereist om de LMRA te voltooien"
+          },
+          "completion": {
+            "title": "Klaar voor Indiening",
+            "message": "Alle handtekeningen zijn verzameld. U kunt nu doorgaan naar de volgende stap om de LMRA in te dienen."
+          }
+        }
+      },
+      "status": {
+        "draft": "Concept",
+        "inProgress": "Bezig",
+        "completed": "Voltooid",
+        "stopped": "Gestopt"
+      }
     },
     "risk": {
       "level": {
@@ -247,6 +902,21 @@
       "boots": "Veiligheidsschoenen",
       "vest": "Hesje",
       "mask": "Mondmasker"
+    },
+    "stopWork": {
+      "title": "Werk Stoppen",
+      "button": "Stop Werk",
+      "confirm": "Weet u zeker dat u het werk wilt stoppen?",
+      "reason": "Reden voor stoppen",
+      "emergency": "Noodsituatie",
+      "unsafeConditions": "Onveilige omstandigheden",
+      "equipmentFailure": "Apparatuur defect",
+      "weatherConditions": "Weersomstandigheden",
+      "other": "Andere reden",
+      "description": "Beschrijving",
+      "submit": "Werk stoppen",
+      "cancelled": "Geannuleerd",
+      "success": "Werk succesvol gestopt"
     }
   },
   "dashboard": {
@@ -359,6 +1029,12 @@
       "create": "Maak uw eerste project aan om te beginnen met TRA en LMRA workflows.",
       "cta": "Eerste Project Aanmaken"
     },
+    "list": {
+      "title": "Projecten",
+      "help": "Beheer uw projecten en teamleden voor georganiseerde TRA/LMRA workflows",
+      "counter": "{count} van {total} projecten",
+      "newProject": "Nieuw project"
+    },
     "fields": {
       "name": "Projectnaam",
       "description": "Beschrijving",
@@ -428,46 +1104,21 @@
       "subtitle": "Progressive Web App functionaliteit"
     }
   },
-  "lmra": {
-    "title": "LMRA",
-    "subtitle": "Last Minute Risicoanalyse",
-    "new": "Nieuwe LMRA",
-    "execute": "LMRA uitvoeren",
-    "complete": "LMRA voltooien",
-    "status": {
-      "draft": "Concept",
-      "inProgress": "Bezig",
-      "completed": "Voltooid",
-      "stopped": "Gestopt"
-    },
-    "steps": {
-      "location": "Locatie verificatie",
-      "environment": "Omgevingsfactoren",
-      "personnel": "Personeel controle",
-      "equipment": "Uitrusting inspectie",
-      "hazards": "Gevaren beoordeling",
-      "decision": "Beslissing",
-      "documentation": "Documentatie",
-      "signature": "Handtekening"
-    },
-    "decisions": {
-      "safe": "Veilig om door te gaan",
-      "caution": "Voorzichtig doorgaan",
-      "stop": "Werk stoppen"
-    },
-    "fields": {
-      "location": "Locatie",
-      "weather": "Weer",
-      "temperature": "Temperatuur",
-      "wind": "Wind",
-      "teamSize": "Team grootte",
-      "equipment": "Uitrusting",
-      "hazards": "Gevaren",
-      "controls": "Beheersmaatregelen",
-      "decision": "Beslissing",
-      "reason": "Reden",
-      "photos": "Foto's"
-    }
+  "approvals": {
+    "title": "Goedkeuringen",
+    "subtitle": "Wachtend op uw goedkeuring",
+    "pending": "In afwachting",
+    "approved": "Goedgekeurd",
+    "rejected": "Afgewezen",
+    "approve": "Goedkeuren",
+    "reject": "Afwijzen",
+    "comment": "Opmerking",
+    "decision": "Beslissing",
+    "history": "Geschiedenis",
+    "requestedBy": "Aangevraagd door",
+    "requestedAt": "Aangevraagd op",
+    "decidedBy": "Beslist door",
+    "decidedAt": "Beslist op"
   },
   "organizations": {
     "title": "Organisaties",
@@ -491,6 +1142,15 @@
     "title": "Sjablonen",
     "new": "Nieuw Sjabloon",
     "edit": "Sjabloon bewerken",
+    "active": "Actief",
+    "inactive": "Inactief",
+    "standard": "Standaard",
+    "loading": "Sjablonen laden...",
+    "startFromScratch": "Begin vanaf nul",
+    "startFromScratchDesc": "Maak een volledig aangepaste TRA zonder sjabloon",
+    "hazards": "gevaren",
+    "controls": "maatregelen",
+    "steps": "stappen",
     "fields": {
       "name": "Naam",
       "description": "Beschrijving",
@@ -498,6 +1158,27 @@
       "tasks": "Taken",
       "hazards": "Gevaren",
       "controls": "Beheersmaatregelen"
+    },
+    "industries": {
+      "construction": "Bouw",
+      "industrial": "Industrie",
+      "manufacturing": "Productie",
+      "logistics": "Logistiek",
+      "maintenance": "Onderhoud",
+      "utilities": "Nutsbedrijven",
+      "healthcare": "Gezondheidszorg",
+      "general": "Algemeen"
+    },
+    "selector": {
+      "title": "Selecteer een TRA Sjabloon",
+      "subtitle": "Kies een sjabloon dat past bij uw werkzaamheden",
+      "searchPlaceholder": "Zoek op naam of beschrijving...",
+      "filterByCategory": "Filter op categorie",
+      "allCategories": "Alle Categorieën",
+      "templatesFound": "sjablonen gevonden",
+      "resetFilters": "Filters resetten",
+      "noTemplatesFound": "Geen sjablonen gevonden",
+      "noTemplatesDescription": "Probeer uw zoekopdracht aan te passen of de filters te resetten."
     }
   },
   "notifications": {
@@ -553,6 +1234,64 @@
       "offline": "Offline",
       "security": "Beveiliging",
       "performance": "Prestaties"
+    }
+  },
+  "vca": {
+    "title": "VCA Compliance",
+    "subtitle": "VCA (Veiligheid, Gezondheid en Milieu Checklist Aannemers)",
+    "report": {
+      "title": "VCA Compliance Rapport",
+      "checkedAt": "Gecontroleerd op",
+      "overallScore": "Totale Compliance Score",
+      "categoryScores": "Categorie Scores",
+      "issues": "Gevonden Problemen",
+      "recommendations": "Aanbevelingen",
+      "noIssues": "Geen problemen gevonden. Deze TRA voldoet volledig aan de VCA-eisen!",
+      "compliant": "Deze TRA voldoet aan de VCA-eisen (≥85%)",
+      "notCompliant": "Deze TRA voldoet nog niet aan de VCA-eisen (≥85% vereist)",
+      "showAll": "Toon alle",
+      "hide": "Verberg"
+    },
+    "levels": {
+      "fullyCompliant": "VCA Volledig Conform",
+      "compliant": "VCA Conform",
+      "partiallyCompliant": "Gedeeltelijk Conform",
+      "nonCompliant": "Niet Conform"
+    },
+    "categories": {
+      "riskAssessment": {
+        "title": "Risicobeoordeling",
+        "description": "Kwaliteit van gevarenidentificatie en risico-analyse"
+      },
+      "controlMeasures": {
+        "title": "Beheersmaatregelen",
+        "description": "Adequaatheid van risico-beheersing"
+      },
+      "documentation": {
+        "title": "Documentatie",
+        "description": "Volledigheid van TRA-documentatie"
+      },
+      "approvals": {
+        "title": "Goedkeuringen",
+        "description": "Status van goedkeuringsproces"
+      }
+    },
+    "severity": {
+      "critical": "Kritiek",
+      "high": "Hoog",
+      "medium": "Gemiddeld",
+      "low": "Laag"
+    },
+    "issueTypes": {
+      "critical": "Kritieke Problemen",
+      "high": "Belangrijke Problemen",
+      "medium": "Gemiddelde Problemen",
+      "low": "Kleine Problemen"
+    },
+    "messages": {
+      "criticalIssues": "kritieke problemen",
+      "highIssues": "belangrijke problemen",
+      "field": "Veld"
     }
   }
 }

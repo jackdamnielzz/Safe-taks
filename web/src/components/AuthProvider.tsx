@@ -73,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Helper function to handle Firebase Auth errors
   const handleAuthError = (error: any): string => {
@@ -206,6 +207,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u: User | null) => {
+      // Skip updates if we're in the middle of logging out
+      if (isLoggingOut) {
+        console.log("🔓 onAuthStateChanged: Skipping update during logout");
+        return;
+      }
+
       setUser(u);
 
       if (u) {
@@ -219,25 +226,82 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         setUserProfile(null);
+
+        // Ensure auth cookie is cleared when there is no Firebase user
+        if (typeof document !== "undefined") {
+          document.cookie =
+            "auth_verified=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
+          console.log("🔐 AuthProvider: Cleared auth_verified cookie because user is null");
+        }
       }
 
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isLoggingOut]);
 
   const signIn = async (email: string, password: string): Promise<UserCredential> => {
     try {
+      console.log("🔐 AuthProvider.signIn called with email:", email);
       setError(null);
       setLoading(true);
+      
+      console.log("🔐 Checking Firebase auth availability...");
+      if (!auth) {
+        throw new Error("Firebase auth not initialized");
+      }
+      
+      console.log("🔐 Calling Firebase signInWithEmailAndPassword...");
       const result = await signInWithEmailAndPassword(auth, email, password);
+      console.log("✅ Firebase signInWithEmailAndPassword successful");
+      
+      // Extra beveiliging: blokkeer email/password logins zolang email niet is geverifieerd
+      // (Google SSO blijft gewoon werken).
+      const user = result.user;
+      const usesPasswordProvider = user.providerData.some((p) => p.providerId === "password");
+      
+      if (usesPasswordProvider && !user.emailVerified) {
+        console.log("❌ Email not verified for password-based sign-in, blocking login");
+        
+        // Zorg dat er geen auth-cookie achterblijft
+        if (typeof document !== "undefined") {
+          document.cookie =
+            "auth_verified=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
+          console.log("🔐 Cleared auth_verified cookie because email is not verified");
+        }
+        
+        // Firebase session direct beëindigen
+        await signOut(auth);
+        
+        // Duidelijke foutmelding richting UI
+        throw new Error(
+          "Please verify your email via the link we sent you before signing in."
+        );
+      }
+      
+      // Set a simple auth flag cookie for middleware (development-friendly)
+      console.log("🔐 Setting auth cookie...");
+      if (typeof document !== 'undefined') {
+        // Set a simple cookie that middleware can read
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 14); // 14 days
+        document.cookie = `auth_verified=true; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
+        console.log("✅ Auth cookie set");
+      }
+      
       return result;
     } catch (error: any) {
+      console.error("❌ AuthProvider.signIn error:", error);
+      console.error("❌ Error code:", error?.code);
+      console.error("❌ Error message:", error?.message);
+      
       const errorMessage = handleAuthError(error);
+      console.error("❌ Formatted error message:", errorMessage);
       setError(errorMessage);
       throw new Error(errorMessage);
     } finally {
+      console.log("🔐 AuthProvider.signIn finally block - setting loading to false");
       setLoading(false);
     }
   };
@@ -251,16 +315,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       setLoading(true);
 
-      // Create Firebase Auth user
+      // Create Firebase Auth user (this will sign the user in temporarily)
       const result = await createUserWithEmailAndPassword(auth, email, password);
 
-      // Send email verification
-      await sendEmailVerification(result.user);
+      // Send email verification with a nice in-app confirmation redirect
+      try {
+        if (typeof window !== "undefined") {
+          const actionCodeSettings = {
+            url: `${window.location.origin}/auth/email-verified`,
+            handleCodeInApp: false,
+          };
+          await sendEmailVerification(result.user, actionCodeSettings);
+        } else {
+          await sendEmailVerification(result.user);
+        }
+      } catch (verificationError) {
+        console.error("Error sending verification email during sign up:", verificationError);
+        throw verificationError;
+      }
 
       // Create user profile in Firestore
       const profile = await createUserProfile(result.user, userData);
       setUserProfile(profile);
 
+      // Immediately sign the user out again so registration does NOT equal "logged in"
+      try {
+        // Clear local auth state
+        setUser(null);
+        setUserProfile(null);
+
+        // Clear auth cookie used by middleware, so new users are treated as logged out
+        if (typeof document !== "undefined") {
+          document.cookie =
+            "auth_verified=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
+        }
+
+        // Sign out from Firebase to drop the client session
+        await signOut(auth);
+      } catch (signOutError) {
+        console.warn("SignUp: error while signing user out after registration:", signOutError);
+      }
+
+      // We still return the created user credential (for logging/analytics),
+      // but from de gebruikers-perspectief is hij nu uitgelogd en moet hij
+      // expliciet inloggen via /auth/login.
       return result;
     } catch (error: any) {
       const errorMessage = handleAuthError(error);
@@ -277,6 +375,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
 
       const result = await signInWithPopup(auth, googleProvider);
+
+      // Set a simple auth flag cookie for middleware
+      console.log("🔐 Setting auth cookie for Google sign-in...");
+      if (typeof document !== 'undefined') {
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 14);
+        document.cookie = `auth_verified=true; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
+        console.log("✅ Auth cookie set");
+      }
 
       // Check if user profile exists, create if not
       let profile = await loadUserProfile(result.user.uid);
@@ -321,7 +428,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       setError(null);
-      await sendEmailVerification(user);
+      // Resend verification email with the same in-app confirmation redirect
+      if (typeof window !== "undefined") {
+        const actionCodeSettings = {
+          url: `${window.location.origin}/auth/email-verified`,
+          handleCodeInApp: false,
+        };
+        await sendEmailVerification(user, actionCodeSettings);
+      } else {
+        await sendEmailVerification(user);
+      }
     } catch (error: any) {
       const errorMessage = handleAuthError(error);
       setError(errorMessage);
@@ -364,11 +480,100 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOutUser = async (): Promise<void> => {
     try {
+      console.log('🔓 SignOutUser: Starting...');
       setError(null);
-      await signOut(auth);
+      
+      // Set logout flag FIRST to prevent onAuthStateChanged from re-loading user
+      setIsLoggingOut(true);
+      console.log('🔓 SignOutUser: Logout flag set');
+      
+      // Clear the state immediately
       setUser(null);
       setUserProfile(null);
+      console.log('🔓 SignOutUser: State cleared');
+      
+      // Clear auth cookie
+      if (typeof document !== 'undefined') {
+        document.cookie = 'auth_verified=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        console.log('🔓 SignOutUser: Auth cookie cleared');
+      }
+      
+      // Then sign out from Firebase
+      await signOut(auth);
+      console.log('🔓 SignOutUser: Firebase signOut complete');
+      
+      // Clear ALL Firebase persistence data
+      if (typeof window !== 'undefined') {
+        // Clear all localStorage items related to Firebase
+        try {
+          const keysToRemove: string[] = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && (
+              key.startsWith('firebase:') ||
+              key.startsWith('firebaseui::') ||
+              key.includes('firebase')
+            )) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(key => localStorage.removeItem(key));
+          console.log(`🔓 SignOutUser: Cleared ${keysToRemove.length} localStorage items`);
+        } catch (e) {
+          console.warn('Could not clear localStorage:', e);
+        }
+
+        // Clear all sessionStorage items related to Firebase
+        try {
+          const sessionKeysToRemove: string[] = [];
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key && (
+              key.startsWith('firebase:') ||
+              key.startsWith('firebaseui::') ||
+              key.includes('firebase')
+            )) {
+              sessionKeysToRemove.push(key);
+            }
+          }
+          sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
+          console.log(`🔓 SignOutUser: Cleared ${sessionKeysToRemove.length} sessionStorage items`);
+        } catch (e) {
+          console.warn('Could not clear sessionStorage:', e);
+        }
+
+        // Clear Firebase Auth cookies
+        try {
+          // Firebase uses cookies with pattern: firebase:authUser:[projectId]:[base64]
+          document.cookie.split(';').forEach(cookie => {
+            const [name] = cookie.split('=');
+            const trimmedName = name.trim();
+            if (trimmedName.startsWith('firebase:') || trimmedName.includes('firebase')) {
+              // Set cookie to expire immediately
+              document.cookie = `${trimmedName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`;
+              document.cookie = `${trimmedName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+              console.log(`🔓 SignOutUser: Cleared cookie: ${trimmedName}`);
+            }
+          });
+        } catch (e) {
+          console.warn('Could not clear cookies:', e);
+        }
+
+        // Clear IndexedDB databases used by Firebase
+        try {
+          const databases = ['firebaseLocalStorageDb', 'firestore', 'firebase-installations-database'];
+          for (const dbName of databases) {
+            indexedDB.deleteDatabase(dbName);
+          }
+          console.log('🔓 SignOutUser: IndexedDB databases cleared');
+        } catch (e) {
+          console.warn('Could not clear IndexedDB:', e);
+        }
+      }
+      
+      console.log('🔓 SignOutUser: Complete!');
     } catch (error: any) {
+      console.error('🔓 SignOutUser: Error occurred:', error);
       const errorMessage = handleAuthError(error);
       setError(errorMessage);
       throw new Error(errorMessage);

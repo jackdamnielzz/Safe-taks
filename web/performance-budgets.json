@@ -49,6 +49,18 @@
       "description": "JavaScript bundle size should be kept under 250kb (gzipped)",
       "measurement": "Gzipped bundle size",
       "priority": "high"
+    },
+    "risk_calculation": {
+      "target": "2ms",
+      "description": "Kinney & Wiruth risk score computation for all hazards in a single TRA should complete within 2ms in typical conditions",
+      "measurement": "Synchronous execution time of risk calculation helpers for up to 50 hazards",
+      "priority": "high"
+    },
+    "tra_hazard_with_risk_render": {
+      "target": "16ms",
+      "description": "Re-render of TraHazardWithRisk, including summary calculations, should stay within one 60fps frame budget under typical load",
+      "measurement": "Client-side render time for up to 50 hazards and their control measures",
+      "priority": "medium"
     }
   },
   "thresholds": {

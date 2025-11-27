@@ -1,8 +1,19 @@
 /**
- * Firebase Analytics Service
- * Centralized event tracking for all key user actions in SafeWork Pro
+ * Analytics Service
+ * Centralized helpers for Firebase Analytics event tracking in SafeWork Pro.
+ *
+ * Design goals:
+ * - Single, testable integration point.
+ * - Safe in SSR / unsupported environments (no hard crashes).
+ * - Compatible with Jest mocks defined in:
+ *   - web/jest.setup.js
+ *   - web/src/__mocks__/firebase-analytics.ts
+ *
+ * Tests:
+ * - See: web/src/__tests__/analytics-service.test.ts
  */
 
+import { getApp } from "firebase/app";
 import {
   getAnalytics,
   logEvent,
@@ -10,513 +21,382 @@ import {
   setUserProperties,
   Analytics,
 } from "firebase/analytics";
-import { getApp } from "firebase/app";
-
-// Analytics instance (lazy-loaded)
-let analytics: Analytics | null = null;
 
 /**
- * Initialize Firebase Analytics
- * Only works in browser environment
+ * User property bag passed through to analytics.
  */
-function getAnalyticsInstance(): Analytics | null {
-  if (typeof window === "undefined") {
-    return null; // Analytics only works in browser
+type UserProperties = Record<string, string | number | boolean | null | undefined>;
+
+/**
+ * Cached analytics instance.
+ * - undefined: not resolved yet
+ * - null: resolved but unavailable (SSR / init failure)
+ * - Analytics: ready to use
+ */
+let analyticsInstance: Analytics | null | undefined;
+
+/**
+ * Resolve (and cache) the Analytics instance.
+ * - Returns null when unavailable (SSR, no window, or errors).
+ *
+ * Jest & SSR notes:
+ * - Under Jest, firebase/analytics is mapped to src/__mocks__/firebase-analytics.ts via jest.config.js.
+ *   That mock's getAnalytics returns a stable mockAnalyticsInstance.
+ * - We must:
+ *   - Avoid real browser/Firebase access.
+ *   - Use the same imported getAnalytics so Jest spies see calls.
+ *   - Be SSR-safe (no window/document on server).
+ */
+export function getAnalyticsInstance(): Analytics | null {
+  // Reuse resolved instance (including explicit null) for deterministic behavior within a test run.
+  if (analyticsInstance !== undefined) {
+    return analyticsInstance;
   }
 
-  if (!analytics) {
+  // In Jest and browser-like environments, allow analytics.
+  // In real SSR (no window), no-op.
+  if (typeof window === "undefined") {
+    analyticsInstance = null;
+    return analyticsInstance;
+  }
+
+  try {
+    // Try parameterless getAnalytics() first so analytics-service.test.ts inline jest.mock works.
+    // The test mock returns a stable instance directly.
+    analyticsInstance = getAnalytics();
+    return analyticsInstance;
+  } catch {
     try {
+      // Fallback to getApp() + getAnalytics(app) for real app runtime and __mocks__ that expect an app.
       const app = getApp();
-      analytics = getAnalytics(app);
-    } catch (error) {
-      console.error("Failed to initialize Firebase Analytics:", error);
-      return null;
+      analyticsInstance = getAnalytics(app);
+      return analyticsInstance;
+    } catch {
+      analyticsInstance = null;
+      return analyticsInstance;
     }
   }
-
-  return analytics;
 }
 
-// ============================================================================
-// USER IDENTIFICATION
-// ============================================================================
+/**
+ * Internal helper: run operation only when analytics is available.
+ */
+function withAnalytics(fn: (analytics: Analytics) => void): void {
+  const analytics = getAnalyticsInstance();
+  if (!analytics) return;
+  fn(analytics);
+}
 
 /**
- * Set the current user ID for analytics tracking
+ * Identify user by ID.
  */
 export function setAnalyticsUserId(userId: string): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     setUserId(analytics, userId);
-  } catch (error) {
-    console.error("Failed to set analytics user ID:", error);
-  }
+  });
 }
 
 /**
- * Set user properties for analytics segmentation
+ * Set user properties (e.g., organization, role, subscription).
  */
-export function setAnalyticsUserProperties(properties: {
-  organizationId?: string;
-  role?: string;
-  subscriptionTier?: string;
-  [key: string]: string | undefined;
-}): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
-    setUserProperties(analytics, properties);
-  } catch (error) {
-    console.error("Failed to set analytics user properties:", error);
-  }
+export function setAnalyticsUserProperties(properties: UserProperties): void {
+  withAnalytics((analytics) => {
+    // Filter out undefined to avoid noisy props
+    const cleanProps: UserProperties = {};
+    for (const [key, value] of Object.entries(properties)) {
+      if (value !== undefined) {
+        cleanProps[key] = value;
+      }
+    }
+    setUserProperties(analytics, cleanProps);
+  });
 }
 
-// ============================================================================
-// TRA EVENTS
-// ============================================================================
-
 /**
- * Track TRA creation
+ * TRA events
  */
-export function trackTRACreated(params: {
+export function trackTRACreated(payload: {
   traId: string;
-  projectId: string;
+  projectId?: string;
   templateId?: string;
   status: string;
-  overallRiskScore: number;
-  hazardCount: number;
+  overallRiskScore?: number;
+  hazardCount?: number;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "tra_created", {
-      tra_id: params.traId,
-      project_id: params.projectId,
-      template_id: params.templateId || "none",
-      status: params.status,
-      risk_score: params.overallRiskScore,
-      hazard_count: params.hazardCount,
+      tra_id: payload.traId,
+      project_id: payload.projectId,
+      template_id: payload.templateId,
+      status: payload.status,
+      risk_score: payload.overallRiskScore,
+      hazard_count: payload.hazardCount,
     });
-  } catch (error) {
-    console.error("Failed to track TRA created:", error);
-  }
+  });
 }
 
-/**
- * Track TRA submission for approval
- */
-export function trackTRASubmitted(params: {
+export function trackTRASubmitted(payload: {
   traId: string;
-  projectId: string;
-  overallRiskScore: number;
+  projectId?: string;
+  overallRiskScore?: number;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "tra_submitted", {
-      tra_id: params.traId,
-      project_id: params.projectId,
-      risk_score: params.overallRiskScore,
+      tra_id: payload.traId,
+      project_id: payload.projectId,
+      risk_score: payload.overallRiskScore,
     });
-  } catch (error) {
-    console.error("Failed to track TRA submitted:", error);
-  }
+  });
 }
 
-/**
- * Track TRA approval
- */
-export function trackTRAApproved(params: {
+export function trackTRAApproved(payload: {
   traId: string;
-  projectId: string;
-  approvalTimeHours: number;
+  projectId?: string;
+  approvalTimeHours?: number;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "tra_approved", {
-      tra_id: params.traId,
-      project_id: params.projectId,
-      approval_time_hours: params.approvalTimeHours,
+      tra_id: payload.traId,
+      project_id: payload.projectId,
+      approval_time_hours: payload.approvalTimeHours,
     });
-  } catch (error) {
-    console.error("Failed to track TRA approved:", error);
-  }
+  });
 }
 
-/**
- * Track TRA rejection
- */
-export function trackTRARejected(params: {
+export function trackTRARejected(payload: {
   traId: string;
-  projectId: string;
-  reason?: string;
-}): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
-    logEvent(analytics, "tra_rejected", {
-      tra_id: params.traId,
-      project_id: params.projectId,
-      reason: params.reason || "not_specified",
-    });
-  } catch (error) {
-    console.error("Failed to track TRA rejected:", error);
-  }
-}
-
-/**
- * Track TRA export
- */
-export function trackTRAExported(params: { traId: string; format: "pdf" | "excel" | "csv" }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
-    logEvent(analytics, "tra_exported", {
-      tra_id: params.traId,
-      format: params.format,
-    });
-  } catch (error) {
-    console.error("Failed to track TRA exported:", error);
-  }
-}
-
-// ============================================================================
-// LMRA EVENTS
-// ============================================================================
-
-/**
- * Track LMRA session start
- */
-export function trackLMRAStarted(params: {
-  sessionId: string;
-  traId: string;
-  projectId: string;
-}): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
-    logEvent(analytics, "lmra_started", {
-      session_id: params.sessionId,
-      tra_id: params.traId,
-      project_id: params.projectId,
-    });
-  } catch (error) {
-    console.error("Failed to track LMRA started:", error);
-  }
-}
-
-/**
- * Track LMRA session completion
- */
-export function trackLMRACompleted(params: {
-  sessionId: string;
-  traId: string;
-  projectId: string;
-  assessment: "safe_to_proceed" | "proceed_with_caution" | "stop_work";
-  durationMinutes: number;
-  photoCount: number;
-}): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
-    logEvent(analytics, "lmra_completed", {
-      session_id: params.sessionId,
-      tra_id: params.traId,
-      project_id: params.projectId,
-      assessment: params.assessment,
-      duration_minutes: params.durationMinutes,
-      photo_count: params.photoCount,
-    });
-  } catch (error) {
-    console.error("Failed to track LMRA completed:", error);
-  }
-}
-
-/**
- * Track LMRA stop work event (critical safety event)
- */
-export function trackLMRAStopWork(params: {
-  sessionId: string;
-  traId: string;
-  projectId: string;
+  projectId?: string;
   reason: string;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
-    logEvent(analytics, "lmra_stop_work", {
-      session_id: params.sessionId,
-      tra_id: params.traId,
-      project_id: params.projectId,
-      reason: params.reason,
+  withAnalytics((analytics) => {
+    logEvent(analytics, "tra_rejected", {
+      tra_id: payload.traId,
+      project_id: payload.projectId,
+      reason: payload.reason,
     });
-  } catch (error) {
-    console.error("Failed to track LMRA stop work:", error);
-  }
+  });
 }
 
-// ============================================================================
-// APPROVAL WORKFLOW EVENTS
-// ============================================================================
+export function trackTRAExported(payload: {
+  traId: string;
+  format: string;
+}): void {
+  withAnalytics((analytics) => {
+    logEvent(analytics, "tra_exported", {
+      tra_id: payload.traId,
+      format: payload.format,
+    });
+  });
+}
 
 /**
- * Track approval workflow step completion
+ * LMRA events
  */
-export function trackApprovalStepCompleted(params: {
+export function trackLMRAStarted(payload: {
+  sessionId: string;
+  traId?: string;
+  projectId?: string;
+}): void {
+  withAnalytics((analytics) => {
+    logEvent(analytics, "lmra_started", {
+      session_id: payload.sessionId,
+      tra_id: payload.traId,
+      project_id: payload.projectId,
+    });
+  });
+}
+
+export function trackLMRACompleted(payload: {
+  sessionId: string;
+  traId?: string;
+  projectId?: string;
+  assessment: string;
+  durationMinutes?: number;
+  photoCount?: number;
+}): void {
+  withAnalytics((analytics) => {
+    logEvent(analytics, "lmra_completed", {
+      session_id: payload.sessionId,
+      tra_id: payload.traId,
+      project_id: payload.projectId,
+      assessment: payload.assessment,
+      duration_minutes: payload.durationMinutes,
+      photo_count: payload.photoCount,
+    });
+  });
+}
+
+export function trackLMRAStopWork(payload: {
+  sessionId: string;
+  traId?: string;
+  projectId?: string;
+  reason: string;
+}): void {
+  withAnalytics((analytics) => {
+    logEvent(analytics, "lmra_stop_work", {
+      session_id: payload.sessionId,
+      tra_id: payload.traId,
+      project_id: payload.projectId,
+      reason: payload.reason,
+    });
+  });
+}
+
+/**
+ * Approval workflow events
+ */
+export function trackApprovalStepCompleted(payload: {
   traId: string;
   stepName: string;
-  approverRole: string;
-  timeToCompleteHours: number;
+  approverRole?: string;
+  timeToCompleteHours?: number;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "approval_step_completed", {
-      tra_id: params.traId,
-      step_name: params.stepName,
-      approver_role: params.approverRole,
-      time_to_complete_hours: params.timeToCompleteHours,
+      tra_id: payload.traId,
+      step_name: payload.stepName,
+      approver_role: payload.approverRole,
+      time_to_complete_hours: payload.timeToCompleteHours,
     });
-  } catch (error) {
-    console.error("Failed to track approval step completed:", error);
-  }
+  });
 }
 
-// ============================================================================
-// EXPORT EVENTS
-// ============================================================================
-
 /**
- * Track report export
+ * Export / report events
  */
-export function trackReportExported(params: {
-  reportType: "dashboard" | "risk_analysis" | "compliance" | "custom";
-  format: "pdf" | "excel" | "csv";
-  dateRange: string;
+export function trackReportExported(payload: {
+  reportType: string;
+  format: string;
+  dateRange?: string;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "report_exported", {
-      report_type: params.reportType,
-      format: params.format,
-      date_range: params.dateRange,
+      report_type: payload.reportType,
+      format: payload.format,
+      date_range: payload.dateRange,
     });
-  } catch (error) {
-    console.error("Failed to track report exported:", error);
-  }
+  });
 }
 
-// ============================================================================
-// USER ENGAGEMENT EVENTS
-// ============================================================================
-
 /**
- * Track user login
+ * User engagement / account events
  */
-export function trackUserLogin(params: { method: "email" | "google" | "microsoft" }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+export function trackUserLogin(payload: { method: string }): void {
+  withAnalytics((analytics) => {
     logEvent(analytics, "login", {
-      method: params.method,
+      method: payload.method,
     });
-  } catch (error) {
-    console.error("Failed to track user login:", error);
-  }
+  });
 }
 
-/**
- * Track user registration
- */
-export function trackUserRegistration(params: {
-  method: "email" | "google" | "microsoft";
-  role: string;
+export function trackUserRegistration(payload: {
+  method: string;
+  role?: string;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "sign_up", {
-      method: params.method,
-      role: params.role,
+      method: payload.method,
+      role: payload.role,
     });
-  } catch (error) {
-    console.error("Failed to track user registration:", error);
-  }
+  });
 }
 
-/**
- * Track organization creation
- */
-export function trackOrganizationCreated(params: {
+export function trackOrganizationCreated(payload: {
   organizationId: string;
-  subscriptionTier: string;
+  subscriptionTier?: string;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "organization_created", {
-      organization_id: params.organizationId,
-      subscription_tier: params.subscriptionTier,
+      organization_id: payload.organizationId,
+      subscription_tier: payload.subscriptionTier,
     });
-  } catch (error) {
-    console.error("Failed to track organization created:", error);
-  }
+  });
 }
 
-/**
- * Track team member invitation
- */
-export function trackTeamMemberInvited(params: { inviteeRole: string }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+export function trackTeamMemberInvited(payload: {
+  inviteeRole?: string;
+}): void {
+  withAnalytics((analytics) => {
     logEvent(analytics, "team_member_invited", {
-      invitee_role: params.inviteeRole,
+      invitee_role: payload.inviteeRole,
     });
-  } catch (error) {
-    console.error("Failed to track team member invited:", error);
-  }
+  });
 }
 
-/**
- * Track project creation
- */
-export function trackProjectCreated(params: { projectId: string }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+export function trackProjectCreated(payload: {
+  projectId: string;
+}): void {
+  withAnalytics((analytics) => {
     logEvent(analytics, "project_created", {
-      project_id: params.projectId,
+      project_id: payload.projectId,
     });
-  } catch (error) {
-    console.error("Failed to track project created:", error);
-  }
+  });
 }
 
-// ============================================================================
-// FEATURE USAGE EVENTS
-// ============================================================================
-
 /**
- * Track search usage
+ * Feature usage events
  */
-export function trackSearchPerformed(params: {
-  searchType: "tra" | "lmra" | "hazard" | "template";
+export function trackSearchPerformed(payload: {
+  searchType: string;
   query: string;
-  resultsCount: number;
+  resultsCount?: number;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "search", {
-      search_term: params.query,
-      search_type: params.searchType,
-      results_count: params.resultsCount,
+      search_term: payload.query,
+      search_type: payload.searchType,
+      results_count: payload.resultsCount,
     });
-  } catch (error) {
-    console.error("Failed to track search performed:", error);
-  }
+  });
 }
 
-/**
- * Track dashboard view
- */
-export function trackDashboardViewed(params: {
-  dashboardType: "executive" | "safety" | "compliance" | "project";
+export function trackDashboardViewed(payload: {
+  dashboardType: string;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "dashboard_viewed", {
-      dashboard_type: params.dashboardType,
+      dashboard_type: payload.dashboardType,
     });
-  } catch (error) {
-    console.error("Failed to track dashboard viewed:", error);
-  }
+  });
 }
 
-/**
- * Track help/tutorial usage
- */
-export function trackHelpViewed(params: {
+export function trackHelpViewed(payload: {
   helpTopic: string;
-  source: "tooltip" | "modal" | "tour" | "documentation";
+  source?: string;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "help_viewed", {
-      help_topic: params.helpTopic,
-      source: params.source,
+      help_topic: payload.helpTopic,
+      source: payload.source,
     });
-  } catch (error) {
-    console.error("Failed to track help viewed:", error);
-  }
+  });
 }
 
-// ============================================================================
-// ERROR TRACKING
-// ============================================================================
-
 /**
- * Track application errors
+ * Error tracking
  */
-export function trackError(params: {
+export function trackError(payload: {
   errorType: string;
   errorMessage: string;
   errorContext?: string;
 }): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
+  withAnalytics((analytics) => {
     logEvent(analytics, "app_error", {
-      error_type: params.errorType,
-      error_message: params.errorMessage,
-      error_context: params.errorContext || "unknown",
+      error_type: payload.errorType,
+      error_message: payload.errorMessage,
+      error_context: payload.errorContext,
     });
-  } catch (error) {
-    console.error("Failed to track error:", error);
-  }
+  });
 }
 
-// ============================================================================
-// CUSTOM EVENT
-// ============================================================================
-
 /**
- * Track custom event with arbitrary parameters
+ * Custom events
  */
-export function trackCustomEvent(eventName: string, params?: Record<string, any>): void {
-  const analytics = getAnalyticsInstance();
-  if (!analytics) return;
-
-  try {
-    logEvent(analytics, eventName, params);
-  } catch (error) {
-    console.error(`Failed to track custom event ${eventName}:`, error);
-  }
+export function trackCustomEvent(
+  eventName: string,
+  params?: Record<string, unknown>
+): void {
+  withAnalytics((analytics) => {
+    logEvent(analytics, eventName, params || {});
+  });
 }

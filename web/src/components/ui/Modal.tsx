@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { Button } from "./Button";
+import { useTranslations } from "next-intl";
 
 interface ModalProps {
   isOpen: boolean;
@@ -9,7 +10,7 @@ interface ModalProps {
   title: string;
   description?: string;
   children?: React.ReactNode;
-  size?: "sm" | "md" | "lg" | "xl";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl";
   showCloseButton?: boolean;
 }
 
@@ -22,6 +23,7 @@ export const Modal: React.FC<ModalProps> = ({
   size = "md",
   showCloseButton = true,
 }) => {
+  const t = useTranslations();
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -47,6 +49,7 @@ export const Modal: React.FC<ModalProps> = ({
     md: "max-w-lg",
     lg: "max-w-2xl",
     xl: "max-w-4xl",
+    "2xl": "max-w-5xl",
   };
 
   return (
@@ -78,7 +81,7 @@ export const Modal: React.FC<ModalProps> = ({
             <button
               onClick={onClose}
               className="ml-4 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-              aria-label="Close modal"
+              aria-label={t("modal.closeButton", { default: "Sluit dialoog" })}
             >
               <svg
                 className="w-6 h-6"
@@ -120,11 +123,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onConfirm,
   title,
   description,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
+  confirmText,
+  cancelText,
   variant = "info",
   isLoading = false,
 }) => {
+  const t = useTranslations();
   const handleConfirm = () => {
     onConfirm();
   };
@@ -142,7 +146,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
         <div className="flex justify-end gap-3 pt-4">
           <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            {cancelText}
+            {cancelText ?? t("modal.cancel")}
           </Button>
           <Button
             variant={variantButtonStyles[variant]}
@@ -150,7 +154,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             loading={isLoading}
             disabled={isLoading}
           >
-            {confirmText}
+            {confirmText ?? t("modal.confirm")}
           </Button>
         </div>
       </div>

@@ -1,0 +1,44 @@
+# Jest Test Suite Fixing — Checklist
+
+- [x] Create roadmap checklist (this file)
+- [ ] Run failing tests individually and capture errors
+  - [ ] tra-wizard.test.tsx
+  - [ ] hazard-selector.test.tsx
+  - [ ] projects-api.test.ts
+  - [ ] project-model.test.ts
+  - [ ] tra-model.test.ts
+  - [ ] location-service.test.ts
+  - [ ] analytics-service.test.ts
+  - [ ] kpi-calculator.test.ts
+  - [ ] integration/auth-flow.integration.test.ts (optional)
+  - [ ] auth-system.test.ts (optional)
+  - [ ] firebase-emulator.test.ts (optional)
+- [ ] Fix tra-wizard.test.tsx ("renders and progresses through steps")
+  - [ ] Inspect test failure output
+  - [ ] Add appropriate waitFor/expect and ensure correct Dutch labels are used
+  - [ ] Re-run and verify
+- [ ] Fix hazard-selector.test.tsx (next-intl mock)
+  - [ ] Verify _global_ next-intl mock is used
+  - [ ] Remove or update any local test mocks returning keys instead of translations
+  - [ ] Ensure keys exist in web/src/messages/nl.json
+  - [ ] Re-run and verify
+- [ ] Fix projects-api.test.ts (firestore subcollection access)
+  - [ ] Inspect test file for local initializeAdmin/server-helpers mocks
+  - [ ] Ensure mocks return `{ firestore: global.mockFirestore }`
+  - [ ] Re-run and verify
+- [ ] Fix project-model.test.ts and tra-model.test.ts
+  - [ ] Inspect model imports and initialization
+  - [ ] Ensure tests use/reset global.mockFirestore and call global.resetMockFirestore() in beforeEach
+  - [ ] Re-run and verify
+- [ ] Fix service tests (location, analytics, kpi-calculator)
+  - [ ] Add necessary global mocks (navigator.geolocation, analytics stubs)
+  - [ ] Mock network/fetch where required
+  - [ ] Re-run and verify
+- [ ] Update TEST_RESULTS_REPORT.md and memory-bank/progress.md with new results
+- [ ] (Optional) Tackle integration/emulator tests
+- [ ] Final: achieve minimum goal (20+ passing), then stretch/ultimate goals
+
+Notes:
+- Run commands from web/ directory: `cd web && npm test -- path/to/test --testTimeout=120000`
+- Use waitFor and explicit expects in component tests to account for async state updates
+- Prefer using project global mocks in web/jest.setup.js and avoid per-test mocks that return keys instead of translations

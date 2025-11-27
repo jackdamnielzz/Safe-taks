@@ -1,0 +1,196 @@
+{
+  "id": "template-confined-space-entry",
+  "name": "Beperkte Ruimte Toegang (Besloten Ruimten)",
+  "description": "VCA-compliant template voor werkzaamheden in beperkte/besloten ruimten met specifieke gasmetingen en veiligheidsmaatregelen",
+  "industry": "industrial",
+  "category": "confined_space",
+  "vcaCompliant": true,
+  "vcaVersion": "VCA 2017 v5.1",
+  "validityPeriod": 12,
+  "createdBy": "system",
+  "version": 1,
+  "steps": [
+    {
+      "order": 1,
+      "title": "Voorbereiding en Risicoanalyse",
+      "description": "Bepaal aard van beperkte ruimte en identificeer potentiële gevaren",
+      "duration": 30,
+      "requiredPersonnel": 2,
+      "location": "Kantoor/Werkplek"
+    },
+    {
+      "order": 2,
+      "title": "Gasmetingen en Ventilatie",
+      "description": "Voer gasmetingen uit (zuurstof, giftige gassen, explosieve dampen) en zorg voor ventilatie",
+      "duration": 20,
+      "requiredPersonnel": 2,
+      "location": "Ingang beperkte ruimte"
+    },
+    {
+      "order": 3,
+      "title": "Veiligheidsuitrusting Controle",
+      "description": "Controleer alle persoonlijke beschermingsmiddelen en communicatieapparatuur",
+      "duration": 15,
+      "requiredPersonnel": 2,
+      "location": "Ingang beperkte ruimte"
+    },
+    {
+      "order": 4,
+      "title": "Werkvergunning Ondertekening",
+      "description": "Onderteken werkvergunning en communiceer veiligheidsmaatregelen aan team",
+      "duration": 10,
+      "requiredPersonnel": 2,
+      "location": "Ingang beperkte ruimte"
+    },
+    {
+      "order": 5,
+      "title": "Werkzaamheden in Beperkte Ruimte",
+      "description": "Voer werkzaamheden uit met continue monitoring en communicatie",
+      "duration": 120,
+      "requiredPersonnel": 3,
+      "location": "Beperkte ruimte"
+    },
+    {
+      "order": 6,
+      "title": "Evacuatie en Controle",
+      "description": "Evacueer beperkte ruimte en voer eindcontrole uit",
+      "duration": 15,
+      "requiredPersonnel": 2,
+      "location": "Ingang beperkte ruimte"
+    },
+    {
+      "order": 7,
+      "title": "Opruimen en Rapportage",
+      "description": "Ruim werkplek op en documenteer werkzaamheden",
+      "duration": 15,
+      "requiredPersonnel": 2,
+      "location": "Werkplek"
+    }
+  ],
+  "hazards": [
+    {
+      "id": "hazard-oxygen-deficiency",
+      "name": "Zuurstofgebrek",
+      "category": "chemical",
+      "description": "Risico op bewusteloosheid en dood door onvoldoende zuurstof in beperkte ruimte",
+      "typicalEffect": 100,
+      "typicalExposure": 3,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Gasmetingen voor toegang (zuurstof 19.5-23.5%)",
+          "type": "administrative",
+          "responsible": "Gasmeettechnicus",
+          "verificationMethod": "Gasmeetrapport"
+        },
+        {
+          "description": "Continue ventilatie van beperkte ruimte",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        },
+        {
+          "description": "Gebruik van zelfstandige ademhalingsapparatuur (SCBA)",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        }
+      ]
+    },
+    {
+      "id": "hazard-toxic-gases",
+      "name": "Giftige gassen",
+      "category": "chemical",
+      "description": "Risico op vergiftiging door aanwezigheid van giftige gassen (H2S, CO, etc.)",
+      "typicalEffect": 100,
+      "typicalExposure": 3,
+      "typicalProbability": 0.5,
+      "controlMeasures": [
+        {
+          "description": "Gasmetingen voor giftige gassen (H2S, CO, etc.)",
+          "type": "administrative",
+          "responsible": "Gasmeettechnicus",
+          "verificationMethod": "Gasmeetrapport"
+        },
+        {
+          "description": "Gebruik van ademhalingsapparatuur bij aanwezigheid van giftige gassen",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        },
+        {
+          "description": "Veiligheidswatch buiten beperkte ruimte",
+          "type": "administrative",
+          "responsible": "Veiligheidswatch",
+          "verificationMethod": "Aanwezigheid veiligheidswatch"
+        }
+      ]
+    },
+    {
+      "id": "hazard-explosive-atmosphere",
+      "name": "Explosieve atmosfeer",
+      "category": "fire_explosion",
+      "description": "Risico op explosie door aanwezigheid van brandbare dampen of gassen",
+      "typicalEffect": 100,
+      "typicalExposure": 2,
+      "typicalProbability": 0.5,
+      "controlMeasures": [
+        {
+          "description": "Gasmetingen voor explosieve dampen",
+          "type": "administrative",
+          "responsible": "Gasmeettechnicus",
+          "verificationMethod": "Gasmeetrapport"
+        },
+        {
+          "description": "Verbod op open vuur en vonkproducerende werkzaamheden",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Werkvergunning"
+        },
+        {
+          "description": "Gebruik van explosieveilige gereedschappen en apparatuur",
+          "type": "engineering",
+          "responsible": "Supervisor",
+          "verificationMethod": "Visuele inspectie"
+        }
+      ]
+    },
+    {
+      "id": "hazard-physical-hazards",
+      "name": "Fysieke gevaren (beknelling, verdrinking)",
+      "category": "mechanical",
+      "description": "Risico op beknelling, verdrinking of ander fysiek letsel",
+      "typicalEffect": 40,
+      "typicalExposure": 3,
+      "typicalProbability": 1,
+      "controlMeasures": [
+        {
+          "description": "Inspectie van beperkte ruimte op fysieke gevaren",
+          "type": "administrative",
+          "responsible": "Supervisor",
+          "verificationMethod": "Inspectie rapport"
+        },
+        {
+          "description": "Gebruik van veiligheidsharnas en reddingstouw",
+          "type": "ppe",
+          "responsible": "Werknemer",
+          "verificationMethod": "Persoonlijke controle"
+        },
+        {
+          "description": "Veiligheidswatch met reddingsapparatuur",
+          "type": "administrative",
+          "responsible": "Veiligheidswatch",
+          "verificationMethod": "Aanwezigheid veiligheidswatch"
+        }
+      ]
+    }
+  ],
+  "requiredCompetencies": [
+    "VCA Basis Veiligheid",
+    "Beperkte Ruimte Training",
+    "Gasmeettechnicus Certificaat",
+    "Eerste Hulp",
+    "Reddingstechniek"
+  ],
+  "notes": "Deze template is van toepassing op werkzaamheden in beperkte/besloten ruimten. Werkvergunning is verplicht. Veiligheidswatch moet altijd aanwezig zijn. Raadpleeg NEN 2916 voor technische eisen."
+}
